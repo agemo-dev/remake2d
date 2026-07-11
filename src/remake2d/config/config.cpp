@@ -1,0 +1,74 @@
+#include <remake2d/config/config.hpp>
+#include <remake2d/sound.hpp>
+#include <remake2d/script.hpp>
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_ttf.h>
+
+namespace rmk {
+namespace config {
+
+namespace system {
+void initSDL(void) {
+    int sdlflags = SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS;
+    if(SDL_Init(sdlflags) != 0) {
+        rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_init_fail) + " : " + SDL_GetError()));
+    }
+
+    int imgflags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP | IMG_INIT_AVIF;
+    if((IMG_Init(imgflags) & imgflags) != imgflags) {
+        rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_image_init_fail) + " : " + IMG_GetError()));
+    }
+    
+    int mixflags = MIX_INIT_OGG | MIX_INIT_MP3 | MIX_INIT_FLAC;
+    if((Mix_Init(mixflags) & mixflags) != mixflags) {
+        rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_mixer_init_fail) + " : " + Mix_GetError()));
+    }
+    
+    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
+        rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_mixer_init_fail) + " : " + Mix_GetError()));
+    }
+    
+    if(TTF_Init() != 0) {
+        rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_ttf_init_fail) + " : " + TTF_GetError()));
+    }
+}
+} //namespace system
+
+
+namespace solstat {
+void initLua(void) noexcept {
+    auto& table = script.m_table;
+    
+    initLuaType();
+    initLuaClass();
+    initLuaSignal();
+    initLuaEntity();
+    initLuaEvent(table);
+    initLuaGlobal(table);
+    initLuaUtility(table);
+    initLuaSingleton(table);
+    
+    script.m_is_init = true;
+}
+} //namespace solstat
+
+
+namespace sound {
+void initQueue(void) noexcept {
+    static bool isInit = false;
+    
+    if(isInit) return;
+    for(u16 i = 0; i < rmk::system.info.channelCount(); i++) {
+        rmk::SFX::m_free_channels.push(i);
+        rmk::SFX::m_channel_owners[i] = nullptr;
+    } 
+    
+    isInit = true;
+}
+} //namespace sound
+
+} //namespace config
+} //namespace rmk

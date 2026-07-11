@@ -1,0 +1,108 @@
+site_name: RE:MAKE 2D
+site_description: full code game engine for 2D game in C++
+site_author: agemo-dev
+
+theme:
+  name: material
+  palette:
+    scheme:  slate
+    primary: indigo
+    accent:  cyan
+  logo: assets/favicon.png
+  favicon: assets/favicon.png
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.emoji:
+      emoji_index:     !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  
+
+nav:
+  - Home:
+    - About RE:MAKE 2D : home/about.md
+    - Cheatsheet:        home/cheatsheet.md
+  - Learn:
+    - Install:
+        - Installation & compilation : learn/install/install.md
+    - Basics types:
+        - Numeric:            learn/types/numeric.md
+        - Vector & dimension: learn/types/vector.md
+        - Area:               learn/types/area.md
+        - Color:              learn/types/color.md
+    - Graphics:
+        - Window:   learn/graphics/window.md
+        - Loop:     learn/graphics/loop.md
+        - Shape:    learn/graphics/shape.md
+        - Viewport: learn/graphics/viewport.md
+    - Texture:
+        - Texture:   learn/texture/texture.md
+        - Text:      learn/texture/text.md
+        - Animation: learn/texture/animation.md
+    - Sound:
+        - Play sound: learn/sound/sound.md
+    - physic:
+        - Physic entity:   learn/physic/body.md
+        - Advanced physic: learn/physic/physic.md
+    - Maps:
+        - Tile grid: learn/maps/tilegrid.md
+        - Tile map:  learn/maps/tilemap.md
+        - Parallax:  learn/maps/parallax.md
+    - time:
+        - Delta time:  learn/time/delta.md
+        - Timer:       learn/time/timer.md
+        - Chronometer: learn/time/chrono.md
+        - Date:        learn/time/date.md
+        - Clock:       learn/time/clock.md
+    - Tools:
+        - Math:        learn/tools/math.md
+        - Stream:      learn/tools/stream.md
+        - Concept:     learn/tools/concept.md
+        - Utility:     learn/tools/utility.md
+        - Random:      learn/tools/random.md
+        - Scene & act: learn/tools/scene.md
+    - Data & Script: 
+        - Save & load data:    learn/data/data.md
+        - Data file:           learn/data/datafile.md
+        - Custom savable type: learn/data/isavable.md
+        - lua hot-loading:     learn/data/script.md
+        - Load custom type:    learn/data/loadtype.md
+    - core:
+        - Error:    learn/core/error.md
+        - Signal:   learn/core/signal.md
+        - Event:    learn/core/event.md
+        - Croutine: learn/core/croutine.md
+        - System:   learn/core/system.md
+  - Examples:
+    - Game test:  example/example.md
+  - More:
+    - Versions:
+        - Change log:
+            - v1.0:    more/patch/v1.0.md
+        - Versions:    more/version.md
+    - Licence:         more/licence.md
+    - Contributors:    more/contributor.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/agemo-dev
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/agemo405
+    - icon: fontawesome/solid/envelope
+      link: mailto:my.agemo.dev@email.com

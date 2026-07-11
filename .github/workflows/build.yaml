@@ -1,0 +1,54 @@
+name: REMAKE2D — CI Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: REMAKE2D-${{ matrix.os }}-${{ matrix.mode }}-${{ matrix.type }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        mode: [Release, Debug]
+        type: [static, shared]
+  
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: lukka/get-cmake@latest
+    - uses: seanmiddleditch/gha-setup-ninja@master
+    
+    - uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/build/_deps
+        key: REMAKE2D-${{ matrix.os }}-${{ matrix.mode }}-deps-cache
+
+    - name: Install NASM
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt-get update && sudo apt-get install -y nasm
+    
+    - name: Configure CMake Shared
+      if: matrix.type == 'shared'
+      run: >
+        cmake -B ${{ github.workspace }}/build 
+        -DCMAKE_BUILD_TYPE=${{ matrix.mode }} 
+        -DBUILD_SHARED_LIBS=ON
+        -G Ninja
+    
+    - name: Configure CMake Static
+      if: matrix.type == 'static'
+      run: >
+        cmake -B ${{ github.workspace }}/build 
+        -DCMAKE_BUILD_TYPE=${{ matrix.mode }} 
+        -DBUILD_SHARED_LIBS=OFF
+        -G Ninja
+
+    - run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.mode }}
+
+    - run: cd ${{ github.workspace }}/build && ctest -C ${{ matrix.mode }} --output-on-failure

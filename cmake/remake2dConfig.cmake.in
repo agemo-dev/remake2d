@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(SDL2)
+find_dependency(SDL2_image)
+find_dependency(SDL2_mixer)
+find_dependency(SDL2_ttf)
+
+include("${CMAKE_CURRENT_LIST_DIR}/remake2dTargets.cmake")
