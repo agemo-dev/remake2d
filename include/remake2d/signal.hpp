@@ -5,7 +5,13 @@
 #include <remake2d/error.hpp>
 #include <remake2d/croutine.hpp>
 
-#include <SDL2/SDL.h>
+#if __has_include(<SDL2/SDL.h>)
+    #include <SDL2/SDL.h>
+#elif __has_include(<SDL.h>)
+    #include <SDL.h>
+#else
+    #error "SDL not found."
+#endif
 
 #include <vector>
 #include <mutex>
