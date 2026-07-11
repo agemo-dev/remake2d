@@ -2,10 +2,19 @@
 #include <remake2d/sound.hpp>
 #include <remake2d/script.hpp>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_ttf.h>
+#if __has_include(<SDL2/SDL.h>)
+    #include <SDL2/SDL.h>
+	#include <SDL2/SDL_ttf.h>
+	#include <SDL2/SDL_image.h>
+	#include <SDL2/SDL_mixer.h>
+#elif __has_include(<SDL.h>)
+    #include <SDL.h>
+	#include <SDL_ttf.h>
+	#include <SDL_image.h>
+	#include <SDL_mixer.h>
+#else
+    #error "SDL not found."
+#endif
 
 namespace rmk {
 namespace config {

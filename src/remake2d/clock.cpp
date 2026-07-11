@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <vector>
+
 namespace rmk {
 
 Date::Date(u8 day, u8 month, i32 year) {

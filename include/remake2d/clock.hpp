@@ -4,11 +4,11 @@
 #include <remake2d/numeric.hpp>
 #include <remake2d/error.hpp>
 
-#include <string>
-#include <string_view>
 #include <map>
 #include <array>
 #include <vector>
+#include <string>
+
 namespace rmk {
 
 class Date {

@@ -7,19 +7,25 @@ namespace solstat {
 
 void initLuaUtility(sol::table& rmk) noexcept {
 
-    rmk["degToRad"] = &angle::degToRad;
-    rmk["radToDeg"] = &angle::radToDeg;
+	rmk["version"].get_or_create<sol::table>();
+	rmk["version"]["current"] = &version::current;
+	
+    rmk["angle"].get_or_create<sol::table>();
+    rmk["angle"]["degToRad"] = &angle::degToRad;
+    rmk["angle"]["radToDeg"] = &angle::radToDeg;
 
-    rmk["RGBToHSL"] = &color::RGBToHSL;
-    rmk["HSLToRGB"] = &color::HSLToRGB;
+	rmk["color"].get_or_create<sol::table>();
+    rmk["color"]["RGBToHSL"] = &color::RGBToHSL;
+    rmk["color"]["HSLToRGB"] = &color::HSLToRGB;
 
-    rmk["pixelToMeter"] = sol::overload(
+	rmk["physic"].get_or_create<sol::table>();
+    rmk["physic"]["pixelToMeter"] = sol::overload(
         [](f32 pixels) { return physic::pixelToMeter(pixels); },
         [](const Vec2d& pixels) { return physic::pixelToMeter(pixels); },
         [](const Dim2d& pixels) { return physic::pixelToMeter(pixels); }
     );
 
-    rmk["meterToPixel"] = sol::overload(
+    rmk["physic"]["meterToPixel"] = sol::overload(
         [](f32 meters) { return physic::meterToPixel(meters); },
         [](const Vec2d& meters) { return physic::meterToPixel(meters); },
         [](const Dim2d& meters) { return physic::meterToPixel(meters); }
@@ -32,7 +38,7 @@ void initLuaUtility(sol::table& rmk) noexcept {
     rmk["isTrue"]   = isTrue;
     rmk["isFalse"]  = isFalse;
 
-    rmk["file"] = rmk.create();
+    rmk["file"].get_or_create<sol::table>();
     rmk["file"]["jump"] = [](sol::variadic_args va) -> std::string {
         std::vector<std::string> strs;
         std::vector<std::string_view> views;

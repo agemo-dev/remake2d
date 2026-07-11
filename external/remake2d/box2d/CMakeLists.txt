@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.22)
+﻿cmake_minimum_required(VERSION 3.32) # [RE:MAKE 2D] : manual patch
 include(FetchContent)
 
 project(box2d

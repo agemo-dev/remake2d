@@ -4,10 +4,19 @@
 #include <remake2d/math.hpp>
 
 #include <cmath>
+#include <ostream>
 #include <algorithm>
 #include <filesystem>
 
 namespace rmk {
+
+namespace version {
+std::string current(void) noexcept {
+	std::ostringstream oss;
+	oss << REMAKE2D_VERSION_MAJOR << '.' << REMAKE2D_VERSION_MINOR << '.' << REMAKE2D_VERSION_PATCH;
+	return oss.str();
+}
+} // namespace version
 
 namespace color {
 HSL RGBToHSL(const Color& c) {
@@ -130,8 +139,14 @@ fmax radToDeg(fmax radians) noexcept {
 }
 
 namespace literal {
-fmax operator""_deg(fmax d) noexcept { return degToRad(d); }
-fmax operator""_rad(fmax r) noexcept { return radToDeg(r); }
+fmax operator""_deg(fmax d) noexcept { 
+	return degToRad(d);
+}
+	
+fmax operator""_rad(fmax r) noexcept {
+	return radToDeg(r);
+}
+
 } //namespace literal
 } //namespace angle
 
@@ -149,16 +164,16 @@ std::string jump(std::span<std::string_view> files) noexcept {
 
 namespace time {
 namespace literal {
-time::Nanosecond  operator""_ns(unsigned long long val) noexcept { return time::Nanosecond(val); }
-time::Microsecond operator""_us(unsigned long long val) noexcept { return time::Microsecond(val); }
-time::Millisecond operator""_ms(unsigned long long val) noexcept { return time::Millisecond(val); }
-time::Second      operator""_s(unsigned long long val) noexcept  { return time::Second(val); }
+time::Nanosecond  operator""_ns(unsigned long long val)  noexcept { return time::Nanosecond(val);  }
+time::Microsecond operator""_us(unsigned long long val)  noexcept { return time::Microsecond(val); }
+time::Millisecond operator""_ms(unsigned long long val)  noexcept { return time::Millisecond(val); }
+time::Second      operator""_s(unsigned long long val)   noexcept { return time::Second(val); }
 time::Minute      operator""_min(unsigned long long val) noexcept { return time::Minute(val); }
-time::Hour        operator""_h(unsigned long long val) noexcept  { return time::Hour(val); }
-time::Day         operator""_d(unsigned long long val) noexcept  { return time::Day(val); }
-time::Week        operator""_w(unsigned long long val) noexcept  { return time::Week(val); }
-time::Month       operator""_mo(unsigned long long val) noexcept { return time::Month(val); }
-time::Year        operator""_y(unsigned long long val) noexcept  { return time::Year(val); }
+time::Hour        operator""_h(unsigned long long val)   noexcept { return time::Hour(val);   }
+time::Day         operator""_d(unsigned long long val)   noexcept { return time::Day(val);    }
+time::Week        operator""_w(unsigned long long val)   noexcept { return time::Week(val);   }
+time::Month       operator""_mo(unsigned long long val)  noexcept { return time::Month(val);  }
+time::Year        operator""_y(unsigned long long val)   noexcept { return time::Year(val);   }
 } //namespace literal
 } //namespace time
 

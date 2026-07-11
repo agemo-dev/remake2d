@@ -144,6 +144,25 @@ rmk::Color color = rmk::color::HSLToRGB(hsl);
 
 ---
 
+## Version
+
+This header also contains macros and a function to find out the current version of the engine being used: 
+
+```cpp
+// version macro
+
+REMAKE2D_VERSION_MAJOR // major version x
+REMAKE2D_VERSION_MINOR // minor version y
+REMAKE2D_VERSION_PATCH // patch version z
+
+// Helper function
+namespace version {
+std::string current(void) noexcept; // full current version (x.y.z)
+}
+```
+
+---
+
 ## Constants
 
 A few generic constants are also exposed, mostly to make certain return values more readable than a plain `0`/`1`:
