@@ -17,8 +17,8 @@ endif()
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
-option(USE_NATIVE_OPT "Enable -march=native optimizations" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(USE_NATIVE_OPT "Enable -march=native optimizations" OFF)
 
 if(USE_NATIVE_OPT)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
@@ -59,36 +59,35 @@ else()
 
     FetchContent_Declare(
         SDL2
-        GIT_REPOSITORY https://github.com
-        GIT_TAG release-2.28.10
+        https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-2.30.11
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
     )
     FetchContent_Declare(
         SDL2_image
-        GIT_REPOSITORY https://github.com
-        GIT_TAG release-2.8.2
+        https://github.com/libsdl-org/SDL_image.git
+        GIT_TAG release-2.8.6
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
     )
     FetchContent_Declare(
         SDL2_mixer
-        GIT_REPOSITORY https://github.com
-        GIT_TAG release-2.8.0
+        https://github.com/libsdl-org/SDL_mixer.git
+        GIT_TAG release-2.8.2
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
     )
     FetchContent_Declare(
         SDL2_ttf
-        GIT_REPOSITORY https://github.com
-        GIT_TAG release-2.22.0
+        https://github.com/libsdl-org/SDL_ttf.git
+        GIT_TAG release-2.24.0
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
     )
 
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
 
-    # --- UNIFORMISATION DES CIBLES FETCHCONTENT (SÉCURITÉ ALIAS) ---
     if(NOT TARGET SDL2::SDL2)
         if(TARGET SDL2)
             add_library(SDL2::SDL2 ALIAS SDL2)
