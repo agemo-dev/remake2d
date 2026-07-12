@@ -10,6 +10,7 @@ project(
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 enable_language(ASM_NASM ASM-ATT ASM OPTIONAL)
 
@@ -34,7 +35,7 @@ else()
 endif()
 
 include(FetchContent)
-set(CMAKE_POLICY_VERSION_MINIMUM  3.5)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
     find_package(SDL2 REQUIRED)
@@ -51,6 +52,9 @@ else()
     set(SDL2MIXER_VENDORED ON CACHE BOOL "" FORCE)
     set(SDL2TTF_VENDORED   ON CACHE BOOL "" FORCE)
 
+    set(USER_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+    set(BUILD_SHARED_LIBS OFF)
+
     set(SDL2MIXER_WAV    ON  CACHE BOOL "" FORCE)
     set(SDL2MIXER_MP3    ON  CACHE BOOL "" FORCE)
     set(SDL2MIXER_FLAC   ON  CACHE BOOL "" FORCE)
@@ -59,40 +63,62 @@ else()
     set(SDL2MIXER_MOD    OFF CACHE BOOL "" FORCE)
     set(SDL2MIXER_MIDI   OFF CACHE BOOL "" FORCE)
 
-	FetchContent_Declare(
-	    SDL2
-	    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-	    GIT_TAG release-2.30.11
-	    GIT_SHALLOW TRUE
-	    GIT_PROGRESS TRUE
-	)
+    set(SDL2IMAGE_PNG    ON  CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_JPG    ON  CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_AVIF   ON  CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_WEBP   ON  CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_TGA    ON  CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_BMP    ON  CACHE BOOL "" FORCE)
 	
-	FetchContent_Declare(
-	    SDL2_image
-	    GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
-	    GIT_TAG release-2.8.6
-	    GIT_SHALLOW TRUE
-	    GIT_PROGRESS TRUE
-	)
+    set(SDL2IMAGE_GIF    OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_LBM    OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_PCX    OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_PNM    OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_SVG    OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_TIF    OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_XCF    OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_XPM    OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_XV     OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_QOI    OFF CACHE BOOL "" FORCE)
 	
-	FetchContent_Declare(
-	    SDL2_mixer
-	    GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
-	    GIT_TAG release-2.8.2
-	    GIT_SHALLOW TRUE
-	    GIT_PROGRESS TRUE
-	)
-	
-	FetchContent_Declare(
-	    SDL2_ttf
-	    GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
-	    GIT_TAG release-2.24.0
-	    GIT_SHALLOW TRUE
-	    GIT_PROGRESS TRUE
-	)
-	
-	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
-	
+    set(AVIF_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        SDL2
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-2.30.11
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+    )
+    
+    FetchContent_Declare(
+        SDL2_image
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+        GIT_TAG release-2.8.6
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+    )
+    
+    FetchContent_Declare(
+        SDL2_mixer
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
+        GIT_TAG release-2.8.2
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+    )
+    
+    FetchContent_Declare(
+        SDL2_ttf
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
+        GIT_TAG release-2.24.0
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+    )
+    
+    FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
+    
+    set(BUILD_SHARED_LIBS ${USER_BUILD_SHARED_LIBS})
+
     if(NOT TARGET SDL2::SDL2)
         if(TARGET SDL2)
             add_library(SDL2::SDL2 ALIAS SDL2)
@@ -126,7 +152,6 @@ target_compile_options(lualib PRIVATE -Wno-unused-parameter)
 target_include_directories(lualib PRIVATE ${CMAKE_SOURCE_DIR}/external/remake2d)
 set_target_properties(lualib PROPERTIES LINKER_LANGUAGE C)
 
-# patch include directories
 file(GLOB_RECURSE SOL2_PATCH_HEADERS ${CMAKE_SOURCE_DIR}/external/remake2d/sol2/*.hpp)
 foreach(SOL2_HPP ${SOL2_PATCH_HEADERS})
     file(READ ${SOL2_HPP} SOL2_CONTENT)
@@ -136,7 +161,6 @@ foreach(SOL2_HPP ${SOL2_PATCH_HEADERS})
     file(WRITE ${SOL2_HPP} "${SOL2_CONTENT}")
 endforeach()
 
-# patch box2d files for TERMUX
 if(TERMUX_BUILD)
     file(READ ${CMAKE_SOURCE_DIR}/external/remake2d/box2d/src/core.h B2_CORE_CONTENT)
     string(REPLACE "#error Unsupported CPU"
@@ -153,12 +177,24 @@ if(TERMUX_BUILD)
 endif()
 
 file(GLOB_RECURSE REMAKE2D_SRC src/remake2d/*.cpp)
-add_library(
-    remake2d STATIC
-    ${REMAKE2D_SRC}
-    $<TARGET_OBJECTS:lualib>
-    $<TARGET_OBJECTS:box2d>
-)
+
+if(BUILD_SHARED_LIBS)
+    add_library(
+        remake2d SHARED
+        ${REMAKE2D_SRC}
+        $<TARGET_OBJECTS:box2d>
+        $<TARGET_OBJECTS:lualib>
+    )
+    set(SDL_LINK_TYPE PRIVATE)
+else()
+    add_library(
+        remake2d STATIC
+        ${REMAKE2D_SRC}
+        $<TARGET_OBJECTS:box2d>
+        $<TARGET_OBJECTS:lualib>
+    )
+    set(SDL_LINK_TYPE PUBLIC)
+endif()
 
 target_include_directories(
     remake2d
@@ -173,11 +209,12 @@ target_include_directories(
 
 target_link_libraries(
     remake2d
-    PUBLIC
+    ${SDL_LINK_TYPE}
         SDL2::SDL2
         SDL2_image::SDL2_image
         SDL2_mixer::SDL2_mixer
         SDL2_ttf::SDL2_ttf
+    PRIVATE
         ${CMAKE_DL_LIBS}
 )
 
@@ -191,10 +228,22 @@ configure_package_config_file(
 )
 
 if(BUILD_SHARED_LIBS)
-    install(TARGETS remake2d LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(TARGETS remake2d 
+        EXPORT remake2dTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
 else()
-    install(TARGETS remake2d ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(TARGETS remake2d 
+        EXPORT remake2dTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
 endif()
+
+install(EXPORT remake2dTargets
+    FILE remake2dTargets.cmake
+    NAMESPACE remake2d::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
+)
 
 install(
     FILES ${CMAKE_BINARY_DIR}/remake2dConfig.cmake

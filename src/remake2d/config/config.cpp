@@ -26,7 +26,7 @@ void initSDL(void) {
         rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_init_fail) + " : " + SDL_GetError()));
     }
 
-    int imgflags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP | IMG_INIT_AVIF;
+    int imgflags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP | IMG_INIT_AVIF | IMG_INIT_TGA | IMG_INIT_BMP;
     if((IMG_Init(imgflags) & imgflags) != imgflags) {
         rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_image_init_fail) + " : " + IMG_GetError()));
     }

@@ -47,6 +47,9 @@ Sprite(std::string_view path, const Rectangle&);
 rmk::Sprite player("player.png", {{400, 300}, {64, 64}});
 ```
 
+!!! info
+    **RE:MAKE 2D** supports PNG, JPG, WEBP, AVIF, TGA and BMP image formats .
+
 ### Drawing a texture
 
 ```cpp
@@ -77,7 +80,7 @@ A texture has no color of its own; tint and opacity are entirely driven by the `
 white so color modulation applies correctly:
 
 ```cpp
-win.draw(player, rmk::color::red);           // tinted red
+win.draw(player, rmk::color::red);         // tinted red
 win.draw(player, {255, 255, 255, 128});      // half transparent
 ```
 
