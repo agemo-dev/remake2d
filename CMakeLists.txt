@@ -57,37 +57,40 @@ else()
     set(SDL2MIXER_MOD    OFF CACHE BOOL "" FORCE)
     set(SDL2MIXER_MIDI   OFF CACHE BOOL "" FORCE)
 
-    FetchContent_Declare(
-        SDL2
-        https://github.com/libsdl-org/SDL.git
-        GIT_TAG release-2.30.11
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-    )
-    FetchContent_Declare(
-        SDL2_image
-        https://github.com/libsdl-org/SDL_image.git
-        GIT_TAG release-2.8.6
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-    )
-    FetchContent_Declare(
-        SDL2_mixer
-        https://github.com/libsdl-org/SDL_mixer.git
-        GIT_TAG release-2.8.2
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-    )
-    FetchContent_Declare(
-        SDL2_ttf
-        https://github.com/libsdl-org/SDL_ttf.git
-        GIT_TAG release-2.24.0
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-    )
-
-    FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
-
+	FetchContent_Declare(
+	    SDL2
+	    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+	    GIT_TAG release-2.30.11
+	    GIT_SHALLOW TRUE
+	    GIT_PROGRESS TRUE
+	)
+	
+	FetchContent_Declare(
+	    SDL2_image
+	    GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+	    GIT_TAG release-2.8.6
+	    GIT_SHALLOW TRUE
+	    GIT_PROGRESS TRUE
+	)
+	
+	FetchContent_Declare(
+	    SDL2_mixer
+	    GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
+	    GIT_TAG release-2.8.2
+	    GIT_SHALLOW TRUE
+	    GIT_PROGRESS TRUE
+	)
+	
+	FetchContent_Declare(
+	    SDL2_ttf
+	    GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
+	    GIT_TAG release-2.24.0
+	    GIT_SHALLOW TRUE
+	    GIT_PROGRESS TRUE
+	)
+	
+	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf)
+	
     if(NOT TARGET SDL2::SDL2)
         if(TARGET SDL2)
             add_library(SDL2::SDL2 ALIAS SDL2)
