@@ -185,7 +185,6 @@ if(BUILD_SHARED_LIBS)
         $<TARGET_OBJECTS:box2d>
         $<TARGET_OBJECTS:lualib>
     )
-    set(SDL_LINK_TYPE PRIVATE)
 else()
     add_library(
         remake2d STATIC
@@ -193,7 +192,6 @@ else()
         $<TARGET_OBJECTS:box2d>
         $<TARGET_OBJECTS:lualib>
     )
-    set(SDL_LINK_TYPE PUBLIC)
 endif()
 
 target_include_directories(
@@ -209,12 +207,11 @@ target_include_directories(
 
 target_link_libraries(
     remake2d
-    ${SDL_LINK_TYPE}
+    PRIVATE
         SDL2::SDL2
+        SDL2_ttf::SDL2_ttf
         SDL2_image::SDL2_image
         SDL2_mixer::SDL2_mixer
-        SDL2_ttf::SDL2_ttf
-    PRIVATE
         ${CMAKE_DL_LIBS}
 )
 
