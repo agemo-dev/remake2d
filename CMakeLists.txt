@@ -138,6 +138,31 @@ else()
     if(NOT TARGET SDL2_ttf::SDL2_ttf AND TARGET SDL2_ttf)
         add_library(SDL2_ttf::SDL2_ttf ALIAS SDL2_ttf)
     endif()
+
+	# copy SDL2_* headers in SDL2/
+	set(SDL2_SHIM_DIR ${CMAKE_BINARY_DIR}/sdl2_include_shim)
+    file(MAKE_DIRECTORY ${SDL2_SHIM_DIR}/SDL2)
+
+    function(remake2d_shim_header SRC_DIR HEADER_NAME)
+        file(GLOB_RECURSE FOUND "${SRC_DIR}/${HEADER_NAME}")
+        if(FOUND)
+            list(GET FOUND 0 HDR_PATH)
+            set(DEST ${SDL2_SHIM_DIR}/SDL2/${HEADER_NAME})
+            if(NOT EXISTS ${DEST})
+                file(COPY_FILE ${HDR_PATH} ${DEST})
+            endif()
+        else()
+            message(WARNING "remake2d: ${HEADER_NAME} not found under ${SRC_DIR}")
+        endif()
+    endfunction()
+
+    remake2d_shim_header(${sdl2_ttf_SOURCE_DIR}   SDL_ttf.h)
+    remake2d_shim_header(${sdl2_image_SOURCE_DIR} SDL_image.h)
+    remake2d_shim_header(${sdl2_mixer_SOURCE_DIR} SDL_mixer.h)
+
+    file(GLOB SHIM_CHECK "${SDL2_SHIM_DIR}/SDL2/*.h")
+    list(LENGTH SHIM_CHECK SHIM_CHECK_COUNT)
+    message(STATUS "SDL2 shim headers copied: ${SHIM_CHECK_COUNT}")
 endif()
 
 set(BOX2D_BUILD_TESTBED    OFF CACHE BOOL "" FORCE)
