@@ -43,10 +43,10 @@ if(TERMUX_BUILD)
     find_package(SDL2_mixer REQUIRED)
     find_package(SDL2_ttf REQUIRED)
 else()
-    set(SDL2_DISABLE_INSTALL   ON  CACHE BOOL "" FORCE)
-    set(SDL2IMAGE_INSTALL      OFF CACHE BOOL "" FORCE)
-    set(SDL2MIXER_INSTALL      OFF CACHE BOOL "" FORCE)
-    set(SDL2TTF_INSTALL        OFF CACHE BOOL "" FORCE)
+    set(SDL2_DISABLE_INSTALL   OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_INSTALL      ON  CACHE BOOL "" FORCE)
+    set(SDL2MIXER_INSTALL      ON  CACHE BOOL "" FORCE)
+    set(SDL2TTF_INSTALL        ON  CACHE BOOL "" FORCE)
 
     set(SDL2IMAGE_VENDORED ON CACHE BOOL "" FORCE)
     set(SDL2MIXER_VENDORED ON CACHE BOOL "" FORCE)
@@ -138,37 +138,6 @@ else()
     if(NOT TARGET SDL2_ttf::SDL2_ttf AND TARGET SDL2_ttf)
         add_library(SDL2_ttf::SDL2_ttf ALIAS SDL2_ttf)
     endif()
-
-    set(SDL2_SHIM_DIR ${CMAKE_BINARY_DIR}/sdl2_include_shim)
-    file(MAKE_DIRECTORY ${SDL2_SHIM_DIR}/SDL2)
-
-    function(remake2d_find_and_copy_header SRC_DIR HEADER_NAME)
-        file(GLOB_RECURSE FOUND_HEADERS "${SRC_DIR}/${HEADER_NAME}")
-        if(FOUND_HEADERS)
-            list(GET FOUND_HEADERS 0 HDR_PATH)
-            set(DEST ${SDL2_SHIM_DIR}/SDL2/${HEADER_NAME})
-            if(NOT EXISTS ${DEST})
-                file(COPY_FILE ${HDR_PATH} ${DEST})
-            endif()
-            message(STATUS "remake2d: found ${HEADER_NAME} at ${HDR_PATH}")
-        else()
-            message(WARNING "remake2d: ${HEADER_NAME} NOT found under ${SRC_DIR}")
-        endif()
-    endfunction()
-
-    file(GLOB_RECURSE SDL_MAIN_HEADERS "${sdl2_SOURCE_DIR}/include/SDL*.h")
-    foreach(HDR ${SDL_MAIN_HEADERS})
-        get_filename_component(HDR_NAME ${HDR} NAME)
-        remake2d_find_and_copy_header(${sdl2_SOURCE_DIR} ${HDR_NAME})
-    endforeach()
-
-    remake2d_find_and_copy_header(${sdl2_ttf_SOURCE_DIR}   SDL_ttf.h)
-    remake2d_find_and_copy_header(${sdl2_image_SOURCE_DIR} SDL_image.h)
-    remake2d_find_and_copy_header(${sdl2_mixer_SOURCE_DIR} SDL_mixer.h)
-
-    file(GLOB SHIM_CHECK "${SDL2_SHIM_DIR}/SDL2/*.h")
-    list(LENGTH SHIM_CHECK SHIM_CHECK_COUNT)
-    message(STATUS "SDL2 shim headers copied: ${SHIM_CHECK_COUNT}")
 endif()
 
 set(BOX2D_BUILD_TESTBED    OFF CACHE BOOL "" FORCE)
@@ -234,7 +203,6 @@ target_include_directories(
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/external
-        $<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>
 )
 
 target_link_libraries(
@@ -266,6 +234,15 @@ else()
         EXPORT remake2dTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
+
+    if(NOT TERMUX_BUILD)
+        install(TARGETS SDL2-static SDL2_image SDL2_mixer SDL2_ttf
+            EXPORT remake2dTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        )
+    endif()
 endif()
 
 install(EXPORT remake2dTargets
@@ -297,23 +274,3 @@ install(
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/remake2d
     FILES_MATCHING PATTERN "*.tpp"
 )
-
-if(NOT TERMUX_BUILD)
-    install(
-        DIRECTORY ${sdl2_SOURCE_DIR}/include/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2
-        FILES_MATCHING PATTERN "*.h"
-    )
-    install(
-        FILES ${sdl2_ttf_SOURCE_DIR}/include/SDL_ttf.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2
-    )
-    install(
-        FILES ${sdl2_image_SOURCE_DIR}/include/SDL_image.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2
-    )
-    install(
-        FILES ${sdl2_mixer_SOURCE_DIR}/include/SDL_mixer.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2
-    )
-endif()

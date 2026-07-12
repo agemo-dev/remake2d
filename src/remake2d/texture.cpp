@@ -1,4 +1,4 @@
-#include <remake2d/config/concept.hpp>
+#include <remake2d/concept.hpp>
 #include <remake2d/utility.hpp>
 #include <remake2d/texture.hpp>
 #include <remake2d/window.hpp>
