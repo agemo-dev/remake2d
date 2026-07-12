@@ -11,6 +11,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+cmake_policy(VERSION 3.5)
+enable_language(ASM_NASM ASM-ATT ASM OPTIONAL)
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
 endif()
@@ -32,7 +35,6 @@ else()
 endif()
 
 include(FetchContent)
-set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
     find_package(SDL2 REQUIRED)
