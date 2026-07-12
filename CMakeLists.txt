@@ -138,6 +138,22 @@ else()
     if(NOT TARGET SDL2_ttf::SDL2_ttf AND TARGET SDL2_ttf)
         add_library(SDL2_ttf::SDL2_ttf ALIAS SDL2_ttf)
     endif()
+
+    set(SDL2_SHIM_DIR ${CMAKE_BINARY_DIR}/sdl2_include_shim)
+    file(MAKE_DIRECTORY ${SDL2_SHIM_DIR}/SDL2)
+
+    function(remake2d_link_sdl2_headers SRC_DIR)
+        file(GLOB SDL2_PUBLIC_HEADERS "${SRC_DIR}/include/*.h")
+        foreach(HDR ${SDL2_PUBLIC_HEADERS})
+            get_filename_component(HDR_NAME ${HDR} NAME)
+            file(CREATE_LINK ${HDR} ${SDL2_SHIM_DIR}/SDL2/${HDR_NAME} SYMBOLIC OR_COPY)
+        endforeach()
+    endfunction()
+
+    remake2d_link_sdl2_headers(${sdl2_SOURCE_DIR})
+    remake2d_link_sdl2_headers(${sdl2_image_SOURCE_DIR})
+    remake2d_link_sdl2_headers(${sdl2_mixer_SOURCE_DIR})
+    remake2d_link_sdl2_headers(${sdl2_ttf_SOURCE_DIR})
 endif()
 
 set(BOX2D_BUILD_TESTBED    OFF CACHE BOOL "" FORCE)
@@ -203,15 +219,16 @@ target_include_directories(
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/external
+        $<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>
 )
 
 target_link_libraries(
     remake2d
     PRIVATE
         SDL2::SDL2
-        SDL2_ttf::SDL2_ttf
         SDL2_image::SDL2_image
         SDL2_mixer::SDL2_mixer
+        SDL2_ttf::SDL2_ttf
         ${CMAKE_DL_LIBS}
 )
 
@@ -265,3 +282,23 @@ install(
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/remake2d
     FILES_MATCHING PATTERN "*.tpp"
 )
+
+if(NOT TERMUX_BUILD)
+    install(
+        DIRECTORY ${sdl2_SOURCE_DIR}/include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2
+        FILES_MATCHING PATTERN "*.h"
+    )
+    install(
+        FILES ${sdl2_ttf_SOURCE_DIR}/include/SDL_ttf.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2
+    )
+    install(
+        FILES ${sdl2_image_SOURCE_DIR}/include/SDL_image.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2
+    )
+    install(
+        FILES ${sdl2_mixer_SOURCE_DIR}/include/SDL_mixer.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2
+    )
+endif()
