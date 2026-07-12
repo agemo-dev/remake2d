@@ -35,6 +35,7 @@ else()
 endif()
 
 include(FetchContent)
+set(DCMAKE_POLICY_VERSION_MINIMUM  3.5)
 
 if(TERMUX_BUILD)
     find_package(SDL2 REQUIRED)
