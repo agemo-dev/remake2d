@@ -1,13 +1,6 @@
 #include <remake2d/random.hpp>
 #include <remake2d/utility.hpp>
 
-#if defined(__x86_64__) || defined(_M_X64)
-#include <immintrin.h>
-#elif defined(__aarch64__) || defined(_M_ARM64)
-#include <arm_acle.h>
-#endif
-
-
 namespace rmk {
 
 Random::Random(void) {
@@ -31,23 +24,9 @@ void Random::seed(u32 s) noexcept {
   u32 Random::randSeed(void) noexcept {
     u32 seed = 0;
 
-    #if defined(__x86_64__) || defined(_M_X64)
-    u32 rd = 0;
-    for (int i = 0; i < 10; i++) {
-        if (_rdrand32_step(&rd)) {
-            seed ^= rd;
-            break;
-        }
-    }
-    #elif defined(__aarch64__) || defined(_M_ARM64)
-    u64 rndr = 0;
-    if (__builtin_arm_rndr_supported()) {
-        __builtin_arm_rndr(&rndr);
-        seed ^= static_cast<u32>(rndr);
-    }
-    #endif
-
-    u32 epoch = static_cast<u32>(std::chrono::steady_clock::now().time_since_epoch().count());
+    u32 epoch = static_cast<u32>(
+		std::chrono::steady_clock::now().time_since_epoch().count()
+	);
     std::random_device rd;
     seed ^= u32(rd()) ^ epoch;
 
