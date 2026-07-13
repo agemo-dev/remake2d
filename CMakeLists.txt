@@ -139,8 +139,7 @@ else()
         add_library(SDL2_ttf::SDL2_ttf ALIAS SDL2_ttf)
     endif()
 
-	# copy SDL2_* headers in SDL2/
-	set(SDL2_SHIM_DIR ${CMAKE_BINARY_DIR}/sdl2_include_shim)
+    set(SDL2_SHIM_DIR ${CMAKE_BINARY_DIR}/sdl2_include_shim)
     file(MAKE_DIRECTORY ${SDL2_SHIM_DIR}/SDL2)
 
     function(remake2d_shim_header SRC_DIR HEADER_NAME)
@@ -228,6 +227,7 @@ target_include_directories(
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/external
+        $<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>
 )
 
 target_link_libraries(
@@ -259,15 +259,6 @@ else()
         EXPORT remake2dTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
-
-    if(NOT TERMUX_BUILD)
-        install(TARGETS SDL2-static SDL2_image SDL2_mixer SDL2_ttf
-            EXPORT remake2dTargets
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        )
-    endif()
 endif()
 
 install(EXPORT remake2dTargets
