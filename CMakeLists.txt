@@ -237,7 +237,7 @@ target_link_libraries(
         SDL2_ttf::SDL2_ttf
         SDL2_image::SDL2_image
         SDL2_mixer::SDL2_mixer
-		$<$<PLATFORM_ID:Linux>:atomic>
+		$<$<CXX_COMPILER_ID:GNU>:atomic>
         ${CMAKE_DL_LIBS}
 )
 

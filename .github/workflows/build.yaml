@@ -111,9 +111,20 @@ jobs:
       - name: Build compile test
         run: cmake --build ${{ github.workspace }}/smoke/build --config ${{ matrix.mode }}
 
-      - name: Run compile test
+      - name: Run compile test (Unix)
+        if: runner.os != 'Windows'
         shell: bash
-        env:
-          SDL_AUDIODRIVER: dummy
-          SDL_VIDEODRIVER: dummy
-        run: "${{ github.workspace }}/smoke/build/compile_test"
+        run: |
+          export SDL_AUDIODRIVER=dummy
+          export SDL_VIDEODRIVER=dummy
+          export SDL_RENDER_DRIVER=software
+          "${{ github.workspace }}/smoke/build/compile_test"
+
+      - name: Run compile test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:SDL_AUDIODRIVER = "dummy"
+          $env:SDL_VIDEODRIVER = "dummy"
+          $env:SDL_RENDER_DRIVER = "software"
+          & "${{ github.workspace }}\smoke\build\compile_test.exe"
