@@ -4,7 +4,7 @@ project(
 	remake2d
 	VERSION 1.0.0
 	DESCRIPTION "A cross-plateform 2D game engine"
-	LANGUAGES CXX C 
+	LANGUAGES CXX C ASM_NASM # for SDL2_image
 )
 
 set(CMAKE_CXX_STANDARD 20)
