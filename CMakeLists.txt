@@ -4,15 +4,13 @@ project(
 	remake2d
 	VERSION 1.0.0
 	DESCRIPTION "A cross-plateform 2D game engine"
-	LANGUAGES CXX C ASM_NASM # for SDL2_image
+	LANGUAGES CXX C
 )
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-enable_language(ASM_NASM ASM-ATT ASM OPTIONAL)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
@@ -38,10 +36,10 @@ include(FetchContent)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
-    find_package(SDL2 REQUIRED)
+    find_package(SDL2       REQUIRED)
+    find_package(SDL2_ttf   REQUIRED)
     find_package(SDL2_image REQUIRED)
     find_package(SDL2_mixer REQUIRED)
-    find_package(SDL2_ttf REQUIRED)
 else()
     set(SDL2_DISABLE_INSTALL   OFF CACHE BOOL "" FORCE)
     set(SDL2IMAGE_INSTALL      ON  CACHE BOOL "" FORCE)
@@ -65,11 +63,11 @@ else()
 
     set(SDL2IMAGE_PNG    ON  CACHE BOOL "" FORCE)
     set(SDL2IMAGE_JPG    ON  CACHE BOOL "" FORCE)
-    set(SDL2IMAGE_AVIF   ON  CACHE BOOL "" FORCE)
     set(SDL2IMAGE_WEBP   ON  CACHE BOOL "" FORCE)
     set(SDL2IMAGE_TGA    ON  CACHE BOOL "" FORCE)
     set(SDL2IMAGE_BMP    ON  CACHE BOOL "" FORCE)
 	
+    set(SDL2IMAGE_AVIF   OFF CACHE BOOL "" FORCE)
     set(SDL2IMAGE_GIF    OFF CACHE BOOL "" FORCE)
     set(SDL2IMAGE_LBM    OFF CACHE BOOL "" FORCE)
     set(SDL2IMAGE_PCX    OFF CACHE BOOL "" FORCE)
@@ -80,8 +78,6 @@ else()
     set(SDL2IMAGE_XPM    OFF CACHE BOOL "" FORCE)
     set(SDL2IMAGE_XV     OFF CACHE BOOL "" FORCE)
     set(SDL2IMAGE_QOI    OFF CACHE BOOL "" FORCE)
-	
-    set(AVIF_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
 
     FetchContent_Declare(
         SDL2
@@ -259,6 +255,12 @@ else()
         EXPORT remake2dTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
+endif()
+
+if(APPLE AND NOT BUILD_SHARED_LIBS)
+    set(CMAKE_INSTALL_NAME_DIR "@rpath")
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
 endif()
 
 install(EXPORT remake2dTargets

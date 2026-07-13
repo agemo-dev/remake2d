@@ -2,7 +2,7 @@
 
 RE:MAKE 2D uses **CMake** as its build system. All dependencies are fetched automatically via **CMake FetchContent** if not already installed on your system.
 
-**Requirements :** C++20 — CMake 3.22+
+**Requirements :** C/C++ compiler — CMake 3.32+
 
 ---
 
@@ -10,11 +10,10 @@ RE:MAKE 2D uses **CMake** as its build system. All dependencies are fetched auto
 
 | Library | Version |
 |---|---|
-| SDL2 | 2.28.5+ |
-| SDL2_image | 2.8.2+ |
-| SDL2_mixer | 2.8.0+ |
-| SDL2_ttf | 2.20.2+ |
-| Box2D | 2.4.1+ |
+| SDL2 | 2.28.11 |
+| SDL2_image | 2.8.6 |
+| SDL2_mixer | 2.8.2 |
+| SDL2_ttf | 2.24.0 |
 
 ---
 

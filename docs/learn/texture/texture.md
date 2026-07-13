@@ -48,7 +48,7 @@ rmk::Sprite player("player.png", {{400, 300}, {64, 64}});
 ```
 
 !!! info
-    **RE:MAKE 2D** supports PNG, JPG, WEBP, AVIF, TGA and BMP image formats .
+    **RE:MAKE 2D** supports PNG, JPG, WEBP, TGA and BMP image formats .
 
 ### Drawing a texture
 
