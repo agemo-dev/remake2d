@@ -32,49 +32,49 @@ jobs:
       - name: Configure CMake Shared
         if: matrix.type == 'shared'
         run: >
-          cmake -B ${{ github.workspace }}/build
+          cmake -B "${{ github.workspace }}/build"
           -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
           -DBUILD_SHARED_LIBS=ON
-          -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+          -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install"
           -G Ninja
 
       - name: Configure CMake Static
         if: matrix.type == 'static'
         run: >
-          cmake -B ${{ github.workspace }}/build
+          cmake -B "${{ github.workspace }}/build"
           -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
           -DBUILD_SHARED_LIBS=OFF
-          -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+          -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install"
           -G Ninja
 
       - name: Build Library
-        run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.mode }}
+        run: cmake --build "${{ github.workspace }}/build" --config ${{ matrix.mode }}
 
       - name: Install Library
-        run: cmake --install ${{ github.workspace }}/build --config ${{ matrix.mode }}
+        run: cmake --install "${{ github.workspace }}/build" --config ${{ matrix.mode }}
 
       - name: Generate compile test (Unix)
         if: runner.os != 'Windows'
         run: |
-          mkdir -p ${{ github.workspace }}/smoke
-          cat > ${{ github.workspace }}/smoke/compile.cpp << 'EOF'
-          #include <remake2d/window.hpp>
+          mkdir -p "${{ github.workspace }}/smoke"
+          cat > "${{ github.workspace }}/smoke/compile.cpp" << 'EOF'
+          #include <remake2d/system.hpp>
           #include <remake2d/loop.hpp>
-          #include <remake2d/shape.hpp>
+          #include <iostream>
 
           int main(void) {
-              rmk::Window win("compile-test", rmk::window::pos::undefined, {320, 240});
-              rmk::Circle circle(win.center(), 50);
-              win.close();
+              rmk::system.init();
+              std::cout << "built success — plateform name : " << rmk::system.info.platform() << std::endl;
+              rmk::loop.update();
               return 0;
-          }
+		  }
           EOF
 
       - name: Generate compile test (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path ${{ github.workspace }}\smoke
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\smoke"
           @'
           #include <remake2d/system.hpp>
           #include <remake2d/loop.hpp>
@@ -82,17 +82,17 @@ jobs:
 
           int main(void) {
               rmk::system.init();
-              std::cout << "built success — plateform name : " << rmk::system.info.plateform() << std::endl;
+              std::cout << "built success — plateform name : " << rmk::system.info.platform() << std::endl;
               rmk::loop.update();
               return 0;
           }
-          '@ | Set-Content -Path ${{ github.workspace }}\smoke\compile.cpp
+          '@ | Set-Content -Path "${{ github.workspace }}\smoke\compile.cpp"
 
       - name: Write smoke CMakeLists
         shell: bash
         run: |
-          cat > ${{ github.workspace }}/smoke/CMakeLists.txt << 'EOF'
-          cmake_minimum_required(VERSION 3.22)
+          cat > "${{ github.workspace }}/smoke/CMakeLists.txt" << 'EOF'
+          cmake_minimum_required(VERSION 3.32)
           project(remake2d_smoke LANGUAGES CXX)
           set(CMAKE_CXX_STANDARD 20)
           set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -103,13 +103,13 @@ jobs:
 
       - name: Configure compile test
         run: >
-          cmake -S ${{ github.workspace }}/smoke -B ${{ github.workspace }}/smoke/build
+          cmake -S "${{ github.workspace }}/smoke" -B "${{ github.workspace }}/smoke/build"
           -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
-          -DCMAKE_PREFIX_PATH=${{ github.workspace }}/install
+          -DCMAKE_PREFIX_PATH="${{ github.workspace }}/install"
           -G Ninja
 
       - name: Build compile test
-        run: cmake --build ${{ github.workspace }}/smoke/build --config ${{ matrix.mode }}
+        run: cmake --build "${{ github.workspace }}/smoke/build" --config ${{ matrix.mode }}
 
       - name: Run compile test (Unix)
         if: runner.os != 'Windows'
