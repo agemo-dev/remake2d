@@ -53,6 +53,10 @@ else()
     set(USER_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
     set(BUILD_SHARED_LIBS OFF)
 
+	set(SDL2IMAGE_DEPS_SHARED OFF CACHE BOOL "" FORCE)
+    set(SDL2MIXER_DEPS_SHARED OFF CACHE BOOL "" FORCE)
+    set(SDL2TTF_DEPS_SHARED   OFF CACHE BOOL "" FORCE)
+	
     set(SDL2MIXER_WAV    ON  CACHE BOOL "" FORCE)
     set(SDL2MIXER_MP3    ON  CACHE BOOL "" FORCE)
     set(SDL2MIXER_FLAC   ON  CACHE BOOL "" FORCE)
@@ -230,9 +234,10 @@ target_link_libraries(
     remake2d
     PRIVATE
         SDL2::SDL2
+        SDL2_ttf::SDL2_ttf
         SDL2_image::SDL2_image
         SDL2_mixer::SDL2_mixer
-        SDL2_ttf::SDL2_ttf
+		$<$<PLATFORM_ID:Linux>:atomic>
         ${CMAKE_DL_LIBS}
 )
 
@@ -255,12 +260,6 @@ else()
         EXPORT remake2dTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
-endif()
-
-if(APPLE AND NOT BUILD_SHARED_LIBS)
-    set(CMAKE_INSTALL_NAME_DIR "@rpath")
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
 endif()
 
 install(EXPORT remake2dTargets
