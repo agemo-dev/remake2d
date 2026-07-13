@@ -1,5 +1,6 @@
 #include <remake2d/physic.hpp>
 #include <remake2d/utility.hpp>
+#include <remake2d/math.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -144,7 +145,7 @@ void PhysicBody::_calculateVertices(void) noexcept {
         Vec2d first = {c.x + r, c.y};
 
         for (u32 i = 0; i <= segments; i++) {
-            f32   angle = 2.0f * M_PI * i / segments;
+            f32   angle = 2.0f * pi * i / segments;
             Vec2d p     = { c.x + r * std::cos(angle), c.y + r * std::sin(angle) };
             m_cached_contour.push_back({p.x, p.y});
         }

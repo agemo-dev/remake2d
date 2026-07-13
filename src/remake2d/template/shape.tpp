@@ -1,6 +1,8 @@
 #ifndef REMAKE2D_SHAPE_TPP_
 #define REMAKE2D_SHAPE_TPP_
 
+#include <remake2d/math.hpp>
+
 namespace rmk{
 
 template<IsShape S> S Geometry::as(void) const noexcept {
@@ -168,7 +170,7 @@ template<size_t POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COU
 void Shape<POINT_COUNT>::_build(void) noexcept {
     f32 cosA, sinA;
     for(u16 i = 0; i < m_n; i++) {
-        f32 angle = 2.0f * M_PI * i / m_n;
+        f32 angle = 2.0f * pi * i / m_n;
         cosA = std::cos(angle);
         sinA = std::sin(angle);
         m_points[i] = {
