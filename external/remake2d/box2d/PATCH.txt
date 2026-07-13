@@ -1,0 +1,23 @@
+************************************************************************
+============================= PATCH FILE ===============================
+************************************************************************
+
+[!] THIS FILE EXPOSES ALL MANUAL CHANGES MADE TO DEPENDENCY FILES.
+[!] PATCHES DONE WITH CMAKE ARE NOT INCLUDED.
+
+VERSION: v3.0.0
+REASON: Clean up the repository to keep only core library files and headers.
+
+changed files: none
+
+removed files:
+	- .git/
+	- .github/
+	- docs/
+	- samples/
+	- shared/
+	- test/
+	- unit-test/
+	- .gitignore
+	- .gitmodules
+	- CMakePresets.json
