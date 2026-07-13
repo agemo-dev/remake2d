@@ -67,7 +67,7 @@ jobs:
               std::cout << "built success — plateform name : " << rmk::system.info.platform() << std::endl;
               rmk::loop.update();
               return 0;
-		  }
+          }
           EOF
 
       - name: Generate compile test (Windows)
