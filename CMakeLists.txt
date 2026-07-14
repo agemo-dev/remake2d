@@ -204,19 +204,21 @@ endif()
 
 file(GLOB_RECURSE REMAKE2D_SRC src/remake2d/*.cpp)
 
+add_library(remakeEX STATIC
+    $<TARGET_OBJECTS:box2d>
+    $<TARGET_OBJECTS:lualib>
+)
+set_target_properties(remakeEX PROPERTIES LINKER_LANGUAGE C)
+
 if(BUILD_SHARED_LIBS)
     add_library(
         remake2d SHARED
         ${REMAKE2D_SRC}
-        $<TARGET_OBJECTS:box2d>
-        $<TARGET_OBJECTS:lualib>
     )
 else()
     add_library(
         remake2d STATIC
         ${REMAKE2D_SRC}
-        $<TARGET_OBJECTS:box2d>
-        $<TARGET_OBJECTS:lualib>
     )
 endif()
 
@@ -233,10 +235,12 @@ target_include_directories(
         $<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>
 )
 
+target_compile_definitions(remake2d PUBLIC SDL_MAIN_HANDLED)
+
 target_link_libraries(
     remake2d
     PRIVATE
-		$<$<PLATFORM_ID:Windows>:SDL2::SDL2main>
+        remakeEX
         SDL2::SDL2
         SDL2_ttf::SDL2_ttf
         SDL2_image::SDL2_image

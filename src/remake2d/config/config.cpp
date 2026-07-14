@@ -21,6 +21,9 @@ namespace config {
 
 namespace system {
 void initSDL(void) {
+	
+    SDL_SetMainReady();
+
     int sdlflags = SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS;
     if(SDL_Init(sdlflags) != 0) {
         rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_init_fail) + " : " + SDL_GetError()));
