@@ -247,7 +247,8 @@ target_link_libraries(
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(remake2d PRIVATE -Wa,-mbig-obj)        
+        target_compile_options(remake2d PRIVATE -Wa,-mbig-obj)  
+		target_link_options(remake2d PRIVATE "-Wl,--exclude-libs,ALL")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         target_compile_options(remake2d PRIVATE /bigobj)
     endif()
