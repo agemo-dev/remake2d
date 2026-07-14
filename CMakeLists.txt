@@ -223,6 +223,7 @@ target_include_directories(
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
+		
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/include
@@ -233,6 +234,7 @@ target_include_directories(
 target_link_libraries(
     remake2d
     PRIVATE
+		$<$<PLATFORM_ID:Windows>:SDL2::SDL2main>
         SDL2::SDL2
         SDL2_ttf::SDL2_ttf
         SDL2_image::SDL2_image

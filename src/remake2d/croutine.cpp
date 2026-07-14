@@ -2,6 +2,8 @@
 
 namespace rmk {
 
+thread_local std::vector<CroutineBase*> _self_stack;
+
 CroutineBase* self(void) noexcept {
     return _self_stack.empty() ? nullptr : _self_stack.back();
 }

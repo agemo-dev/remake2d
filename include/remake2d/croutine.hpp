@@ -72,12 +72,13 @@ public:
     virtual void stop(void)          noexcept = 0;
     virtual void wait(void)          noexcept = 0;
     virtual bool isRunning(void)     noexcept = 0;
-    virtual u64  id(void)      const noexcept = 0;
+    virtual u64  ID(void)      const noexcept = 0;
     virtual u64  majorID(void) const noexcept = 0;
+
+public:
     virtual ~CroutineBase(void) = default;
 };
 
-thread_local inline std::vector<CroutineBase*> _self_stack;
 CroutineBase* self(void) noexcept;
 
 class ThreadWorker {
@@ -137,7 +138,7 @@ public:
     void wait(void) 		 noexcept override;
     void resume(void) 		 noexcept override;
     bool isRunning(void)     noexcept override;
-    u64  id(void)      const noexcept override;
+    u64  ID(void)      const noexcept override;
     u64  majorID(void) const noexcept override;
 
     void isHeavy(bool)  			  noexcept;
