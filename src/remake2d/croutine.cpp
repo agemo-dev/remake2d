@@ -39,7 +39,7 @@ u32 ThreadWorker::count(void) const noexcept {
     return m_count.load();
 }
 
-u64 ThreadWorker::id(void) const noexcept {
+u64 ThreadWorker::ID(void) const noexcept {
     return m_id;
 }
 

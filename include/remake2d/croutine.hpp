@@ -95,7 +95,7 @@ public:
     void submit(_CroutineEntry entry);
     bool idle(void);
     u32  count(void) const noexcept;
-    u64  id(void)    const noexcept;
+    u64  ID(void)    const noexcept;
     void stop(void);
     ~ThreadWorker(void);
     ThreadWorker(const ThreadWorker&) = delete;

@@ -25,7 +25,7 @@ template<typename Derived>
 bool CroutineImpl<Derived>::isRunning(void) noexcept { return m_running; }
 
 template<typename Derived>
-u64 CroutineImpl<Derived>::id(void) const noexcept { return m_coro_id; }
+u64 CroutineImpl<Derived>::ID(void) const noexcept { return m_coro_id; }
 
 template<typename Derived>
 u64 CroutineImpl<Derived>::majorID(void) const noexcept { return m_major_id; }
