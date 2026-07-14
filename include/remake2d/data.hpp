@@ -129,7 +129,7 @@ private:
     std::string    m_path;
 
 public:
-    explicit DataFile(std::string_view name);
+    explicit DataFile(std::string_view);
 
     DataFile(const DataFile&)            = default;
     DataFile(DataFile&&)                 = default;

@@ -33,6 +33,8 @@ else()
 endif()
 
 include(FetchContent)
+
+set(BUILD_SHARED_LIBS ON)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
@@ -243,8 +245,14 @@ target_link_libraries(
         ${CMAKE_DL_LIBS}
 )
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(remake2d PRIVATE -Wa,-mbig-obj)
+if(WIN32)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(remake2d PRIVATE -Wa,-mbig-obj)
+        target_link_options(remake2d PRIVATE "-Wl,--exclude-all-symbols")
+        
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(remake2d PRIVATE /bigobj)
+    endif()
 endif()
 
 include(GNUInstallDirs)

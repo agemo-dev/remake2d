@@ -51,6 +51,11 @@ public:
 
 inline Random& random = Random::getInstance();
 
+template<> Vec2d  Random::rand<Vec2d>(const Vec2d&, const Vec2d&)    noexcept;
+template<> Fact2d Random::rand<Fact2d>(const Fact2d&, const Fact2d&) noexcept;
+template<> Grid2d Random::rand<Grid2d>(const Grid2d&, const Grid2d&) noexcept;
+template<> Dim2d  Random::rand<Dim2d>(const Dim2d&, const Dim2d&)    noexcept;
+template<> Color  Random::rand<Color>(const Color&, const Color&)    noexcept;
 } //namespace rmk
 
 #include <remake2d/template/random.tpp>

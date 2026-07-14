@@ -21,7 +21,7 @@ void Random::seed(u32 s) noexcept {
     return m_gen.seed(s);
 }
 
-  u32 Random::randSeed(void) noexcept {
+u32 Random::randSeed(void) noexcept {
     u32 seed = 0;
 
     u32 epoch = static_cast<u32>(
