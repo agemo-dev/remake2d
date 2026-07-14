@@ -243,6 +243,10 @@ target_link_libraries(
         ${CMAKE_DL_LIBS}
 )
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(remake2d PRIVATE -Wa,-mbig-obj)
+endif()
+
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
