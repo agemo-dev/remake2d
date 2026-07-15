@@ -42,6 +42,13 @@ if(TERMUX_BUILD)
     if(NOT SDL2_FOUND)
         execute_process(
             COMMAND pkg install -y x11-repo
+            RESULT_VARIABLE TERMUX_INSTALL_RES
+        )
+        if(NOT TERMUX_INSTALL_RES EQUAL 0)
+            message(FATAL_ERROR "pkg install failed")
+        endif()
+
+        execute_process(
             COMMAND pkg install -y libsdl2 libsdl2-ttf libsdl2-image libsdl2-mixer
             RESULT_VARIABLE TERMUX_INSTALL_RES
         )
@@ -215,29 +222,10 @@ if(TERMUX_BUILD)
 endif()
 
 file(GLOB_RECURSE REMAKE2D_SRC src/remake2d/*.cpp)
-file(GLOB_RECURSE REMAKE2D_SCRIPT_SRC src/remake2d/config/solstat/*.cpp)
+file(GLOB_RECURSE REMAKE2D_SCRIPTING_SRC src/remake2d/config/solstat/*.cpp)
+list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE2D_SCRIPTING_SRC})
 
-list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE2D_SCRIPT_SRC})
-
-if(WIN32)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(remakeScript PRIVATE -Wa,-mbig-obj)
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        target_compile_options(remakeScript PRIVATE /bigobj)
-    endif()
-endif()
-
-add_library(remakeEXT STATIC
-    $<TARGET_OBJECTS:box2d>
-    $<TARGET_OBJECTS:lualib>
-)
-
-add_library(remakeScript STATIC 
-	${REMAKE2D_SCRIPT_SRC}
-)
-
-set_target_properties(remakeEXT    PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(remakeScript PROPERTIES LINKER_LANGUAGE CXX)
+add_library(remakeScript STATIC ${REMAKE2D_SCRIPTING_SRC})
 
 target_include_directories(
     remakeScript
@@ -253,6 +241,29 @@ target_compile_definitions(
     PRIVATE
         SDL_MAIN_HANDLED
 )
+
+target_link_libraries(
+    remakeScript
+    PRIVATE
+        SDL2::SDL2
+        SDL2_ttf::SDL2_ttf
+        SDL2_image::SDL2_image
+        SDL2_mixer::SDL2_mixer
+)
+
+if(WIN32)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(remakeScript PRIVATE -Wa,-mbig-obj)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(remakeScript PRIVATE /bigobj)
+    endif()
+endif()
+
+add_library(remakeEXT STATIC
+    $<TARGET_OBJECTS:box2d>
+    $<TARGET_OBJECTS:lualib>
+)
+set_target_properties(remakeEXT PROPERTIES LINKER_LANGUAGE C)
 
 if(BUILD_SHARED_LIBS)
     add_library(
@@ -324,17 +335,19 @@ configure_package_config_file(
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
 )
 
-install(
-	TARGETS 
-		remake2d 
-		remakeEXT 
-		remakeScript
-		
-    EXPORT remake2dTargets	
+install(TARGETS remake2d
+    EXPORT remake2dTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+
+if(NOT BUILD_SHARED_LIBS)
+    install(TARGETS remakeEXT remakeScript
+        EXPORT remake2dTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif()
 
 install(EXPORT remake2dTargets
     FILE remake2dTargets.cmake

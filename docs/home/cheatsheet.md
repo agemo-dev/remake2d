@@ -74,6 +74,12 @@ Color operator%(const Color&, const Color&) noexcept; // component-wise average
 ```
 
 ```cpp
+// HSL
+HSL(f32 hue, f32 saturation, f32 luminosity); // construct from HSL components
+auto operator<=>(const Color&) const noexcept = default; // full comparison support
+```
+
+```cpp
 // Vec2d
 Vec2d(f32 X, f32 Y);   // construct from X and Y
 Vec2d(f32 XY);         // construct with same value for both axes
@@ -105,11 +111,11 @@ Fact2d(f32 X, f32 Y);  // construct from X and Y — negative values clamped to 
 Fact2d(f32 XY);        // construct with same value for both axes — negative clamped to 0
 operator Vec2d(void);           // implicit conversion
 auto operator<=>(const Fact2d&) const noexcept = default; // full comparison
-Fact2d operator+(const Fact2d&, const Fact2d&) noexcept; // addition
-Fact2d operator-(const Fact2d&, const Fact2d&) noexcept; // subtraction
-Fact2d operator*(const Fact2d&, const Fact2d&) noexcept; // multiplication
-Fact2d operator/(const Fact2d&, const Fact2d&) noexcept; // division
-Fact2d operator%(const Fact2d&, const Fact2d&) noexcept; // modulo
+Fact2d operator+(const Fact2d&, const Fact2d&) noexcept;  // addition
+Fact2d operator-(const Fact2d&, const Fact2d&) noexcept;  // subtraction
+Fact2d operator*(const Fact2d&, const Fact2d&) noexcept;  // multiplication
+Fact2d operator/(const Fact2d&, const Fact2d&) noexcept;  // division
+Fact2d operator%(const Fact2d&, const Fact2d&) noexcept;  // modulo
 ```
 
 ```cpp
@@ -233,6 +239,8 @@ void reserve(int size);  // pre-allocate internal storage
 void poll(void);                  // process all pending events (non-blocking)
 void wait(void);                  // wait indefinitely for an event
 void wait(time::Second);          // wait for an event with timeout
+void textInput(bool);			  // Enable/disable text read mode
+bool textInput(void);   		  // check text read mode stat
 ```
 
 ### Keyboard

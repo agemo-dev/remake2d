@@ -6,7 +6,8 @@
 
 ## Overview
 
-To interact with the different machine events, **RE:MAKE 2D** offers the singleton `event` of type `EventManager`, storing various **event signals** of type `_EventSignal`.
+To interact with the different machine events, **RE:MAKE 2D** offers the singleton `event` of type `EventManager`, 
+storing various **event signals** of type `_EventSignal`.
 
 `_EventSignal` inherits from all methods of the `Signal` class, but also has its own method:
 
@@ -23,8 +24,8 @@ rmk::event.onPressS.join([&](void) {
 ```
 
 !!! warning
-    isActive() is preferred for key combinations because `event` handles one SDL event at a time. Two keys pressed simultaneously will be processed in separate calls,
-    so a combination like Ctrl+S cannot be detected by connecting both events independently.
+    isActive() is preferred for key combinations because `event` handles one SDL event at a time. Two keys pressed simultaneously will
+	be processed in separate calls, so a combination like Ctrl+S cannot be detected by connecting both events independently.
 
 ---
 
@@ -143,6 +144,9 @@ The `EventManager` provides three ways to read events each frame, depending on h
 void poll(void);                        // process all pending events (non-blocking)
 void wait(void);                        // wait indefinitely for an event
 void wait(time::Millisecond timeout);   // wait for an event with timeout
+
+void textInput(bool);					// Enable/disable text read mode
+bool textInput(void);   				// check text read mode stat
 ```
 
 !!! info
@@ -154,6 +158,10 @@ rmk::loop.execute(win, [&]() {
 });
 ```
 
+!!! info
+	le text read mode permet d'activer/desactiver les evenements de lecture de text (e.g: `onTextInput`) .
+	Si desactiver, les entrées clavier ne sont plus vu comme du text literal .
+	
 ---
 
 [:octicons-arrow-left-24: Previous chapter](signal.md){ .md-button }
