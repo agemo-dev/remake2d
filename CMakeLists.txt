@@ -236,7 +236,7 @@ target_include_directories(
 
 target_compile_definitions(
     remakeScript
-    PRIVATE
+    PUBLIC
         SDL_MAIN_HANDLED
 )
 
