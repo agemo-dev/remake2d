@@ -128,8 +128,8 @@ jobs:
           $env:SDL_VIDEODRIVER = "dummy"
           $env:SDL_RENDER_DRIVER = "software"
 
-          Write-Host "--- DLL dependencies ---"
-          dumpbin /dependents "${{ github.workspace }}\smoke\build\compile_test.exe"
+          Write-Host "--- DLL dependencies (objdump) ---"
+          & objdump -p "${{ github.workspace }}\smoke\build\compile_test.exe" | Select-String "DLL Name"
 
           Write-Host "--- Files next to the exe ---"
           Get-ChildItem "${{ github.workspace }}\smoke\build"

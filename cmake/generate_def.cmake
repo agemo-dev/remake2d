@@ -49,16 +49,9 @@ string(REPLACE "\r" "" NM_LINES "${NM_LINES}")
 
 set(SYMBOLS "")
 foreach(line IN LISTS NM_LINES)
-    # A real symbol line looks like: "0000000000000000 T _ZN3rmk6SystemC1Ev"
-    # nm also prints "path/to/file.obj:" header lines and blank lines when
-    # given multiple object files at once; only lines below match a symbol.
     if(line MATCHES "^[0-9a-fA-F]+ ([A-Za-z]) (.+)$")
         set(_type "${CMAKE_MATCH_1}")
         set(_name "${CMAKE_MATCH_2}")
-        # nm convention: UPPERCASE type letter = external/global linkage.
-        # lowercase = local (static) symbol -- must NOT be exported, and
-        # normally wouldn't even show up here since these are usually not
-        # visible with -g, but we double check to be safe.
         if(_type MATCHES "^[A-Z]$")
             list(APPEND SYMBOLS "${_name}")
         endif()

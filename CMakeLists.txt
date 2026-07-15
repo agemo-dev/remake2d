@@ -62,6 +62,7 @@ else()
     set(SDL2MIXER_WAV    ON  CACHE BOOL "" FORCE)
     set(SDL2MIXER_MP3    ON  CACHE BOOL "" FORCE)
     set(SDL2MIXER_FLAC   ON  CACHE BOOL "" FORCE)
+    set(SDL2MIXER_VORBIS "STB" CACHE STRING "" FORCE)
 	
     set(SDL2MIXER_OPUS   OFF CACHE BOOL "" FORCE)
     set(SDL2MIXER_MOD    OFF CACHE BOOL "" FORCE)
@@ -210,15 +211,40 @@ add_library(remakeEX STATIC
 )
 set_target_properties(remakeEX PROPERTIES LINKER_LANGUAGE C)
 
+add_library(remake2d_objects OBJECT ${REMAKE2D_SRC})
+
+target_include_directories(
+    remake2d_objects
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/external
+        $<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>
+)
+
+target_compile_definitions(
+    remake2d_objects
+    PRIVATE
+        SDL_MAIN_HANDLED
+)
+
+if(WIN32)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(remake2d_objects PRIVATE -Wa,-mbig-obj)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(remake2d_objects PRIVATE /bigobj)
+    endif()
+endif()
+
 if(BUILD_SHARED_LIBS)
     add_library(
         remake2d SHARED
-        ${REMAKE2D_SRC}
+        $<TARGET_OBJECTS:remake2d_objects>
     )
 else()
     add_library(
         remake2d STATIC
-        ${REMAKE2D_SRC}
+        $<TARGET_OBJECTS:remake2d_objects>
     )
 endif()
 
@@ -227,15 +253,13 @@ target_include_directories(
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
-		
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/src
-        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/external
-        $<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>
 )
 
-target_compile_definitions(remake2d PUBLIC SDL_MAIN_HANDLED)
+target_compile_definitions(
+    remake2d
+    PUBLIC
+        SDL_MAIN_HANDLED
+)
 
 target_link_libraries(
     remake2d
@@ -251,10 +275,33 @@ target_link_libraries(
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(remake2d PRIVATE -Wa,-mbig-obj)  
-		target_link_options(remake2d PRIVATE "-Wl,--exclude-libs,ALL")
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        target_compile_options(remake2d PRIVATE /bigobj)
+        target_link_options(remake2d PRIVATE "-Wl,--exclude-libs,ALL")
+
+        if(BUILD_SHARED_LIBS)
+            find_program(REMAKE2D_NM_EXECUTABLE NAMES ${CMAKE_NM} nm)
+            if(NOT REMAKE2D_NM_EXECUTABLE)
+                message(FATAL_ERROR "nm was not found; it is required (as part of your MinGW/binutils install) to generate remake2d's DLL export list")
+            endif()
+
+            set(REMAKE2D_DEF_FILE ${CMAKE_CURRENT_BINARY_DIR}/remake2d_exports.def)
+
+            add_custom_command(
+                OUTPUT ${REMAKE2D_DEF_FILE}
+                COMMAND ${CMAKE_COMMAND}
+                        -DNM_EXECUTABLE=${REMAKE2D_NM_EXECUTABLE}
+                        "-DOBJECT_FILES=$<TARGET_OBJECTS:remake2d_objects>"
+                        -DOUTPUT_FILE=${REMAKE2D_DEF_FILE}
+                        -P ${CMAKE_SOURCE_DIR}/cmake/generate_def.cmake
+                DEPENDS $<TARGET_OBJECTS:remake2d_objects> ${CMAKE_SOURCE_DIR}/cmake/generate_def.cmake
+                COMMENT "Generating remake2d DLL export list (remake2d_exports.def)"
+                VERBATIM
+            )
+
+            add_custom_target(remake2d_def_gen DEPENDS ${REMAKE2D_DEF_FILE})
+            add_dependencies(remake2d remake2d_def_gen)
+
+            target_link_options(remake2d PRIVATE "-Wl,--exclude-all-symbols" "-Wl,${REMAKE2D_DEF_FILE}")
+        endif()
     endif()
 endif()
 
