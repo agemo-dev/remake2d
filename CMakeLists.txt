@@ -219,21 +219,6 @@ file(GLOB_RECURSE REMAKE2D_SCRIPT_SRC src/remake2d/config/solstat/*.cpp)
 
 list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE2D_SCRIPT_SRC})
 
-target_include_directories(
-    remakeScript
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/src
-        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/external
-        $<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>
-)
-
-target_compile_definitions(
-    remakeScript
-    PRIVATE
-        SDL_MAIN_HANDLED
-)
-
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(remakeScript PRIVATE -Wa,-mbig-obj)
@@ -253,6 +238,21 @@ add_library(remakeScript STATIC
 
 set_target_properties(remakeEXT    PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(remakeScript PROPERTIES LINKER_LANGUAGE CXX)
+
+target_include_directories(
+    remakeScript
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/external
+        $<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>
+)
+
+target_compile_definitions(
+    remakeScript
+    PRIVATE
+        SDL_MAIN_HANDLED
+)
 
 if(BUILD_SHARED_LIBS)
     add_library(
