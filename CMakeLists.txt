@@ -36,7 +36,6 @@ endif()
 
 include(FetchContent)
 
-set(BUILD_SHARED_LIBS ON)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
@@ -221,12 +220,10 @@ file(GLOB_RECURSE REMAKE_SCRIPT_SRC src/remake2d/config/solstat/*.cpp)
 
 list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE_SCRIPT_SRC})
 
-# remakeScript : remake 2D - Scripting .
-# compile scripting files on static lib .
-# because they generates so symbol for Windows compilers
 add_library(remakeScript STATIC ${REMAKE_SCRIPT_SRC})
 
 target_include_directories(
+    remakeScript
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/include
@@ -240,14 +237,25 @@ target_compile_definitions(
         SDL_MAIN_HANDLED
 )
 
-target_link_libraries(
-    remakeScript
-    PRIVATE
-        SDL2::SDL2
-        SDL2_ttf::SDL2_ttf
-        SDL2_image::SDL2_image
-        SDL2_mixer::SDL2_mixer
-)
+if(BUILD_SHARED_LIBS)
+    target_link_libraries(
+        remakeScript
+        PRIVATE
+            SDL2::SDL2
+            SDL2_ttf::SDL2_ttf
+            SDL2_image::SDL2_image
+            SDL2_mixer::SDL2_mixer
+    )
+else()
+    target_link_libraries(
+        remakeScript
+        PUBLIC
+            SDL2::SDL2
+            SDL2_ttf::SDL2_ttf
+            SDL2_image::SDL2_image
+            SDL2_mixer::SDL2_mixer
+    )
+endif()
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -257,13 +265,17 @@ if(WIN32)
     endif()
 endif()
 
-# remakeEXT : remake 2D - External .
-# link vendored dependencies on static lib .
 add_library(remakeEXT STATIC
     $<TARGET_OBJECTS:box2d>
     $<TARGET_OBJECTS:lualib>
 )
 set_target_properties(remakeEXT PROPERTIES LINKER_LANGUAGE CXX)
+
+target_include_directories(
+    remakeEXT
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/external
+)
 
 if(BUILD_SHARED_LIBS)
     add_library(
@@ -307,18 +319,33 @@ target_compile_definitions(
         SDL_MAIN_HANDLED
 )
 
-target_link_libraries(
-    remake2d
-    PRIVATE
-        remakeEXT
-		remakeScript
-        SDL2::SDL2
-        SDL2_ttf::SDL2_ttf
-        SDL2_image::SDL2_image
-        SDL2_mixer::SDL2_mixer
-		$<$<CXX_COMPILER_ID:GNU>:atomic>
-        ${CMAKE_DL_LIBS}
-)
+if(BUILD_SHARED_LIBS)
+    target_link_libraries(
+        remake2d
+        PRIVATE
+            remakeEXT
+            remakeScript
+            SDL2::SDL2
+            SDL2_ttf::SDL2_ttf
+            SDL2_image::SDL2_image
+            SDL2_mixer::SDL2_mixer
+            $<$<CXX_COMPILER_ID:GNU>:atomic>
+            ${CMAKE_DL_LIBS}
+    )
+else()
+    target_link_libraries(
+        remake2d
+        PUBLIC
+            remakeEXT
+            remakeScript
+            SDL2::SDL2
+            SDL2_ttf::SDL2_ttf
+            SDL2_image::SDL2_image
+            SDL2_mixer::SDL2_mixer
+            $<$<CXX_COMPILER_ID:GNU>:atomic>
+            ${CMAKE_DL_LIBS}
+    )
+endif()
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -335,7 +362,7 @@ configure_package_config_file(
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
 )
 
-install(TARGETS remake2d
+install(TARGETS remake2d remakeEXT remakeScript
     EXPORT remake2dTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
