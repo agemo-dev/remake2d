@@ -127,4 +127,15 @@ jobs:
           $env:SDL_AUDIODRIVER = "dummy"
           $env:SDL_VIDEODRIVER = "dummy"
           $env:SDL_RENDER_DRIVER = "software"
+
+          Write-Host "--- DLL dependencies ---"
+          dumpbin /dependents "${{ github.workspace }}\smoke\build\compile_test.exe"
+
+          Write-Host "--- Files next to the exe ---"
+          Get-ChildItem "${{ github.workspace }}\smoke\build"
+
+          Write-Host "--- Running compile_test.exe ---"
           & "${{ github.workspace }}\smoke\build\compile_test.exe"
+          $code = $LASTEXITCODE
+          Write-Host "--- Exit code: $code ---"
+          if ($code -ne 0) { exit $code }
