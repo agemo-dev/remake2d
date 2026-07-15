@@ -20,6 +20,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(USE_NATIVE_OPT "Enable -march=native optimizations" OFF)
+option(REMAKE2D_TERMUX_DOWNLOAD_DEPENDENCIES "Download dependencies" OFF)
 
 if(USE_NATIVE_OPT)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
@@ -27,7 +28,8 @@ endif()
 
 if(EXISTS "/data/data/com.termux")
     set(TERMUX_BUILD ON)
-    set(CMAKE_SYSTEM_NAME Linux CACHE STRING "termux detected — System name changed" FORCE)
+    set(CMAKE_SYSTEM_NAME Linux CACHE STRING "" FORCE)
+	message("Termux detected — plateform set to 'Linux'")
 else()
     set(TERMUX_BUILD OFF)
 endif()
@@ -38,6 +40,18 @@ set(BUILD_SHARED_LIBS ON)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
+    find_package(SDL2 QUIET)
+    if(NOT SDL2_FOUND)
+        execute_process(
+            COMMAND pkg install -y x11-repo
+            COMMAND pkg install -y libsdl2 libsdl2-ttf libsdl2-image libsdl2-mixer
+            RESULT_VARIABLE TERMUX_INSTALL_RES
+        )
+        if(NOT TERMUX_INSTALL_RES EQUAL 0)
+            message(FATAL_ERROR "pkg install failed")
+        endif()
+    endif()
+
     find_package(SDL2       REQUIRED)
     find_package(SDL2_ttf   REQUIRED)
     find_package(SDL2_image REQUIRED)
@@ -62,7 +76,6 @@ else()
     set(SDL2MIXER_WAV    ON  CACHE BOOL "" FORCE)
     set(SDL2MIXER_MP3    ON  CACHE BOOL "" FORCE)
     set(SDL2MIXER_FLAC   ON  CACHE BOOL "" FORCE)
-    set(SDL2MIXER_VORBIS "STB" CACHE STRING "" FORCE)
 	
     set(SDL2MIXER_OPUS   OFF CACHE BOOL "" FORCE)
     set(SDL2MIXER_MOD    OFF CACHE BOOL "" FORCE)
@@ -204,38 +217,16 @@ if(TERMUX_BUILD)
 endif()
 
 file(GLOB_RECURSE REMAKE2D_SRC src/remake2d/*.cpp)
+file(GLOB_RECURSE REMAKE_SCRIPT_SRC src/remake2d/config/solstat/*.cpp)
 
-# sol2 (header-only, used to bind C++ types/functions to Lua) is extremely
-# template-heavy: every bound type generates its own set of uniquely-mangled
-# functions. The config/solstat/*.cpp files are remake2d's internal Lua
-# binding glue (not part of the public API) and are what mainly pushes
-# remake2d's own exported symbol count on MinGW past the PE format's 65535
-# export-ordinal ceiling ("export ordinal too large") -- same root cause as
-# box2d/lua below but for remake2d's own code. Splitting them into their own
-# object library and archiving that (like box2d/lualib) lets
-# -Wl,--exclude-libs,ALL hide all of that bloat, while remake2d's real public
-# API (System, Loop, Window, script, ...) stays as plain objects in
-# remake2d_objects and keeps getting exported normally.
-#
-# script.cpp is NOT included here even though it also uses sol2 heavily:
-# rmk::script is public API that consumers call directly, so it has to stay
-# exported. If this alone isn't enough to fix Debug builds on MinGW, the
-# next step would be to actually measure per-file symbol counts with nm
-# rather than guessing further -- see the conversation for context.
-set(REMAKE2D_SCRIPTING_SRC
-    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configClass.cpp
-    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configEntity.cpp
-    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configEvent.cpp
-    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configGlobal.cpp
-    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configSingleton.cpp
-    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configUtility.cpp
-)
-list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE2D_SCRIPTING_SRC})
+list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE_SCRIPT_SRC})
 
-add_library(remake2d_scripting OBJECT ${REMAKE2D_SCRIPTING_SRC})
+# remakeScript : remake 2D - Scripting .
+# compile scripting files on static lib .
+# because they generates so symbol for Windows compilers
+add_library(remakeScript STATIC ${REMAKE_SCRIPT_SRC})
 
 target_include_directories(
-    remake2d_scripting
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/include
@@ -244,13 +235,13 @@ target_include_directories(
 )
 
 target_compile_definitions(
-    remake2d_scripting
+    remakeScript
     PRIVATE
         SDL_MAIN_HANDLED
 )
 
 target_link_libraries(
-    remake2d_scripting
+    remakeScript
     PRIVATE
         SDL2::SDL2
         SDL2_ttf::SDL2_ttf
@@ -260,29 +251,19 @@ target_link_libraries(
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(remake2d_scripting PRIVATE -Wa,-mbig-obj)
+        target_compile_options(remakeScript PRIVATE -Wa,-mbig-obj)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        target_compile_options(remake2d_scripting PRIVATE /bigobj)
+        target_compile_options(remakeScript PRIVATE /bigobj)
     endif()
 endif()
 
-# box2d and lualib are OBJECT libraries, so their .o files get baked directly
-# into remake2d's own objects. On MinGW, neither box2d nor lua mark their
-# symbols with __declspec(dllexport) (their headers only do so for MSVC), so
-# when remake2d is built SHARED, GNU ld falls back to auto-exporting every
-# global symbol it sees. That auto-export applies to raw object files
-# regardless of where they came from, so "-Wl,--exclude-libs,ALL" (which only
-# hides symbols coming from linked *static archives*) can't hide them.
-# Bundling them into a real static archive first makes --exclude-libs,ALL
-# effective and keeps the exported symbol count (and PE export ordinals)
-# from blowing past the 65535 limit. remake2d_scripting's objects go in here
-# too, for the same reason.
-add_library(remake2d_thirdparty STATIC
+# remakeEXT : remake 2D - External .
+# link vendored dependencies on static lib .
+add_library(remakeEXT STATIC
     $<TARGET_OBJECTS:box2d>
     $<TARGET_OBJECTS:lualib>
-    $<TARGET_OBJECTS:remake2d_scripting>
 )
-set_target_properties(remake2d_thirdparty PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(remakeEXT PROPERTIES LINKER_LANGUAGE CXX)
 
 if(BUILD_SHARED_LIBS)
     add_library(
@@ -316,8 +297,8 @@ endif()
 target_include_directories(
     remake2d
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
 target_compile_definitions(
@@ -329,7 +310,8 @@ target_compile_definitions(
 target_link_libraries(
     remake2d
     PRIVATE
-        remake2d_thirdparty
+        remakeEXT
+		remakeScript
         SDL2::SDL2
         SDL2_ttf::SDL2_ttf
         SDL2_image::SDL2_image

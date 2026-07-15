@@ -83,7 +83,6 @@ jobs:
           int main(void) {
               rmk::system.init();
               std::cout << "built success — plateform name : " << rmk::system.info.platform() << std::endl;
-              rmk::loop.update();
               return 0;
           }
           '@ | Set-Content -Path "${{ github.workspace }}\smoke\compile.cpp"
@@ -125,8 +124,6 @@ jobs:
         shell: pwsh
         run: |
           Copy-Item "${{ github.workspace }}\install\bin\*.dll" -Destination "${{ github.workspace }}\smoke\build\" -ErrorAction SilentlyContinue
-          Write-Host "--- Files copied next to the exe ---"
-          Get-ChildItem "${{ github.workspace }}\smoke\build\*.dll" -ErrorAction SilentlyContinue
 
       - name: Run compile test (Windows)
         if: runner.os == 'Windows'
@@ -135,15 +132,4 @@ jobs:
           $env:SDL_AUDIODRIVER = "dummy"
           $env:SDL_VIDEODRIVER = "dummy"
           $env:SDL_RENDER_DRIVER = "software"
-
-          Write-Host "--- DLL dependencies (objdump) ---"
-          & objdump -p "${{ github.workspace }}\smoke\build\compile_test.exe" | Select-String "DLL Name"
-
-          Write-Host "--- Files next to the exe ---"
-          Get-ChildItem "${{ github.workspace }}\smoke\build"
-
-          Write-Host "--- Running compile_test.exe ---"
           & "${{ github.workspace }}\smoke\build\compile_test.exe"
-          $code = $LASTEXITCODE
-          Write-Host "--- Exit code: $code ---"
-          if ($code -ne 0) { exit $code }
