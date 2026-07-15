@@ -219,8 +219,6 @@ file(GLOB_RECURSE REMAKE2D_SCRIPT_SRC src/remake2d/config/solstat/*.cpp)
 
 list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE2D_SCRIPT_SRC})
 
-add_library(remakeScript STATIC ${REMAKE2D_SCRIPT_SRC})
-
 target_include_directories(
     remakeScript
     PRIVATE
@@ -236,15 +234,6 @@ target_compile_definitions(
         SDL_MAIN_HANDLED
 )
 
-target_link_libraries(
-    remakeScript
-    PRIVATE
-        SDL2::SDL2
-        SDL2_ttf::SDL2_ttf
-        SDL2_image::SDL2_image
-        SDL2_mixer::SDL2_mixer
-)
-
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(remakeScript PRIVATE -Wa,-mbig-obj)
@@ -256,6 +245,10 @@ endif()
 add_library(remakeEXT STATIC
     $<TARGET_OBJECTS:box2d>
     $<TARGET_OBJECTS:lualib>
+)
+
+add_library(remakeScript STATIC 
+	${REMAKE2D_SCRIPT_SRC}
 )
 
 set_target_properties(remakeEXT    PROPERTIES LINKER_LANGUAGE CXX)
