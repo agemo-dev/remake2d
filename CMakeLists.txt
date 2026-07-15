@@ -205,26 +205,37 @@ endif()
 
 file(GLOB_RECURSE REMAKE2D_SRC src/remake2d/*.cpp)
 
-# box2d and lualib are OBJECT libraries, so their .o files get baked directly
-# into remake2d's own objects. On MinGW, neither box2d nor lua mark their
-# symbols with __declspec(dllexport) (their headers only do so for MSVC), so
-# when remake2d is built SHARED, GNU ld falls back to auto-exporting every
-# global symbol it sees. That auto-export applies to raw object files
-# regardless of where they came from, so "-Wl,--exclude-libs,ALL" (which only
-# hides symbols coming from linked *static archives*) can't hide them.
-# Bundling them into a real static archive first makes --exclude-libs,ALL
-# effective and keeps the exported symbol count (and PE export ordinals)
-# from blowing past the 65535 limit.
-add_library(remake2d_thirdparty STATIC
-    $<TARGET_OBJECTS:box2d>
-    $<TARGET_OBJECTS:lualib>
+# sol2 (header-only, used to bind C++ types/functions to Lua) is extremely
+# template-heavy: every bound type generates its own set of uniquely-mangled
+# functions. The config/solstat/*.cpp files are remake2d's internal Lua
+# binding glue (not part of the public API) and are what mainly pushes
+# remake2d's own exported symbol count on MinGW past the PE format's 65535
+# export-ordinal ceiling ("export ordinal too large") -- same root cause as
+# box2d/lua below but for remake2d's own code. Splitting them into their own
+# object library and archiving that (like box2d/lualib) lets
+# -Wl,--exclude-libs,ALL hide all of that bloat, while remake2d's real public
+# API (System, Loop, Window, script, ...) stays as plain objects in
+# remake2d_objects and keeps getting exported normally.
+#
+# script.cpp is NOT included here even though it also uses sol2 heavily:
+# rmk::script is public API that consumers call directly, so it has to stay
+# exported. If this alone isn't enough to fix Debug builds on MinGW, the
+# next step would be to actually measure per-file symbol counts with nm
+# rather than guessing further -- see the conversation for context.
+set(REMAKE2D_SCRIPTING_SRC
+    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configClass.cpp
+    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configEntity.cpp
+    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configEvent.cpp
+    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configGlobal.cpp
+    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configSingleton.cpp
+    ${CMAKE_SOURCE_DIR}/src/remake2d/config/solstat/configUtility.cpp
 )
-set_target_properties(remake2d_thirdparty PROPERTIES LINKER_LANGUAGE C)
+list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE2D_SCRIPTING_SRC})
 
-add_library(remake2d_objects OBJECT ${REMAKE2D_SRC})
+add_library(remake2d_scripting OBJECT ${REMAKE2D_SCRIPTING_SRC})
 
 target_include_directories(
-    remake2d_objects
+    remake2d_scripting
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/include
@@ -233,19 +244,13 @@ target_include_directories(
 )
 
 target_compile_definitions(
-    remake2d_objects
+    remake2d_scripting
     PRIVATE
         SDL_MAIN_HANDLED
 )
 
-# remake2d_objects is what actually compiles the .cpp files now, so it needs
-# SDL2's (and friends') include directories -- previously these reached
-# compilation because SDL2 was linked straight onto the single "remake2d"
-# target, which then also held all the sources. Splitting compiling
-# (remake2d_objects) from linking (remake2d) means this has to be repeated
-# here explicitly, or headers like <SDL2/SDL.h> stop resolving.
 target_link_libraries(
-    remake2d_objects
+    remake2d_scripting
     PRIVATE
         SDL2::SDL2
         SDL2_ttf::SDL2_ttf
@@ -255,22 +260,57 @@ target_link_libraries(
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(remake2d_objects PRIVATE -Wa,-mbig-obj)
+        target_compile_options(remake2d_scripting PRIVATE -Wa,-mbig-obj)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        target_compile_options(remake2d_objects PRIVATE /bigobj)
+        target_compile_options(remake2d_scripting PRIVATE /bigobj)
     endif()
 endif()
+
+# box2d and lualib are OBJECT libraries, so their .o files get baked directly
+# into remake2d's own objects. On MinGW, neither box2d nor lua mark their
+# symbols with __declspec(dllexport) (their headers only do so for MSVC), so
+# when remake2d is built SHARED, GNU ld falls back to auto-exporting every
+# global symbol it sees. That auto-export applies to raw object files
+# regardless of where they came from, so "-Wl,--exclude-libs,ALL" (which only
+# hides symbols coming from linked *static archives*) can't hide them.
+# Bundling them into a real static archive first makes --exclude-libs,ALL
+# effective and keeps the exported symbol count (and PE export ordinals)
+# from blowing past the 65535 limit. remake2d_scripting's objects go in here
+# too, for the same reason.
+add_library(remake2d_thirdparty STATIC
+    $<TARGET_OBJECTS:box2d>
+    $<TARGET_OBJECTS:lualib>
+    $<TARGET_OBJECTS:remake2d_scripting>
+)
+set_target_properties(remake2d_thirdparty PROPERTIES LINKER_LANGUAGE CXX)
 
 if(BUILD_SHARED_LIBS)
     add_library(
         remake2d SHARED
-        $<TARGET_OBJECTS:remake2d_objects>
+        ${REMAKE2D_SRC}
     )
 else()
     add_library(
         remake2d STATIC
-        $<TARGET_OBJECTS:remake2d_objects>
+        ${REMAKE2D_SRC}
     )
+endif()
+
+target_include_directories(
+    remake2d
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/external
+        $<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>
+)
+
+if(WIN32)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(remake2d PRIVATE -Wa,-mbig-obj)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(remake2d PRIVATE /bigobj)
+    endif()
 endif()
 
 target_include_directories(
@@ -301,37 +341,6 @@ target_link_libraries(
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_link_options(remake2d PRIVATE "-Wl,--exclude-libs,ALL")
-
-        if(BUILD_SHARED_LIBS)
-            # See cmake/generate_def.cmake for the full explanation: this
-            # generates a .def file from remake2d_objects' own symbols only
-            # (never touching box2d/lua/sol2 internals), which stops GNU ld
-            # from auto-exporting everything and fixes
-            # "export ordinal too large" on MinGW Debug builds.
-            find_program(REMAKE2D_NM_EXECUTABLE NAMES ${CMAKE_NM} nm)
-            if(NOT REMAKE2D_NM_EXECUTABLE)
-                message(FATAL_ERROR "nm was not found; it is required (as part of your MinGW/binutils install) to generate remake2d's DLL export list")
-            endif()
-
-            set(REMAKE2D_DEF_FILE ${CMAKE_CURRENT_BINARY_DIR}/remake2d_exports.def)
-
-            add_custom_command(
-                OUTPUT ${REMAKE2D_DEF_FILE}
-                COMMAND ${CMAKE_COMMAND}
-                        -DNM_EXECUTABLE=${REMAKE2D_NM_EXECUTABLE}
-                        "-DOBJECT_FILES=$<TARGET_OBJECTS:remake2d_objects>"
-                        -DOUTPUT_FILE=${REMAKE2D_DEF_FILE}
-                        -P ${CMAKE_SOURCE_DIR}/cmake/generate_def.cmake
-                DEPENDS $<TARGET_OBJECTS:remake2d_objects> ${CMAKE_SOURCE_DIR}/cmake/generate_def.cmake
-                COMMENT "Generating remake2d DLL export list (remake2d_exports.def)"
-                VERBATIM
-            )
-
-            add_custom_target(remake2d_def_gen DEPENDS ${REMAKE2D_DEF_FILE})
-            add_dependencies(remake2d remake2d_def_gen)
-
-            target_link_options(remake2d PRIVATE "-Wl,--exclude-all-symbols" "-Wl,${REMAKE2D_DEF_FILE}")
-        endif()
     endif()
 endif()
 
@@ -344,17 +353,12 @@ configure_package_config_file(
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
 )
 
-if(BUILD_SHARED_LIBS)
-    install(TARGETS remake2d 
-        EXPORT remake2dTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    )
-else()
-    install(TARGETS remake2d 
-        EXPORT remake2dTargets
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    )
-endif()
+install(TARGETS remake2d
+    EXPORT remake2dTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
 
 install(EXPORT remake2dTargets
     FILE remake2dTargets.cmake

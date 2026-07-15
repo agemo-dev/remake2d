@@ -120,6 +120,14 @@ jobs:
           export SDL_RENDER_DRIVER=software
           "${{ github.workspace }}/smoke/build/compile_test"
 
+      - name: Copy runtime DLLs (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Copy-Item "${{ github.workspace }}\install\bin\*.dll" -Destination "${{ github.workspace }}\smoke\build\" -ErrorAction SilentlyContinue
+          Write-Host "--- Files copied next to the exe ---"
+          Get-ChildItem "${{ github.workspace }}\smoke\build\*.dll" -ErrorAction SilentlyContinue
+
       - name: Run compile test (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
