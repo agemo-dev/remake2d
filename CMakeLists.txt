@@ -205,11 +205,21 @@ endif()
 
 file(GLOB_RECURSE REMAKE2D_SRC src/remake2d/*.cpp)
 
-add_library(remakeEX STATIC
+# box2d and lualib are OBJECT libraries, so their .o files get baked directly
+# into remake2d's own objects. On MinGW, neither box2d nor lua mark their
+# symbols with __declspec(dllexport) (their headers only do so for MSVC), so
+# when remake2d is built SHARED, GNU ld falls back to auto-exporting every
+# global symbol it sees. That auto-export applies to raw object files
+# regardless of where they came from, so "-Wl,--exclude-libs,ALL" (which only
+# hides symbols coming from linked *static archives*) can't hide them.
+# Bundling them into a real static archive first makes --exclude-libs,ALL
+# effective and keeps the exported symbol count (and PE export ordinals)
+# from blowing past the 65535 limit.
+add_library(remake2d_thirdparty STATIC
     $<TARGET_OBJECTS:box2d>
     $<TARGET_OBJECTS:lualib>
 )
-set_target_properties(remakeEX PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(remake2d_thirdparty PROPERTIES LINKER_LANGUAGE C)
 
 add_library(remake2d_objects OBJECT ${REMAKE2D_SRC})
 
@@ -226,6 +236,21 @@ target_compile_definitions(
     remake2d_objects
     PRIVATE
         SDL_MAIN_HANDLED
+)
+
+# remake2d_objects is what actually compiles the .cpp files now, so it needs
+# SDL2's (and friends') include directories -- previously these reached
+# compilation because SDL2 was linked straight onto the single "remake2d"
+# target, which then also held all the sources. Splitting compiling
+# (remake2d_objects) from linking (remake2d) means this has to be repeated
+# here explicitly, or headers like <SDL2/SDL.h> stop resolving.
+target_link_libraries(
+    remake2d_objects
+    PRIVATE
+        SDL2::SDL2
+        SDL2_ttf::SDL2_ttf
+        SDL2_image::SDL2_image
+        SDL2_mixer::SDL2_mixer
 )
 
 if(WIN32)
@@ -264,7 +289,7 @@ target_compile_definitions(
 target_link_libraries(
     remake2d
     PRIVATE
-        remakeEX
+        remake2d_thirdparty
         SDL2::SDL2
         SDL2_ttf::SDL2_ttf
         SDL2_image::SDL2_image
@@ -278,6 +303,11 @@ if(WIN32)
         target_link_options(remake2d PRIVATE "-Wl,--exclude-libs,ALL")
 
         if(BUILD_SHARED_LIBS)
+            # See cmake/generate_def.cmake for the full explanation: this
+            # generates a .def file from remake2d_objects' own symbols only
+            # (never touching box2d/lua/sol2 internals), which stops GNU ld
+            # from auto-exporting everything and fixes
+            # "export ordinal too large" on MinGW Debug builds.
             find_program(REMAKE2D_NM_EXECUTABLE NAMES ${CMAKE_NM} nm)
             if(NOT REMAKE2D_NM_EXECUTABLE)
                 message(FATAL_ERROR "nm was not found; it is required (as part of your MinGW/binutils install) to generate remake2d's DLL export list")
