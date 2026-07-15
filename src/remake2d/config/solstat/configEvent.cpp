@@ -14,6 +14,10 @@ void initLuaEvent(sol::table& rmk) noexcept {
                             [](EventManager& self) { self.wait(); },
                             [](EventManager& self, time::Millisecond t) { self.wait(t); }
         );
+        ut["textInput"] = sol::overload(
+                            [](EventManager& self) { return self.textInput(); },
+                            [](EventManager& self, bool s) { self.textInput(s); }
+        );
         
         ut["onPressA"]       = &event.onPressA;
         ut["onPressB"]       = &event.onPressB;

@@ -608,4 +608,14 @@ void EventManager::wait(time::Second timeout) {
     else onEventNone._evaluate();
 }
 
+void EventManager::textInput(bool stat) {
+	m_text_input = stat;
+	if(stat) SDL_StartTextInput();
+	else     SDL_StopTextInput();
+}
+
+bool EventManager::textInput(void) {
+	return m_text_input;
+}
+
 }//namespace rmk

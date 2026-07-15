@@ -20,7 +20,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(USE_NATIVE_OPT "Enable -march=native optimizations" OFF)
-option(REMAKE2D_TERMUX_DOWNLOAD_DEPENDENCIES "Download dependencies" OFF)
 
 if(USE_NATIVE_OPT)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
@@ -28,14 +27,14 @@ endif()
 
 if(EXISTS "/data/data/com.termux")
     set(TERMUX_BUILD ON)
-    set(CMAKE_SYSTEM_NAME Linux CACHE STRING "" FORCE)
-	message("Termux detected — plateform set to 'Linux'")
+    set(CMAKE_SYSTEM_NAME Linux CACHE STRING "termux detected — System name changed" FORCE)
 else()
     set(TERMUX_BUILD OFF)
 endif()
 
 include(FetchContent)
 
+set(BUILD_SHARED_LIBS ON)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
@@ -216,11 +215,11 @@ if(TERMUX_BUILD)
 endif()
 
 file(GLOB_RECURSE REMAKE2D_SRC src/remake2d/*.cpp)
-file(GLOB_RECURSE REMAKE_SCRIPT_SRC src/remake2d/config/solstat/*.cpp)
+file(GLOB_RECURSE REMAKE2D_SCRIPT_SRC src/remake2d/config/solstat/*.cpp)
 
-list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE_SCRIPT_SRC})
+list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE2D_SCRIPT_SRC})
 
-add_library(remakeScript STATIC ${REMAKE_SCRIPT_SRC})
+add_library(remakeScript STATIC ${REMAKE2D_SCRIPT_SRC})
 
 target_include_directories(
     remakeScript
@@ -233,29 +232,18 @@ target_include_directories(
 
 target_compile_definitions(
     remakeScript
-    PUBLIC
+    PRIVATE
         SDL_MAIN_HANDLED
 )
 
-if(BUILD_SHARED_LIBS)
-    target_link_libraries(
-        remakeScript
-        PRIVATE
-            SDL2::SDL2
-            SDL2_ttf::SDL2_ttf
-            SDL2_image::SDL2_image
-            SDL2_mixer::SDL2_mixer
-    )
-else()
-    target_link_libraries(
-        remakeScript
-        PUBLIC
-            SDL2::SDL2
-            SDL2_ttf::SDL2_ttf
-            SDL2_image::SDL2_image
-            SDL2_mixer::SDL2_mixer
-    )
-endif()
+target_link_libraries(
+    remakeScript
+    PRIVATE
+        SDL2::SDL2
+        SDL2_ttf::SDL2_ttf
+        SDL2_image::SDL2_image
+        SDL2_mixer::SDL2_mixer
+)
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -269,13 +257,9 @@ add_library(remakeEXT STATIC
     $<TARGET_OBJECTS:box2d>
     $<TARGET_OBJECTS:lualib>
 )
-set_target_properties(remakeEXT PROPERTIES LINKER_LANGUAGE CXX)
 
-target_include_directories(
-    remakeEXT
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/external
-)
+set_target_properties(remakeEXT    PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(remakeScript PROPERTIES LINKER_LANGUAGE CXX)
 
 if(BUILD_SHARED_LIBS)
     add_library(
@@ -309,8 +293,8 @@ endif()
 target_include_directories(
     remake2d
     INTERFACE
-        $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
 target_compile_definitions(
@@ -319,33 +303,18 @@ target_compile_definitions(
         SDL_MAIN_HANDLED
 )
 
-if(BUILD_SHARED_LIBS)
-    target_link_libraries(
-        remake2d
-        PRIVATE
-            remakeEXT
-            remakeScript
-            SDL2::SDL2
-            SDL2_ttf::SDL2_ttf
-            SDL2_image::SDL2_image
-            SDL2_mixer::SDL2_mixer
-            $<$<CXX_COMPILER_ID:GNU>:atomic>
-            ${CMAKE_DL_LIBS}
-    )
-else()
-    target_link_libraries(
-        remake2d
-        PUBLIC
-            remakeEXT
-            remakeScript
-            SDL2::SDL2
-            SDL2_ttf::SDL2_ttf
-            SDL2_image::SDL2_image
-            SDL2_mixer::SDL2_mixer
-            $<$<CXX_COMPILER_ID:GNU>:atomic>
-            ${CMAKE_DL_LIBS}
-    )
-endif()
+target_link_libraries(
+    remake2d
+    PRIVATE
+        remakeEXT
+        remakeScript
+        SDL2::SDL2
+        SDL2_ttf::SDL2_ttf
+        SDL2_image::SDL2_image
+        SDL2_mixer::SDL2_mixer
+		$<$<CXX_COMPILER_ID:GNU>:atomic>
+        ${CMAKE_DL_LIBS}
+)
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -362,8 +331,13 @@ configure_package_config_file(
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
 )
 
-install(TARGETS remake2d remakeEXT remakeScript
-    EXPORT remake2dTargets
+install(
+	TARGETS 
+		remake2d 
+		remakeEXT 
+		remakeScript
+		
+    EXPORT remake2dTargets	
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

@@ -18,6 +18,7 @@ class EventManager {
 private:
     SDL_Event   									m_event;
     bool        									m_has_event{false};
+    bool        									m_text_input{false};
     std::unordered_map<i32, SDL_GameController*>	m_controllers;
 
 private:
@@ -34,6 +35,10 @@ public:
     void wait(void);
     void wait(time::Second);
 
+public:
+	void textInput(bool);
+	bool textInput(void);
+	
 public:
 	friend SDL_GameController* _getOpenController(i32) noexcept;
 
