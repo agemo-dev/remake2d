@@ -50,7 +50,13 @@ void ThreadWorker::stop(void) {
 }
 
 ThreadWorker::~ThreadWorker(void) {
-    stop();
+    m_running = false;
+    m_cv.notify_all();
+#ifdef _WIN32
+    if (m_thread.joinable()) m_thread.detach();
+#else
+    if (m_thread.joinable()) m_thread.join();
+#endif
 }
 
 void ThreadWorker::_loop(void) {
