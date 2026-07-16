@@ -83,6 +83,7 @@ jobs:
           int main(void) {
               rmk::system.init();
               std::cout << "built success — plateform name : " << rmk::system.info.platform() << std::endl;
+              rmk::loop.update();
               return 0;
           }
           '@ | Set-Content -Path "${{ github.workspace }}\smoke\compile.cpp"
@@ -132,4 +133,8 @@ jobs:
           $env:SDL_AUDIODRIVER = "dummy"
           $env:SDL_VIDEODRIVER = "dummy"
           $env:SDL_RENDER_DRIVER = "software"
+          Write-Host "--- Run 1 ---"
           & "${{ github.workspace }}\smoke\build\compile_test.exe"
+          Write-Host "--- Run 1 finished, starting Run 2 ---"
+          & "${{ github.workspace }}\smoke\build\compile_test.exe"
+          Write-Host "--- Run 2 finished ---"
