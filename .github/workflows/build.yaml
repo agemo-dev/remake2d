@@ -134,19 +134,23 @@ jobs:
           $env:SDL_VIDEODRIVER = "dummy"
           $env:SDL_RENDER_DRIVER = "software"
 
-          $p = Start-Process -FilePath "${{ github.workspace }}\smoke\build\compile_test.exe" -PassThru -NoNewWindow
+          $exePath = Join-Path "${{ github.workspace }}" "smoke\build\compile_test.exe"
+          $p = Start-Process -FilePath $exePath -PassThru -NoNewWindow
 
           $finished = $p.WaitForExit(15000)
 
           if (-not $finished) {
-              Write-Host "--- Still running after 15s, dumping thread states ---"
+              Write-Host "Still running after 15s, dumping thread states"
               $proc = Get-Process -Id $p.Id
               foreach ($t in $proc.Threads) {
-                  Write-Host "Thread $($t.Id): State=$($t.ThreadState) WaitReason=$($t.WaitReason)"
+                  $tid = $t.Id
+                  $state = $t.ThreadState
+                  $reason = $t.WaitReason
+                  Write-Host "Thread $tid State=$state WaitReason=$reason"
               }
-              Write-Host "--- Killing process ---"
+              Write-Host "Killing process"
               Stop-Process -Id $p.Id -Force
               exit 1
           } else {
-              Write-Host "--- Process exited normally with code $($p.ExitCode) ---"
+              Write-Host "Process exited normally with code $($p.ExitCode)"
 		  }
