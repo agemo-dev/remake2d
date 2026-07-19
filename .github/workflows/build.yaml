@@ -152,5 +152,6 @@ jobs:
               Stop-Process -Id $p.Id -Force
               exit 1
           } else {
-              Write-Host "Process exited normally with code $($p.ExitCode)"
+              $code = $p.ExitCode
+              Write-Host "Process exited normally with code $code"
 		  }
