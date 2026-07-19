@@ -1,4 +1,4 @@
-name: REMAKE2D — CI Build
+name: REMAKE2D - CI Build
 
 on:
   push:
@@ -64,7 +64,7 @@ jobs:
 
           int main(void) {
               rmk::system.init();
-              std::cout << "built success — plateform name : " << rmk::system.info.platform() << std::endl;
+              std::cout << "built success - plateform name : " << rmk::system.info.platform() << std::endl;
               rmk::loop.update();
               return 0;
           }
@@ -82,7 +82,7 @@ jobs:
 
           int main(void) {
               rmk::system.init();
-              std::cout << "built success — plateform name : " << rmk::system.info.platform() << std::endl;
+              std::cout << "built success - plateform name : " << rmk::system.info.platform() << std::endl;
               rmk::loop.update();
               return 0;
           }
@@ -119,12 +119,17 @@ jobs:
           export SDL_VIDEODRIVER=dummy
           export SDL_RENDER_DRIVER=software
           "${{ github.workspace }}/smoke/build/compile_test"
-
       - name: Copy runtime DLLs (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           Copy-Item "${{ github.workspace }}\install\bin\*.dll" -Destination "${{ github.workspace }}\smoke\build\" -ErrorAction SilentlyContinue
+
+      - name: Install Debugging Tools for Windows (cdb)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          winget install --id Microsoft.WinDbg --accept-source-agreements --accept-package-agreements --disable-interactivity | Out-Null
 
       - name: Run compile test (Windows)
         if: runner.os == 'Windows'
@@ -135,23 +140,31 @@ jobs:
           $env:SDL_RENDER_DRIVER = "software"
 
           $exePath = Join-Path "${{ github.workspace }}" "smoke\build\compile_test.exe"
+          $cdb = Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\WindowsApps","$env:ProgramFiles*\Windows Kits\*\Debuggers\x64" -Filter cdb.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+
           $p = Start-Process -FilePath $exePath -PassThru -NoNewWindow
 
-          $finished = $p.WaitForExit(15000)
+          Start-Sleep -Seconds 10
 
-          if (-not $finished) {
-              Write-Host "Still running after 15s, dumping thread states"
-              $proc = Get-Process -Id $p.Id
-              foreach ($t in $proc.Threads) {
-                  $tid = $t.Id
-                  $state = $t.ThreadState
-                  $reason = $t.WaitReason
-                  Write-Host "Thread $tid State=$state WaitReason=$reason"
+          if (-not $p.HasExited) {
+              Write-Host "Still running after 10s, attaching cdb and dumping all thread stacks"
+              if ($cdb) {
+                  & $cdb -p $p.Id -c "~*k; q"
+              } else {
+                  Write-Host "cdb.exe not found, falling back to WaitReason only"
+                  $proc = Get-Process -Id $p.Id -ErrorAction SilentlyContinue
+                  if ($proc) {
+                      foreach ($t in $proc.Threads) {
+                          $tid = $t.Id
+                          $state = $t.ThreadState
+                          $reason = $t.WaitReason
+                          Write-Host "Thread $tid State=$state WaitReason=$reason"
+                      }
+                  }
               }
-              Write-Host "Killing process"
-              Stop-Process -Id $p.Id -Force
+              Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
               exit 1
           } else {
               $code = $p.ExitCode
-              Write-Host "Process exited normally with code $code"
+              Write-Host "Process exited before 10s with code $code"
           }
