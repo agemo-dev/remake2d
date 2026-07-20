@@ -16,7 +16,9 @@ void MainRenderLoop::update(void) noexcept {
     auto cond = m_condition;
     auto exec = m_execute ? m_execute : [](){};
 
-    while (cond && cond()) {
+	if(!cond) return;
+	
+    while (cond()) {
         event.poll();
         delta.update();
         physics.update();

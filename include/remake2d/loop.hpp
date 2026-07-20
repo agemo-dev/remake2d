@@ -9,8 +9,8 @@ namespace rmk {
 
 class MainRenderLoop {
 private:
-    std::function<void(void)>      m_execute;
-    std::function<bool(void)>      m_condition;
+    std::function<void(void)>      m_execute{nullptr};
+    std::function<bool(void)>      m_condition{nullptr};
     bool                           m_is_running{false};
 
 private:

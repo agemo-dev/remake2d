@@ -119,6 +119,7 @@ jobs:
           export SDL_VIDEODRIVER=dummy
           export SDL_RENDER_DRIVER=software
           "${{ github.workspace }}/smoke/build/compile_test"
+
       - name: Copy runtime DLLs (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -148,7 +149,7 @@ jobs:
           Write-Host "=== PATH ==="
           $env:PATH -split ';'
           Write-Host "=== gcc location ==="
-    	      Get-Command gcc -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+          Get-Command gcc -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
 
       - name: Run compile test (Windows)
         if: runner.os == 'Windows'
