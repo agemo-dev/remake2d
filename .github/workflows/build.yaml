@@ -120,6 +120,15 @@ jobs:
           export SDL_RENDER_DRIVER=software
           "${{ github.workspace }}/smoke/build/compile_test"
 
+       - name: List installed files (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "=== install/bin ==="
+          Get-ChildItem "${{ github.workspace }}\install\bin" -ErrorAction SilentlyContinue
+          Write-Host "=== install/lib ==="
+          Get-ChildItem "${{ github.workspace }}\install\lib" -ErrorAction SilentlyContinue
+
       - name: Run compile test (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
