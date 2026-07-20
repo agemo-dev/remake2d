@@ -138,10 +138,17 @@ jobs:
           Write-Host "=== compile_test.exe DLL dependencies (objdump) ==="
           $exePath = Join-Path "${{ github.workspace }}" "smoke\build\compile_test.exe"
           & objdump -p $exePath | Select-String "DLL Name"
+          Write-Host "=== libremake2d.dll DLL dependencies (objdump) ==="
+          $dllPath = Join-Path "${{ github.workspace }}" "smoke\build\libremake2d.dll"
+          & objdump -p $dllPath | Select-String "DLL Name"
+          Write-Host "=== libwinpthread-1.dll present in mingw64\bin? ==="
+          Test-Path "C:\mingw64\bin\libwinpthread-1.dll"
+          Write-Host "=== full mingw64\bin runtime DLL listing ==="
+          Get-ChildItem "C:\mingw64\bin" -Filter "*.dll" -ErrorAction SilentlyContinue
           Write-Host "=== PATH ==="
           $env:PATH -split ';'
           Write-Host "=== gcc location ==="
-          Get-Command gcc -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+    	      Get-Command gcc -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
 
       - name: Run compile test (Windows)
         if: runner.os == 'Windows'
