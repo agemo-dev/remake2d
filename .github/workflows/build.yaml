@@ -125,11 +125,23 @@ jobs:
         run: |
           Copy-Item "${{ github.workspace }}\install\bin\*.dll" -Destination "${{ github.workspace }}\smoke\build\" -ErrorAction SilentlyContinue
 
-      - name: Install Debugging Tools for Windows (cdb)
+      - name: Diagnose install output (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          winget install --id Microsoft.WinDbg --accept-source-agreements --accept-package-agreements --disable-interactivity | Out-Null
+          Write-Host "=== install/bin ==="
+          Get-ChildItem "${{ github.workspace }}\install\bin" -ErrorAction SilentlyContinue
+          Write-Host "=== install/lib ==="
+          Get-ChildItem "${{ github.workspace }}\install\lib" -ErrorAction SilentlyContinue
+          Write-Host "=== smoke/build contents ==="
+          Get-ChildItem "${{ github.workspace }}\smoke\build" -ErrorAction SilentlyContinue
+          Write-Host "=== compile_test.exe DLL dependencies (objdump) ==="
+          $exePath = Join-Path "${{ github.workspace }}" "smoke\build\compile_test.exe"
+          & objdump -p $exePath | Select-String "DLL Name"
+          Write-Host "=== PATH ==="
+          $env:PATH -split ';'
+          Write-Host "=== gcc location ==="
+          Get-Command gcc -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
 
       - name: Run compile test (Windows)
         if: runner.os == 'Windows'
@@ -138,33 +150,4 @@ jobs:
           $env:SDL_AUDIODRIVER = "dummy"
           $env:SDL_VIDEODRIVER = "dummy"
           $env:SDL_RENDER_DRIVER = "software"
-
-          $exePath = Join-Path "${{ github.workspace }}" "smoke\build\compile_test.exe"
-          $cdb = Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\WindowsApps","$env:ProgramFiles*\Windows Kits\*\Debuggers\x64" -Filter cdb.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-
-          $p = Start-Process -FilePath $exePath -PassThru -NoNewWindow
-
-          Start-Sleep -Seconds 10
-
-          if (-not $p.HasExited) {
-              Write-Host "Still running after 10s, attaching cdb and dumping all thread stacks"
-              if ($cdb) {
-                  & $cdb -p $p.Id -c "~*k; q"
-              } else {
-                  Write-Host "cdb.exe not found, falling back to WaitReason only"
-                  $proc = Get-Process -Id $p.Id -ErrorAction SilentlyContinue
-                  if ($proc) {
-                      foreach ($t in $proc.Threads) {
-                          $tid = $t.Id
-                          $state = $t.ThreadState
-                          $reason = $t.WaitReason
-                          Write-Host "Thread $tid State=$state WaitReason=$reason"
-                      }
-                  }
-              }
-              Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
-              exit 1
-          } else {
-              $code = $p.ExitCode
-              Write-Host "Process exited before 10s with code $code"
-          }
+          & "${{ github.workspace }}\smoke\build\compile_test.exe"
