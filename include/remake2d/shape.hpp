@@ -109,7 +109,7 @@ public:
 public:
     void rotate(f32) 									noexcept override;
     void move(const Vec2d&) 							noexcept override;
-    void scale(const Fact2d&) 							noexcept override;
+    virtual void scale(const Fact2d&) 					noexcept override;
 	virtual void resize(const Dim2d&) 					noexcept override;
     void transform(const Vec2d& , f32, const Fact2d&)	noexcept override;
 
@@ -145,6 +145,10 @@ public:
     Point(const Vec2d&);
 	
 public:
+    void scale(const Fact2d&) noexcept override;
+    void resize(const Dim2d&) noexcept override;
+    
+public:
     friend class Window;
     friend class Camera;
     friend class PhysicBody;
@@ -163,6 +167,7 @@ public:
     Circle(const Vec2d&, f32);
 
 public:
+    void scale(const Fact2d&) noexcept override;
     void resize(const Dim2d&) noexcept override;
     
 public:
@@ -172,6 +177,23 @@ public:
     template<IsShape S> friend class Texture;
 };
 
+class Triangle : public Shape<3> {
+public:
+    Triangle(void)						    = default;
+    Triangle(Triangle&&)					= default;
+    Triangle(const Triangle&)				= default;
+    Triangle& operator=(Triangle&&)			= default;
+    Triangle& operator=(const Triangle&)	= default;
+
+public:
+    Triangle(const Vec2d&, const Dim2d&);
+    
+public:
+    friend class Window;
+    friend class Camera;
+    friend class PhysicBody;
+    template<IsShape S> friend class Texture;
+};
 
 class Rectangle : public Shape<4> {
 public:
@@ -206,6 +228,7 @@ public:
     Square(const Vec2d&, f32);
 
 public:
+	void scale(const Fact2d&) noexcept override;
     void resize(const Dim2d&) noexcept override;
     
 public:
@@ -217,11 +240,12 @@ public:
 
 
 using Line      = Shape<2>;
-using Triangle  = Shape<3>;
 using Losange   = Shape<4>;
 using Hexagone  = Shape<6>;
 using Ellipse   = Shape<36>;
 
+template<> Circle Geometry::as(void) const noexcept;
+template<> Square Geometry::as(void) const noexcept;
 
 }//namespace rmk
 

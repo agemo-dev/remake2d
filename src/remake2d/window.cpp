@@ -220,16 +220,11 @@ void Window::draw(const TextureBase& tex, Color color, std::string_view viewport
 
     tex._applyColor(m_renderer, color);
 
-    SDL_FPoint center = (SDL_FPoint)tex.center();
-
-    SDL_FRect dest;
-    dest.x = center.x - tex.size().w / 2.0f;
-    dest.y = center.y - tex.size().h / 2.0f;
-    dest.w = tex.size().w;
-    dest.h = tex.size().h;
-
     SDL_Texture* t = tex._ownerTexture(m_renderer);
-    if(t) SDL_RenderCopyF(m_renderer, t, tex.getClipRect(), &dest);
+    if (t) {
+        auto verts = tex.vertices();
+        SDL_RenderGeometry(m_renderer, t, verts.data(), (int)verts.size(), nullptr, 0);
+    }
 
     _restoreViewport();
 }

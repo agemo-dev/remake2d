@@ -80,6 +80,8 @@ int main(void) {
 }
 ```
 
+![drew triangle](assets/graphics1.png)
+
 It is also possible to **fill** the shape with the `fill` method, similar to `draw`:
 
 ```cpp
@@ -90,14 +92,30 @@ void fill(const Geometry& shape, Color color = rmk::color::white, std::string_vi
 win.fill(triangle, rmk::color::red);
 ```
 
+![filled triangle](assets/graphics2.png)
+
 ### Transparency
 
 It is possible to make shapes somewhat transparent. By reducing the *alpha* value of `Color`,
 we also reduce **the opacity** of the shape drawn on screen.
 
+example:
+
+without transparency:
 ```cpp
+win.clear(rmk::color::green);
 win.fill(triangle, {255, 0, 0, 128}); // semi-transparent red triangle
 ```
+
+![opaque triangle](assets/graphics3.png)
+
+with transparency:
+```cpp
+win.clear(rmk::color::green);
+win.fill(triangle, {255, 0, 0, 128}); // semi-transparent red triangle
+```
+
+![semi-transparent triangle](assets/graphics4.png)
 
 You can change the transparency mode via the `blendMode` method of the `Window` class, which can take
 three distinct values:
@@ -122,7 +140,11 @@ example:
 
 ```cpp
 win.blendMode(rmk::window::blendmode::add);
+win.clear(rmk::color::green);
+win.fill(triangle, {255, 0, 0, 128});
 ```
+
+![additive semi-transparent triangle](assets/graphics5.png)
 
 ---
 

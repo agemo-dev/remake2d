@@ -112,6 +112,9 @@ void Texture<S>::clip(const Vec2d& clip_pos, const Dim2d& clip_size) noexcept {
     } else {
         m_use_clip = false;
     }
+
+	m_shape.m_is_changed = true;
+    _calculateVertices();
 }
 
 template<IsShape S>
@@ -119,6 +122,9 @@ void Texture<S>::unclip(void) noexcept {
     m_clip_pos = {0, 0};
     m_clip_size = {0, 0};
     m_use_clip = false;
+
+	m_shape.m_is_changed = true;
+    _calculateVertices();
 }
 
 template<IsShape S>
@@ -170,9 +176,21 @@ void Texture<S>::_calculateVertices(void) noexcept {
 		return;
 	}
 
+    f32 uMin = 0.0f, uRange = m_real_size.w;
+    f32 vMin = 0.0f, vRange = m_real_size.h;
+
+    if (m_use_clip) {
+        uMin   = m_clip_pos.x;
+        vMin   = m_clip_pos.y;
+        uRange = m_clip_size.w;
+        vRange = m_clip_size.h;
+    }
+
     for (auto& v : verts) {
-        v.tex_coord.x = (v.position.x - minX) / w;
-        v.tex_coord.y = (v.position.y - minY) / h;
+        f32 u = (v.position.x - minX) / w;
+        f32 t = (v.position.y - minY) / h;
+        v.tex_coord.x = (uMin + u * uRange) / m_real_size.w;
+        v.tex_coord.y = (vMin + t * vRange) / m_real_size.h;
     }
 
     m_vertices = std::move(verts);
