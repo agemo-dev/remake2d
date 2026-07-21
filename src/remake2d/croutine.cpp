@@ -22,7 +22,10 @@ Task::Task(Task&& o) noexcept : handle(std::exchange(o.handle, {})) {}
 Task::~Task(void) { if (handle) handle.destroy(); }
 
 ThreadWorker::ThreadWorker(void) {
-    m_thread = std::thread([this]() { _loop(); });
+    m_thread = std::jthread(
+		[this](std::stop_token token) {
+			_loop(token);
+	});
 }
 
 void ThreadWorker::submit(_CroutineEntry entry) {
@@ -49,18 +52,10 @@ void ThreadWorker::stop(void) {
     if (m_thread.joinable()) m_thread.join();
 }
 
-ThreadWorker::~ThreadWorker(void) {
-    m_running = false;
-    m_cv.notify_all();
-#ifdef _WIN32
-    if (m_thread.joinable()) m_thread.detach();
-#else
-    if (m_thread.joinable()) m_thread.join();
-#endif
-}
-
-void ThreadWorker::_loop(void) {
-    while (m_running) {
+void ThreadWorker::_loop(std::stop_token token) {
+	auto run = [&]() { return m_running && !token.stop_requested(); };
+	
+    while (run()) {
         _CroutineEntry entry{};
         {
             std::unique_lock lock(m_mtx);

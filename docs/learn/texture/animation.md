@@ -15,7 +15,7 @@ frames of a sprite sheet, clipping the underlying texture to the current frame o
 ## Methods
 
 ```cpp
-void play(i8 loop = 0, u8 fps = 12); // start or advance the animation
+void play(i8 loop = 0, u8 fps = 12); // start the animation
 void pause(void)  noexcept;          // pause on the current frame
 void resume(void) noexcept;          // resume after pause
 void stop(void)   noexcept;          // stop and reset to the first frame
@@ -73,6 +73,41 @@ walk.stop();
 
 !!! info
     Calling `play` again after `stop` restarts the animation from its first frame, exactly as if it had never played before.
+
+### Example
+
+To more easily illustrate their use, we will use this simple code example and a free animation from Pixel Studio.
+You can download the animation sheet [here](assets/texture3.png) .¬
+
+```cpp
+#include <remake2d/all/everything.hpp>
+
+int main () {
+	rmk::Window win;
+
+	rmk::Animation anim(
+	        "texture3.png",					// path to animation sheet
+	        {win.center(), {320, 360}},     // Printing rectangle
+	        4,								// 4 clips
+	        {32, 36},						// clip size
+	        {0, 0}							// clip position
+	)
+	
+	anim.play(-1, 8);						// infinity loop + 8 fps speed
+	
+	rmk::loop.execute(win, [&] (){
+		win.clear(rmk::color::green);		// clear screen on green
+		win.draw(anim);						// draw current clip
+	});
+	
+	rmk::loop.update();		// launch app
+}
+
+```
+
+result:
+
+![gif animation](assets/texture1.gif)
 
 ---
 

@@ -22,6 +22,7 @@ void MainRenderLoop::update(void) noexcept {
         event.poll();
         delta.update();
         physics.update();
+        animation.update();
         
         for (auto& win : xwindow.m_windows) win->clear();
         exec();

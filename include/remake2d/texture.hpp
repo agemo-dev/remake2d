@@ -286,7 +286,6 @@ public:
     friend class Window;
 };
 
-
 class Animation : public Sprite {
 private:
     i8    	m_current_clip{0};
@@ -310,17 +309,46 @@ public:
     Animation& operator=(Animation&&) 	= default;
 
 private:
+    void _advance(void);
     void _animationCopy(const Animation&) noexcept;
 
 public:
-    void play(i8 = 0, u8 = 12);
-    void pause(void)  noexcept;
-    void resume(void) noexcept;
-    void stop(void)   noexcept;
+    void play(i8 = 0, u8 = 12)	noexcept;
+    void pause(void)  			noexcept;
+    void resume(void) 			noexcept;
+    void stop(void)   			noexcept;
+
+public:
+    ~Animation(void) override;
 
 private:
     friend class Window;
+    friend class AnimationManager;
 };
+
+
+class AnimationManager {
+private:
+    std::vector<Animation*> m_animations;
+
+private:
+    AnimationManager(void) = default;
+    AnimationManager(const AnimationManager&) = delete;
+    AnimationManager& operator=(const AnimationManager&) = delete;
+
+public:
+    static AnimationManager& getInstance(void) noexcept;
+    void update(void);
+
+private:
+    void _registerAnimation(Animation*)   noexcept;
+    void _unregisterAnimation(Animation*) noexcept;
+
+private:
+    friend class Animation;
+};
+
+inline AnimationManager& animation = AnimationManager::getInstance();
 
 }//namespace rmk
 

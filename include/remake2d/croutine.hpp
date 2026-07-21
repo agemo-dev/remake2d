@@ -83,7 +83,7 @@ CroutineBase* self(void) noexcept;
 
 class ThreadWorker {
 private:
-    std::thread                m_thread;
+    std::jthread               m_thread;
     std::queue<_CroutineEntry> m_queue;
     std::mutex                 m_mtx;
     std::condition_variable    m_cv;
@@ -92,12 +92,12 @@ private:
     std::atomic<u8>    		   m_count{0};
 public:
     ThreadWorker(void);
-    void submit(_CroutineEntry entry);
+    void submit(_CroutineEntry);
     bool idle(void);
     u32  count(void) const noexcept;
     u64  ID(void)    const noexcept;
-    void stop(void);
-    ~ThreadWorker(void);
+    void stop(std::stop_token);
+    ~ThreadWorker(void) = default;
     ThreadWorker(const ThreadWorker&) = delete;
     ThreadWorker& operator=(const ThreadWorker&) = delete;
 private:

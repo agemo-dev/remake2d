@@ -256,8 +256,30 @@ void Text::_updateWidth(const GlyphAtlas& atlas) noexcept {
     (void)atlas;
 }
 
+Animation::Animation(const Animation& other) : Sprite(other) {
+    this->_animationCopy(other);
+}
 
-Animation::Animation(std::string_view path, const Rectangle& shape, u8 total_clips, Dim2d clip_size, Vec2d start_pos, u8 spacing)
+Animation& Animation::operator=(const Animation& other) {
+    if (this != &other) {
+        Sprite::operator=(other);
+        this->_animationCopy(other);
+    }
+    return *this;
+}
+
+void Animation::_animationCopy(const Animation& other) noexcept {
+    m_spacing 			= other.m_spacing;
+    m_total_clips 		= other.m_total_clips;
+    m_clip_size 		= other.m_clip_size;
+    m_start_pos 		= other.m_start_pos;
+    m_current_clip 		= other.m_current_clip;
+    m_loops_remaining	= other.m_loops_remaining;
+    m_is_playing 		= other.m_is_playing;
+    m_is_paused 		= other.m_is_paused;
+    m_timer 			= other.m_timer;
+    m_clip_duration 	= other.m_clip_duration;
+}Animation::Animation(std::string_view path, const Rectangle& shape, u8 total_clips, Dim2d clip_size, Vec2d start_pos, u8 spacing)
     : Sprite(path, shape) {
     this->m_clip_size = clip_size;
     this->m_start_pos = start_pos;
@@ -265,16 +287,19 @@ Animation::Animation(std::string_view path, const Rectangle& shape, u8 total_cli
     this->m_spacing = spacing;
 }
 
-void Animation::play(i8 loop, u8 fps) {
-    if (!m_is_playing) {
-        m_timer				= 0.0;
-        m_is_playing		= true;
-        m_is_paused			= false;
-        m_clip_duration		= 1.0 / fps;
-        m_loops_remaining	= (loop < 0) ? -2 : loop;
-    }
+void Animation::play(i8 loop, u8 fps) noexcept {
+    m_timer            = 0.0;
+    m_is_playing        = true;
+    m_is_paused         = false;
+    m_clip_duration     = 1.0 / fps;
+    m_loops_remaining   = (loop < 0) ? -2 : loop;
+    m_current_clip      = 0;
+    clip(m_start_pos, m_clip_size);
+    animation._registerAnimation(this);
+}
 
-    if (m_is_paused) return;
+void Animation::_advance(void) {
+    if (!m_is_playing || m_is_paused) return;
 
     m_timer += delta.tick();
 
@@ -312,31 +337,30 @@ void Animation::stop(void) noexcept {
     m_current_clip = 0;
     m_timer 	   = 0.0;
     clip(m_start_pos, m_clip_size);
+    animation._unregisterAnimation(this);
 }
 
-Animation::Animation(const Animation& other) : Sprite(other) {
-    this->_animationCopy(other);
+Animation::~Animation(void) {
+    animation._unregisterAnimation(this);
 }
 
-Animation& Animation::operator=(const Animation& other) {
-    if (this != &other) {
-        Sprite::operator=(other);
-        this->_animationCopy(other);
-    }
-    return *this;
+AnimationManager& AnimationManager::getInstance(void) noexcept {
+    static AnimationManager instance;
+    return instance;
 }
 
-void Animation::_animationCopy(const Animation& other) noexcept {
-    m_spacing 			= other.m_spacing;
-    m_total_clips 		= other.m_total_clips;
-    m_clip_size 		= other.m_clip_size;
-    m_start_pos 		= other.m_start_pos;
-    m_current_clip 		= other.m_current_clip;
-    m_loops_remaining	= other.m_loops_remaining;
-    m_is_playing 		= other.m_is_playing;
-    m_is_paused 		= other.m_is_paused;
-    m_timer 			= other.m_timer;
-    m_clip_duration 	= other.m_clip_duration;
+void AnimationManager::_registerAnimation(Animation* a) noexcept {
+    auto it = std::find(m_animations.begin(), m_animations.end(), a);
+    if (it == m_animations.end()) m_animations.push_back(a);
+}
+
+void AnimationManager::_unregisterAnimation(Animation* a) noexcept {
+    auto it = std::find(m_animations.begin(), m_animations.end(), a);
+    if (it != m_animations.end()) m_animations.erase(it);
+}
+
+void AnimationManager::update(void) {
+    for (auto* a : m_animations) a->_advance();
 }
 
 } // namespace rmk
