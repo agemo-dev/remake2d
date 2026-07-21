@@ -56,7 +56,8 @@ void ThreadWorker::_loop(std::stop_token token) {
 	if (!m_running) return;
 	
     while (!token.stop_requested()) {
-        _CroutineEntry entry{};
+        _CroutineEntry entry;
+		
         {
             std::unique_lock lock(m_mtx);
             m_cv.wait(lock, token, [this]{
@@ -91,6 +92,11 @@ void ThreadWorker::_loop(std::stop_token token) {
     }
 }
 
+ThreadWorker::~ThreadWorker(void) {
+	m_running = false;
+	m_thread.request_stop();
+}
+
 CroutinePool::CroutinePool(void) {
     m_engine   = std::make_unique<ThreadWorker>();
     m_heavy    = std::make_unique<ThreadWorker>();
@@ -110,7 +116,7 @@ void CroutinePool::submit(_CroutineEntry entry, croutine::priority p) {
     switch (p) {
         case croutine::priority::engine: m_engine->submit(entry); break;
         case croutine::priority::heavy:  m_heavy->submit(entry);  break;
-        case croutine::priority::user:   _submitUser(entry);       break;
+        case croutine::priority::user:   _submitUser(entry);      break;
     }
 }
 

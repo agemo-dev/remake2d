@@ -97,7 +97,7 @@ public:
     u32  count(void) const noexcept;
     u64  ID(void)    const noexcept;
     void stop(void);
-    ~ThreadWorker(void) = default;
+    ~ThreadWorker(void);
     ThreadWorker(const ThreadWorker&) = delete;
     ThreadWorker& operator=(const ThreadWorker&) = delete;
 private:
