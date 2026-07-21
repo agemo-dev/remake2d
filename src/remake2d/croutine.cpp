@@ -53,13 +53,13 @@ void ThreadWorker::stop(void) {
 }
 
 void ThreadWorker::_loop(std::stop_token token) {
-	auto run = [&]() { return m_running && !token.stop_requested(); };
+	if (!m_running) return;
 	
-    while (run()) {
+    while (!token.stop_requested()) {
         _CroutineEntry entry{};
         {
             std::unique_lock lock(m_mtx);
-            m_cv.wait(lock, [this]{
+            m_cv.wait(lock, token, [this]{
                 return !m_queue.empty() || !m_running;
             });
             if (!m_running) return;
