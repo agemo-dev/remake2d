@@ -50,8 +50,8 @@ public:
 
 public:
     std::coroutine_handle<promise_type> handle;
-    explicit Task(std::coroutine_handle<promise_type> h) noexcept;
-    Task(Task&& o) noexcept;
+    explicit Task(std::coroutine_handle<promise_type>) noexcept;
+    Task(Task&&) noexcept;
     Task(const Task&) = delete;
     Task& operator=(const Task&) = delete;
     ~Task(void);
@@ -96,12 +96,12 @@ public:
     bool idle(void);
     u32  count(void) const noexcept;
     u64  ID(void)    const noexcept;
-    void stop(std::stop_token);
+    void stop(void);
     ~ThreadWorker(void) = default;
     ThreadWorker(const ThreadWorker&) = delete;
     ThreadWorker& operator=(const ThreadWorker&) = delete;
 private:
-    void _loop(void);
+    void _loop(std::stop_token);
 };
 
 class CroutinePool {
