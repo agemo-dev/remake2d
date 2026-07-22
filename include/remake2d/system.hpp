@@ -5,6 +5,7 @@
 #include <remake2d/vector.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/config.hpp>
+#include <remake2d/config/script/config.hpp>
 
 #include <span>
 #include <string>
