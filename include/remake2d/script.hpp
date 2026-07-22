@@ -4,7 +4,7 @@
 #include <remake2d/signal.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/sol2/sol.hpp>
-#include <remake2d/config/config.hpp>
+#include <remake2d/config/script/config.hpp>
 
 #include <set>
 #include <string>
