@@ -35,7 +35,6 @@ endif()
 
 include(FetchContent)
 
-set(BUILD_SHARED_LIBS ON)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
@@ -357,7 +356,9 @@ install(EXPORT remake2dTargets
 )
 
 install(
-    FILES ${CMAKE_BINARY_DIR}/remake2dConfig.cmake
+    FILES 
+		${CMAKE_SOURCE_DIR}/cmake/copyDLL.cmake
+		${CMAKE_BINARY_DIR}/remake2dConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
 )
 

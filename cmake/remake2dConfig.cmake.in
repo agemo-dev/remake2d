@@ -19,6 +19,10 @@ endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/remake2dTargets.cmake" OPTIONAL)
 
+if(WIN32)
+	include("${CMAKE_CURRENT_LIST_DIR}/copyDLL.cmake" OPTIONAL)
+endif()
+
 if(NOT TARGET remake2d::remake2d AND TARGET remake2d)
     add_library(remake2d::remake2d ALIAS remake2d)
 endif()
