@@ -311,20 +311,18 @@ target_compile_definitions(
         SDL_MAIN_HANDLED
 )
 
-if(BUILD_SHARED_LIBS)
-	target_link_libraries(
-	    remake2d
-	    PRIVATE
-	        remakeEXT
-	        remakeScript
-	        SDL2::SDL2
-	        SDL2_ttf::SDL2_ttf
-	        SDL2_image::SDL2_image
-	        SDL2_mixer::SDL2_mixer
-			$<$<CXX_COMPILER_ID:GNU>:atomic>
-	        ${CMAKE_DL_LIBS}
-	)
-endif()
+target_link_libraries(
+	remake2d
+	PRIVATE
+		remakeEXT
+		remakeScript
+		SDL2::SDL2
+		SDL2_ttf::SDL2_ttf
+		SDL2_image::SDL2_image
+		SDL2_mixer::SDL2_mixer
+		$<$<CXX_COMPILER_ID:GNU>:atomic>
+		${CMAKE_DL_LIBS}
+)
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

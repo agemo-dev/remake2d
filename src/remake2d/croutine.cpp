@@ -28,11 +28,8 @@ ThreadWorker::ThreadWorker(void) {
 }
 
 ThreadWorker::~ThreadWorker(void) {
-    {
-        std::lock_guard lock(m_mtx);
-        m_running = false;
-    }
-    m_cv.notify_all();
+	std::lock_guard lock(m_mtx);
+	m_running = false;
 }
 
 void ThreadWorker::submit(_CroutineEntry entry) {
