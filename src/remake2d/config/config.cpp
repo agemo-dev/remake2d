@@ -1,6 +1,5 @@
 #include <remake2d/config/config.hpp>
 #include <remake2d/sound.hpp>
-#include <remake2d/script.hpp>
 
 #if __has_include(<SDL2/SDL.h>)
     #include <SDL2/SDL.h>
@@ -48,25 +47,6 @@ void initSDL(void) {
     }
 }
 } //namespace system
-
-
-namespace solstat {
-void initLua(void) noexcept {
-    auto& table = script.m_table;
-    
-    initLuaType();
-    initLuaClass();
-    initLuaSignal();
-    initLuaEntity();
-    initLuaEvent(table);
-    initLuaGlobal(table);
-    initLuaUtility(table);
-    initLuaSingleton(table);
-    
-    script.m_is_init = true;
-}
-} //namespace solstat
-
 
 namespace sound {
 void initQueue(void) noexcept {

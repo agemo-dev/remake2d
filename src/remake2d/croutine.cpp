@@ -28,7 +28,11 @@ ThreadWorker::ThreadWorker(void) {
 }
 
 ThreadWorker::~ThreadWorker(void) {
-    stop();
+    {
+        std::lock_guard lock(m_mtx);
+        m_running = false;
+    }
+    m_cv.notify_all();
 }
 
 void ThreadWorker::submit(_CroutineEntry entry) {
@@ -43,7 +47,7 @@ void ThreadWorker::stop(void) {
         m_running = false;
     }
     m_cv.notify_all();
-    if (m_thread.joinable()) m_thread.join();
+	if (m_thread.joinable()) m_thread.join();
 }
 
 bool ThreadWorker::idle(void) {

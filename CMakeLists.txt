@@ -222,10 +222,14 @@ if(TERMUX_BUILD)
 endif()
 
 file(GLOB_RECURSE REMAKE2D_SRC src/remake2d/*.cpp)
-file(GLOB_RECURSE REMAKE2D_SCRIPTING_SRC src/remake2d/config/solstat/*.cpp)
+file(GLOB_RECURSE REMAKE2D_SCRIPTING_SRC src/remake2d/config/script/*.cpp)
 list(REMOVE_ITEM REMAKE2D_SRC ${REMAKE2D_SCRIPTING_SRC})
+list(REMOVE_ITEM REMAKE2D_SRC ${CMAKE_SOURCE_DIR}/src/remake2d/script.cpp)
 
-add_library(remakeScript STATIC ${REMAKE2D_SCRIPTING_SRC})
+add_library(remakeScript STATIC
+	${REMAKE2D_SCRIPTING_SRC}
+	${CMAKE_SOURCE_DIR}/src/remake2d/script.cpp
+)
 
 target_include_directories(
     remakeScript
@@ -307,18 +311,20 @@ target_compile_definitions(
         SDL_MAIN_HANDLED
 )
 
-target_link_libraries(
-    remake2d
-    PRIVATE
-        remakeEXT
-        remakeScript
-        SDL2::SDL2
-        SDL2_ttf::SDL2_ttf
-        SDL2_image::SDL2_image
-        SDL2_mixer::SDL2_mixer
-		$<$<CXX_COMPILER_ID:GNU>:atomic>
-        ${CMAKE_DL_LIBS}
-)
+if(BUILD_SHARED_LIBS)
+	target_link_libraries(
+	    remake2d
+	    PRIVATE
+	        remakeEXT
+	        remakeScript
+	        SDL2::SDL2
+	        SDL2_ttf::SDL2_ttf
+	        SDL2_image::SDL2_image
+	        SDL2_mixer::SDL2_mixer
+			$<$<CXX_COMPILER_ID:GNU>:atomic>
+	        ${CMAKE_DL_LIBS}
+	)
+endif()
 
 if(WIN32)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
