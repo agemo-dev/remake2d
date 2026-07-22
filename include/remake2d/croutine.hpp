@@ -37,15 +37,14 @@ class CroutinePool;
 class CroutineBase;
 
 struct Task {
-
 public:
     struct promise_type {
         void unhandled_exception(void);
-        void return_void(void) 					  noexcept;
-        Task get_return_object(void) 			  noexcept;
-        std::suspend_always final_suspend(void)   noexcept;
-        std::suspend_always initial_suspend(void) noexcept;
-        std::suspend_always yield_value(_pause_t) noexcept;
+        void return_void(void)                    noexcept;
+        Task get_return_object(void)               noexcept;
+        std::suspend_always final_suspend(void)    noexcept;
+        std::suspend_always initial_suspend(void)  noexcept;
+        std::suspend_always yield_value(_pause_t)  noexcept;
     };
 
 public:
@@ -83,23 +82,30 @@ CroutineBase* self(void) noexcept;
 
 class ThreadWorker {
 private:
-    std::jthread                 m_thread;
+	// m_thread must remain the last member declared here. 
+	// Members are destroyed in the reverse order of their declaration: 
+	// by placing it last, it is destroyed first, which guarantees 
+	// that the thread is stopped/joined before m_mtx/m_cv/m_queue are destroyed.
     std::queue<_CroutineEntry>   m_queue;
     std::mutex                   m_mtx;
     std::condition_variable_any  m_cv;
-    bool   					     m_running{true};
-    u64    			   		     m_id{_thread_id_counter += 1};
-    std::atomic<u8>    		     m_count{0};
+    bool                         m_running{true};
+    u64                          m_id{_thread_id_counter += 1};
+    std::atomic<u8>              m_count{0};
+    std::jthread                 m_thread;
+
 public:
     ThreadWorker(void);
+    ~ThreadWorker(void);
+    ThreadWorker(const ThreadWorker&)            = delete;
+    ThreadWorker& operator=(const ThreadWorker&) = delete;
+
     void submit(_CroutineEntry);
+    void stop(void);
     bool idle(void);
     u32  count(void) const noexcept;
     u64  ID(void)    const noexcept;
-    void stop(void);
-    ~ThreadWorker(void);
-    ThreadWorker(const ThreadWorker&) = delete;
-    ThreadWorker& operator=(const ThreadWorker&) = delete;
+
 private:
     void _loop(std::stop_token);
 };
@@ -111,15 +117,18 @@ private:
     std::vector<std::unique_ptr<ThreadWorker>> m_user;
     u32                m_max_user;
     mutable std::mutex m_user_mtx;
+
     CroutinePool(void);
-    CroutinePool(const CroutinePool&) = delete;
+    CroutinePool(const CroutinePool&)            = delete;
     CroutinePool& operator=(const CroutinePool&) = delete;
+
 public:
     static CroutinePool& getInstance(void);
-    void submit(_CroutineEntry entry, croutine::priority p);
-    void submitHandle(std::coroutine_handle<> h, CroutineBase* owner);
+    void submit(_CroutineEntry, croutine::priority);
+    void submitHandle(std::coroutine_handle<>, CroutineBase*);
+
 private:
-    void _submitUser(_CroutineEntry entry);
+    void _submitUser(_CroutineEntry);
 };
 
 inline CroutinePool& croutinePool = CroutinePool::getInstance();
@@ -134,15 +143,15 @@ protected:
     u64    m_coro_id{_croutine_id_counter += 1};
 
 public:
-    void stop(void) 		 noexcept override;
-    void wait(void) 		 noexcept override;
-    void resume(void) 		 noexcept override;
+    void stop(void)          noexcept override;
+    void wait(void)          noexcept override;
+    void resume(void)        noexcept override;
     bool isRunning(void)     noexcept override;
     u64  ID(void)      const noexcept override;
     u64  majorID(void) const noexcept override;
 
-    void isHeavy(bool)  			  noexcept;
-    void isEngine(bool) 			  noexcept;
+    void isHeavy(bool)                noexcept;
+    void isEngine(bool)               noexcept;
     void priority(croutine::priority) noexcept;
 
     auto operator co_await(void) noexcept;

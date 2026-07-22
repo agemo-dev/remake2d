@@ -120,37 +120,6 @@ jobs:
           export SDL_RENDER_DRIVER=software
           "${{ github.workspace }}/smoke/build/compile_test"
 
-      - name: Copy runtime DLLs (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Copy-Item "${{ github.workspace }}\install\bin\*.dll" -Destination "${{ github.workspace }}\smoke\build\" -ErrorAction SilentlyContinue
-
-      - name: Diagnose install output (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Write-Host "=== install/bin ==="
-          Get-ChildItem "${{ github.workspace }}\install\bin" -ErrorAction SilentlyContinue
-          Write-Host "=== install/lib ==="
-          Get-ChildItem "${{ github.workspace }}\install\lib" -ErrorAction SilentlyContinue
-          Write-Host "=== smoke/build contents ==="
-          Get-ChildItem "${{ github.workspace }}\smoke\build" -ErrorAction SilentlyContinue
-          Write-Host "=== compile_test.exe DLL dependencies (objdump) ==="
-          $exePath = Join-Path "${{ github.workspace }}" "smoke\build\compile_test.exe"
-          & objdump -p $exePath | Select-String "DLL Name"
-          Write-Host "=== libremake2d.dll DLL dependencies (objdump) ==="
-          $dllPath = Join-Path "${{ github.workspace }}" "smoke\build\libremake2d.dll"
-          & objdump -p $dllPath | Select-String "DLL Name"
-          Write-Host "=== libwinpthread-1.dll present in mingw64\bin? ==="
-          Test-Path "C:\mingw64\bin\libwinpthread-1.dll"
-          Write-Host "=== full mingw64\bin runtime DLL listing ==="
-          Get-ChildItem "C:\mingw64\bin" -Filter "*.dll" -ErrorAction SilentlyContinue
-          Write-Host "=== PATH ==="
-          $env:PATH -split ';'
-          Write-Host "=== gcc location ==="
-          Get-Command gcc -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
-
       - name: Run compile test (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

@@ -80,13 +80,14 @@ cd remake2d
 mkdir build && cd build
 cmake ..
 cmake --build .
+cmake --install .
 ```
 
-**Requirements:** C++20 — CMake 3.22+
+**Requirements:** C++20 — CMake 3.32+
 
 All other dependencies are fetched automatically via CMake FetchContent if not already installed.
 
-**Fetched automatically:** SDL2 2.28.5+ — SDL_image 2.8.2+ — SDL_mixer 2.8+ — SDL_ttf 2.20.2+
+**Fetched automatically:** SDL2 2.28.11 — SDL_image 2.8.6 — SDL_mixer 2.8.2 — SDL_ttf 2.24.0
 
 ---
 

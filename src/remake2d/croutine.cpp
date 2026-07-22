@@ -12,7 +12,7 @@ Task Task::promise_type::get_return_object(void) noexcept {
     return Task{std::coroutine_handle<Task::promise_type>::from_promise(*this)};
 }
 std::suspend_always Task::promise_type::initial_suspend(void) noexcept { return {}; }
-std::suspend_always Task::promise_type::final_suspend(void) noexcept { return {}; }
+std::suspend_always Task::promise_type::final_suspend(void)   noexcept { return {}; }
 void Task::promise_type::return_void(void) noexcept {}
 void Task::promise_type::unhandled_exception(void) { std::terminate(); }
 std::suspend_always Task::promise_type::yield_value(_pause_t) noexcept { return {}; }
@@ -22,16 +22,28 @@ Task::Task(Task&& o) noexcept : handle(std::exchange(o.handle, {})) {}
 Task::~Task(void) { if (handle) handle.destroy(); }
 
 ThreadWorker::ThreadWorker(void) {
-    m_thread = std::jthread(
-		[this](std::stop_token token) {
-			_loop(token);
-	});
+    m_thread = std::jthread([this](std::stop_token token) {
+        _loop(token);
+    });
+}
+
+ThreadWorker::~ThreadWorker(void) {
+    stop();
 }
 
 void ThreadWorker::submit(_CroutineEntry entry) {
     m_queue.push(entry);
     m_count.fetch_add(1);
     m_cv.notify_one();
+}
+
+void ThreadWorker::stop(void) {
+    {
+        std::lock_guard lock(m_mtx);
+        m_running = false;
+    }
+    m_cv.notify_all();
+    if (m_thread.joinable()) m_thread.join();
 }
 
 bool ThreadWorker::idle(void) {
@@ -46,24 +58,15 @@ u64 ThreadWorker::ID(void) const noexcept {
     return m_id;
 }
 
-void ThreadWorker::stop(void) {
-    m_running = false;
-    m_cv.notify_all();
-    if (m_thread.joinable()) m_thread.join();
-}
-
 void ThreadWorker::_loop(std::stop_token token) {
-	if (!m_running) return;
-	
-    while (!token.stop_requested()) {
-        _CroutineEntry entry;
-		
+    while (true) {
+        _CroutineEntry entry{};
         {
             std::unique_lock lock(m_mtx);
-            m_cv.wait(lock, token, [this]{
+            const bool ready = m_cv.wait(lock, token, [this] {
                 return !m_queue.empty() || !m_running;
             });
-            if (!m_running) return;
+            if (!ready || !m_running || m_queue.empty()) return;
             entry = m_queue.front();
             m_queue.pop();
         }
@@ -90,11 +93,6 @@ void ThreadWorker::_loop(std::stop_token token) {
 
         m_count.fetch_sub(1);
     }
-}
-
-ThreadWorker::~ThreadWorker(void) {
-	m_running = false;
-	m_thread.request_stop();
 }
 
 CroutinePool::CroutinePool(void) {
@@ -151,4 +149,4 @@ void CroutinePool::_submitUser(_CroutineEntry entry) {
     best->submit(entry);
 }
 
-} // namespace rmk
+} // namespace remake2d
