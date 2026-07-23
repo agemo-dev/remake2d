@@ -377,7 +377,7 @@ int Signal<Args...>::count(void) const {
 }
 
 template<typename... Args>
-void Signal<Args...>::reserve(int size) {
+void Signal<Args...>::reserve(i32 size) {
     m_connected_funcs.reserve(size);
     m_prioritary_funcs.reserve(size);
     m_connected_slots.reserve(size);

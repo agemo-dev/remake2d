@@ -229,6 +229,7 @@ void System::_init(void) {
 }
 
 void System::init(void) {
+	m_instance++;
     if(!m_is_init) _init();
 }
 
@@ -236,12 +237,22 @@ bool System::isInit(void) {
     return m_is_init;
 }
 
-System::~System(void) {
+void System::quit(void) noexcept{
+	m_instance--;
+	if (!m_is_init || !m_instance) return;
+	
     Mix_CloseAudio();
     IMG_Quit();
     TTF_Quit();
     Mix_Quit();
     SDL_Quit();
+
+	croutinePool.stopAll();
+	m_is_init = false;
+}
+
+System::~System(void) {
+	quit();
 }
 
 } // namespace rmk

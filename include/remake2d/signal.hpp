@@ -154,7 +154,7 @@ public:
     void stop(void);
     void start(void);
     int count(void) const;
-    void reserve(int size);
+    void reserve(i32);
 
 protected:
     void _dispatch(void) override;

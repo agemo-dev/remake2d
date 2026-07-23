@@ -4,8 +4,10 @@
 #include <remake2d/shape.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/color.hpp>
+#include <remake2d/system.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/config/resource.hpp>
 
 #include <map>
 #include <string>
@@ -33,25 +35,6 @@ class Window;
 
 
 class TextureBase {
-
-protected:
-    struct _Surface {
-    public:
-        SDL_Surface* data{nullptr};
-    
-    public:
-        _Surface(void)							= default;
-        _Surface(_Surface&&)					= default;
-        _Surface(const _Surface&)				= default;
-        _Surface& operator=(_Surface&&)			= default;
-        _Surface& operator=(const _Surface&)	= default;
-        
-    public:
-        ~_Surface(void) {
-            if(data) SDL_FreeSurface(data);
-        }
-    };
-    
 public:
     TextureBase(void)							= default;
     TextureBase(TextureBase&&)					= default;
@@ -108,7 +91,7 @@ protected:
     Dim2d                                   		m_clip_size{0, 0};
     Dim2d                                   		m_real_size{0, 0};
     std::vector<SDL_Vertex>                 		m_vertices;
-    std::shared_ptr<_Surface>               		m_surface{nullptr};
+    Surface              							m_surface;
     mutable std::map<SDL_Renderer*, TextureData>    m_textures;
 
 protected:

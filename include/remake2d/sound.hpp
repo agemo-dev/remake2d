@@ -3,8 +3,9 @@
 
 #include <remake2d/signal.hpp>
 #include <remake2d/system.hpp>
-#include <remake2d/config/config.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/config/config.hpp>
+#include <remake2d/config/resource.hpp>
 
 #include <array>
 #include <memory>
@@ -58,10 +59,9 @@ private:
 };
 
 class Music : public Sound {
-
 private:
+    MUS 				 m_music;
     inline static Music *m_current_music;
-    std::shared_ptr<Mix_Music> m_music{nullptr};
 
 public:
     Music(std::string_view, u8 = 64);
@@ -88,12 +88,12 @@ private:
 
 class SFX : public Sound {
 private:
-    std::shared_ptr<Mix_Chunk>      m_sfx{nullptr};
-    u32                             m_channel;
-    
+    CHK       m_sfx;
+    u32       m_channel{0};
+
 private:
     inline static std::queue<u32>                           m_free_channels;
-    inline static std::array<SFX*, (size_t)channel::max>    m_channel_owners;
+    inline static std::array<SFX*, (usize)channel::max>     m_channel_owners;
 
 public:
     SFX(std::string_view, u8 = 64);

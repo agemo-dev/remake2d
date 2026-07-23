@@ -8,14 +8,13 @@ namespace rmk {
 template<IsShape S>
 Texture<S>::Texture(std::string_view path, const S& shape)
     : m_shape(shape) {
-    m_surface = std::make_shared<_Surface>();
-    m_surface->data = IMG_Load(std::string(path).c_str());
-    if (!m_surface->data) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::surface_no_load) + " : " + IMG_GetError()));
+    m_surface.data = IMG_Load(path.data());
+    if (!m_surface.data) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::surface_no_load) + " : " + IMG_GetError()));
     m_shape.m_is_changed = true;
-    m_real_size = { (f32)m_surface->data->w, (f32)m_surface->data->h };
+    m_real_size = { (f32)m_surface.data->w, (f32)m_surface.data->h };
     for(auto& e : xwindow.m_windows) {
         TextureData td;
-        td.texture = SDL_CreateTextureFromSurface(e->m_renderer, m_surface->data);
+        td.texture = SDL_CreateTextureFromSurface(e->m_renderer, m_surface.data);
         if (!td.texture) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + SDL_GetError()));
         m_textures[e->m_renderer] = td;
     }
@@ -144,7 +143,7 @@ void Texture<S>::_copy(const Texture<S>& other) noexcept {
     this->m_srcrect    = other.m_srcrect;
     for (auto& [renderer, data] : other.m_textures) {
         TextureData td;
-        td.texture = SDL_CreateTextureFromSurface(renderer, this->m_surface->data);
+        td.texture = SDL_CreateTextureFromSurface(renderer, this->m_surface.data);
         td.current_color = rmk::color::white;
         this->m_textures[renderer] = td;
     }

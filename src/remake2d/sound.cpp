@@ -17,8 +17,9 @@ i8 Sound::playFor(void) const noexcept {
 
 Music::Music(std::string_view path, u8 volume) {
     std::string temp(path);
-    m_music = std::shared_ptr<Mix_Music>(Mix_LoadMUS(temp.c_str()), [](Mix_Music *m) { Mix_FreeMusic(m); });
-    if(!m_music.get()) rmk_dynamicAssert(rmk::SoundError, (std::string(error::sound::sound_no_load) + " : " + Mix_GetError()));
+	m_music.data = Mix_LoadMUS(temp.c_str());
+	
+    if(!m_music.data) rmk_dynamicAssert(rmk::SoundError, (std::string(error::sound::sound_no_load) + " : " + Mix_GetError()));
     m_is_playing = false;
     this->volume(volume);
 }
@@ -32,7 +33,7 @@ void Music::play(i8 loop) {
     if(m_current_music && m_current_music != this) m_current_music->stop();
     m_current_music = this;
     Mix_HaltMusic();
-    Mix_PlayMusic(m_music.get(), loop < -1 ? -1 : loop);
+    Mix_PlayMusic(m_music.data, loop < -1 ? -1 : loop);
     Mix_VolumeMusic(m_volume);
     m_loops_remaining = loop == 0 ? 0 : loop - 1;
     m_is_playing = true;
@@ -69,8 +70,9 @@ SFX::SFX(std::string_view path, u8 volume) {
     m_is_playing = false;
     std::string temp(path);
     config::sound::initQueue();
-    m_sfx = std::shared_ptr<Mix_Chunk>(Mix_LoadWAV(temp.c_str()), [](Mix_Chunk *c) { Mix_FreeChunk(c); });
-    if(!m_sfx.get()) rmk_dynamicAssert(rmk::SoundError, (std::string(error::sound::sound_no_load) + " : " + Mix_GetError()));
+	m_sfx.data = Mix_LoadWAV(temp.c_str());
+	
+    if(!m_sfx.data) rmk_dynamicAssert(rmk::SoundError, (std::string(error::sound::sound_no_load) + " : " + Mix_GetError()));
     this->volume(volume);
 }
 
@@ -86,7 +88,7 @@ void SFX::play(i8 loop) {
     m_loops_remaining = loop == 0 ? 0 : loop - 1;
     m_channel_owners[m_channel] = this;
     Mix_Volume(m_channel, m_volume);
-    Mix_PlayChannel(m_channel, m_sfx.get(), loop < -1 ? -1 : loop);
+    Mix_PlayChannel(m_channel, m_sfx.data, loop < -1 ? -1 : loop);
     m_is_playing = true;
 }
 

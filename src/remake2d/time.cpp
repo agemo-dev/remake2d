@@ -1,5 +1,6 @@
 #include <remake2d/time.hpp>
 #include <remake2d/error.hpp>
+#include <remake2d/system.hpp>
 #include <remake2d/croutine.hpp>
 
 #include <map>
@@ -139,8 +140,8 @@ Timer::Timer(void) {
 }
 
 Timer::Timer(fmax l) : m_limit(l < 0 ? 0 : l) {
+	rmk::system.init();
 	timer._registerTimer(this);
-	
 	if(timer.m_routine_started.load()) return;
 	timer.m_routine.run();
 	timer.m_routine_started.store(true);
@@ -240,6 +241,7 @@ fmax Timer::elapsedTime(void) const noexcept {
 
 Timer::~Timer(void) {
 	timer._unregisterTimer(this);
+	rmk::system.quit();
 }
 
 TimerManager::TimerManager(void) {

@@ -24,6 +24,10 @@ void MainRenderLoop::update(void) noexcept {
         physics.update();
         animation.update();
         
+
+
+
+
         for (auto& win : xwindow.m_windows) win->clear();
         exec();
         for (auto& win : xwindow.m_windows) win->present();

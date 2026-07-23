@@ -22,7 +22,7 @@ Window::Window(void) : Window("RE:MAKE 2D") {}
 Window::Window(std::string_view name, Vec2d pos, Dim2d size) : m_title(name), m_size(size) {
     int x, y;
 	
-    if(!system.m_is_init) system._init();
+    rmk::system.init();
 	
     m_window = SDL_CreateWindow(name.data(), pos.x, pos.y, size.w, size.h, SDL_WINDOW_SHOWN);
     if(!m_window) rmk_dynamicAssert(rmk::WindowError, (std::string(error::window::window_no_create) + " : " + SDL_GetError()));
@@ -139,6 +139,7 @@ void Window::close(void) noexcept {
 
 Window::~Window(void) {
     close();
+	rmk::system.quit();
 }
 
 

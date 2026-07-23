@@ -58,6 +58,7 @@ public:
 
 private:
     bool        m_is_init{false};
+	u32			m_instance{0};
     u32         m_channel_count{0};
     SDL_bool    m_relative_mouse_mode{SDL_FALSE};
 
@@ -69,6 +70,9 @@ private:
 public:
     void init(void);
     bool isInit(void);
+	void quit(void) noexcept;
+
+public:
     static System &getInstance(void) noexcept;
     
 private:
@@ -84,7 +88,6 @@ public:
     friend class SFX;
     friend void config::solstat::initLuaSingleton(sol::table&) noexcept;
 };
-
 
 namespace orientation {
 inline constexpr const char *normal     = "Portrait";

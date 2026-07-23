@@ -97,19 +97,24 @@ void ThreadWorker::_loop(std::stop_token token) {
     }
 }
 
-CroutinePool::CroutinePool(void) {
-    m_engine   = std::make_unique<ThreadWorker>();
+
+CroutinePool& CroutinePool::getInstance(void) {
+    static CroutinePool instance;
+    return instance;
+}
+
+void CroutinePool::start(void) {
+	if (m_is_init) return;
+
+	m_engine   = std::make_unique<ThreadWorker>();
     m_heavy    = std::make_unique<ThreadWorker>();
     m_max_user = std::max(1u, std::thread::hardware_concurrency());
 
     u32 initial = std::max(1u, m_max_user / 4u);
     for (u32 i = 0; i < initial; i++)
         m_user.emplace_back(std::make_unique<ThreadWorker>());
-}
 
-CroutinePool& CroutinePool::getInstance(void) {
-    static CroutinePool instance;
-    return instance;
+	m_is_init = true;
 }
 
 void CroutinePool::submit(_CroutineEntry entry, croutine::priority p) {
@@ -149,6 +154,16 @@ void CroutinePool::_submitUser(_CroutineEntry entry) {
     }
 
     best->submit(entry);
+}
+
+void CroutinePool::stopAll(void) {
+    if (m_engine) m_engine->stop();
+    if (m_heavy)  m_heavy->stop();
+
+    std::lock_guard lock(m_user_mtx);
+    for (auto& w : m_user) {
+        if (w) w->stop();
+    }
 }
 
 } // namespace remake2d

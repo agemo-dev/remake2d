@@ -79,6 +79,7 @@ void Croutine<Args...>::run(Args... args) {
     this->m_stopped = false;
     this->m_running = true;
     this->m_task.emplace(m_function(std::forward<Args>(args)...));
+	croutinePool.start();
     croutinePool.submit(this->_makeEntry(), this->m_priority);
 }
 
@@ -93,6 +94,7 @@ inline void Croutine<>::run(void) {
     m_stopped = false;
     m_running = true;
     m_task.emplace(m_function());
+	croutinePool.start();
     croutinePool.submit(_makeEntry(), m_priority);
 }
 

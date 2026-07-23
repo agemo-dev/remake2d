@@ -152,9 +152,8 @@ void Text::write(std::string_view text) {
 
     m_current_text  = txt;
 
-    m_surface = std::make_shared<_Surface>();
-    m_surface->data = TTF_RenderUTF8_Blended_Wrapped(m_font, txt.c_str(), color::white._data(), (int)m_max_lengh);
-    if (!m_surface->data) {
+    m_surface.data = TTF_RenderUTF8_Blended_Wrapped(m_font, txt.c_str(), color::white._data(), (int)m_max_lengh);
+    if (!m_surface.data) {
         rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + TTF_GetError()));
     }
 
@@ -162,18 +161,18 @@ void Text::write(std::string_view text) {
     float y = m_anchor_pos.y;
 	
     switch (m_anchor_x) {
-        case anchor::x::left:   x += m_surface->data->w / 2.0f; break;
+        case anchor::x::left:   x += m_surface.data->w / 2.0f; break;
         case anchor::x::center: break;
-        case anchor::x::right:  x -= m_surface->data->w / 2.0f; break;
+        case anchor::x::right:  x -= m_surface.data->w / 2.0f; break;
     }
     switch (m_anchor_y) {
-        case anchor::y::top:    y += m_surface->data->h / 2.0f; break;
+        case anchor::y::top:    y += m_surface.data->h / 2.0f; break;
         case anchor::y::middle: break;
-        case anchor::y::bottom: y -= m_surface->data->h / 2.0f; break;
+        case anchor::y::bottom: y -= m_surface.data->h / 2.0f; break;
     }
 
     m_shape.move({x, y});
-    m_shape.resize({(f32)m_surface->data->w, (f32)m_surface->data->h});
+    m_shape.resize({(f32)m_surface.data->w, (f32)m_surface.data->h});
 
     for (auto& [renderer, data] : m_textures) {
         if (data.texture) SDL_DestroyTexture(data.texture);
@@ -181,7 +180,7 @@ void Text::write(std::string_view text) {
     m_textures.clear();
 
     for (auto& win : xwindow.m_windows) {
-        SDL_Texture* tex = SDL_CreateTextureFromSurface(win->m_renderer, m_surface->data);
+        SDL_Texture* tex = SDL_CreateTextureFromSurface(win->m_renderer, m_surface.data);
         if (tex) {
             TextureData td;
             td.texture = tex;

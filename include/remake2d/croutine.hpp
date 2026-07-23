@@ -114,18 +114,26 @@ public:
 
 class CroutinePool {
 private:
+    mutable std::mutex m_user_mtx;
+    bool               m_is_init{false};
+    u32                m_max_user;
+
+private:
     std::unique_ptr<ThreadWorker>              m_engine;
     std::unique_ptr<ThreadWorker>              m_heavy;
     std::vector<std::unique_ptr<ThreadWorker>> m_user;
-    u32                m_max_user;
-    mutable std::mutex m_user_mtx;
 
-    CroutinePool(void);
+private:
+    CroutinePool(void)							 = default;
     CroutinePool(const CroutinePool&)            = delete;
     CroutinePool& operator=(const CroutinePool&) = delete;
 
 public:
     static CroutinePool& getInstance(void);
+
+public:
+	void start(void);
+	void stopAll(void);
     void submit(_CroutineEntry, croutine::priority);
     void submitHandle(std::coroutine_handle<>, CroutineBase*);
 
