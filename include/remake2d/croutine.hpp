@@ -96,7 +96,7 @@ private:
 
 public:
     ThreadWorker(void);
-    ~ThreadWorker(void);
+    ~ThreadWorker(void) = default;
     ThreadWorker(const ThreadWorker&)            = delete;
     ThreadWorker& operator=(const ThreadWorker&) = delete;
 
