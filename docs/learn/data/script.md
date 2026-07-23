@@ -89,6 +89,10 @@ end)
 rmk.loop:update()
 ```
 
+!!! warning
+	Used `variable:method()` or `method(variable)` for methods, and `variable.member` for namespaces (tables) and members .
+	sous peine de causer **segment fault** .
+
 That script can then be run from a minimal C++ entry point, which simply loads and launches the file:
 
 ```cpp

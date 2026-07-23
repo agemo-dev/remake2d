@@ -114,10 +114,12 @@ std::string jump(std::span<std::string_view> paths) noexcept;
 ```
 
 ```cpp
-std::string path = rmk::file::jump({
+std::string_view paths [] = {
     "assets/player.png",
     "fallback/player.png"
-});
+};
+
+std::string path = rmk::file::jump(paths);
 ```
 
 !!! info

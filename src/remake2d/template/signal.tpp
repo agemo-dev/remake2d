@@ -4,33 +4,41 @@
 namespace rmk {
 
 template<typename... Args>
-void SignalManager::_register(std::vector<std::function<void()>>& slot,
-                               Croutine<>& routine,
-                               std::atomic<bool>& started,
-                               Signal<Args...>& sig,
-                               std::function<Task()> run_fn) {
+usize SignalManager::_register(std::vector<std::optional<std::function<void()>>>& slot,
+                                Croutine<>& routine,
+                                std::atomic<bool>& started,
+                                Signal<Args...>& sig,
+                                std::function<Task()> run_fn) {
+    std::lock_guard lock(m_mtx);
+
     slot.emplace_back([&sig]() { 
         std::apply([&sig](auto&&... args) { 
             sig._evaluate(std::forward<decltype(args)>(args)...); 
         }, sig.m_default_args()); 
     });
+    usize idx = slot.size() - 1;
+
     m_all_dispatch.emplace_back([&sig]() { sig._dispatch(); });
+
     if (!started.load()) {
         routine.load(run_fn);
         routine.run();
         started.store(true);
     }
+    return idx;
 }
 
 template<typename... Args>
-void SignalManager::registerUser(Signal<Args...>& sig) {
-    _register(m_slot_user, m_routine_user, m_started_user, sig,
-              [this]() -> Task { return _runUser(); });
+usize SignalManager::registerUser(Signal<Args...>& sig) {
+    return _register(m_slot_user, m_routine_user, m_started_user, sig,
+                      [this]() -> Task { return _runUser(); });
 }
 
 template<typename... Args>
-void SignalManager::registerDispatchOnly(Signal<Args...>& sig) {
+usize SignalManager::registerDispatchOnly(Signal<Args...>& sig) {
+    std::lock_guard lock(m_mtx);
     m_all_dispatch.emplace_back([&sig]() { sig._dispatch(); });
+    return m_all_dispatch.size() - 1;
 }
 
 template<typename... Args>
@@ -309,7 +317,8 @@ void Signal<Args...>::bind(Condition cond, Args... defaultArgs) {
     m_edge_mode = EdgeMode::level;
     m_previous_cond.store(false);
     _refreshState();
-    signalManager.registerUser(*this);
+    m_slot_index = signalManager.registerUser(*this);
+    m_registered_user = true;
 }
 
 
@@ -322,8 +331,8 @@ void Signal<Args...>::bindRising(Condition cond, Args... defaultArgs) {
     m_edge_mode = EdgeMode::rising;
     m_previous_cond.store(false);
     _refreshState();
-    signalManager.registerUser(*this);
-    
+    m_slot_index = signalManager.registerUser(*this);
+    m_registered_user = true;
 }
 
 template<typename... Args>
@@ -335,7 +344,8 @@ void Signal<Args...>::bindFalling(Condition cond, Args... defaultArgs) {
     m_edge_mode = EdgeMode::falling;
     m_previous_cond.store(false);
     _refreshState();
-    signalManager.registerUser(*this);
+    m_slot_index = signalManager.registerUser(*this);
+    m_registered_user = true;
 }
 
 template<typename... Args>
@@ -347,7 +357,8 @@ void Signal<Args...>::bindChange(Condition cond, Args... defaultArgs) {
     m_edge_mode = EdgeMode::both;
     m_previous_cond.store(false);
     _refreshState();
-    signalManager.registerUser(*this);
+    m_slot_index = signalManager.registerUser(*this);
+    m_registered_user = true;
 }
 
 template<typename... Args>
@@ -379,7 +390,7 @@ template<typename... Args>
 void Signal<Args...>::_evaluate(Args... args) {
     
     if (!m_active.load()) return;
-              
+    
     bool cond = m_condition && m_condition();
     bool prev = m_previous_cond.load();
     bool should_emit = false;
@@ -405,6 +416,12 @@ void Signal<Args...>::_dispatch(void) {
 }
 
 template<typename... Args>
+Signal<Args...>::~Signal(void) {
+    if (m_registered_user) signalManager.unregisterUser(m_slot_index);
+    if (m_registered_dispatch) signalManager.unregisterDispatchOnly(m_dispatch_index);
+}
+
+template<typename... Args>
 void _EngineSignal<Args...>::_evaluate(Args... args) {
     this->m_pending_args = std::make_tuple(args...);
     this->m_needs_emit.store(true);
@@ -415,7 +432,8 @@ void _EngineSignal<Args...>::_refreshState(void) {
     bool ready = this->m_count > 0;
     this->m_active.store(ready);
     if (ready && !m_registered) {
-        signalManager.registerDispatchOnly(*this);
+        this->m_dispatch_index = signalManager.registerDispatchOnly(*this);
+        this->m_registered_dispatch = true;
         m_registered = true;
     }
 }

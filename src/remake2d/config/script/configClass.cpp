@@ -47,6 +47,13 @@ void initLuaClass(void) noexcept {
         ut["linkCamera"]     = &Window::linkCamera;
         ut["unlinkCamera"]   = &Window::unlinkCamera;
         ut["draw"] = sol::overload(
+            [](Window& win, TextureBase& tex)  { win.draw(tex); },
+            [](Window& win, TileMap     & tile) { win.draw(tile); },
+            [](Window& win, Parallax    & para) { win.draw(para); },
+            [](Window& win, Area        & a)   { win.draw(a); },
+            [](Window& win, Geometry    & g)   { win.draw(g); },
+            [](Window& win, PhysicBody  & b)   { win.draw(b); },
+            [](Window& win, TileGrid    & g)   { win.draw(g); },
             [](Window& win, TextureBase& tex, Color c)  { win.draw(tex, c); },
             [](Window& win, TileMap     & tile, Color c) { win.draw(tile, c); },
             [](Window& win, Parallax    & para, Color c) { win.draw(para, c); },
@@ -63,6 +70,9 @@ void initLuaClass(void) noexcept {
             [](Window& win, TileGrid    & g, Color c, std::string_view v)   { win.draw(g, c, v); }
         );
         ut["fill"] = sol::overload(
+            [](Window& win, Area        & a)   { win.draw(a); },
+            [](Window& win, Geometry    & g)   { win.draw(g); },
+            [](Window& win, PhysicBody  & b)   { win.draw(b); },
             [](Window& win, Area       & a, Color c)   { win.fill(a, c); },
             [](Window& win, Geometry   & g, Color c)   { win.fill(g, c); },
             [](Window& win, PhysicBody & b, Color c)   { win.fill(b, c); },

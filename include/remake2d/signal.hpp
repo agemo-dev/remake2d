@@ -5,20 +5,14 @@
 #include <remake2d/error.hpp>
 #include <remake2d/croutine.hpp>
 
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-#else
-    #error "SDL not found."
-#endif
+#include <SDL2/SDL.h>
 
 #include <vector>
 #include <mutex>
 #include <atomic>
 #include <tuple>
-#include <utility>
 #include <optional>
+#include <utility>
 #include <algorithm>
 #include <functional>
 
@@ -42,25 +36,27 @@ enum class EdgeMode : u8 {
 
 class SignalManager {
 private:
-    std::vector<std::function<void()>> m_slot_user;
-    Croutine<>                         m_routine_user;
-    std::atomic<bool>                  m_started_user{false};
+    std::vector<std::optional<std::function<void()>>>  m_slot_user;
+    Croutine<>                                         m_routine_user;
+    std::atomic<bool>                                  m_started_user{false};
 
-    std::vector<std::function<void()>> m_all_dispatch;
-    mutable std::mutex                 m_mtx;
+    std::vector<std::optional<std::function<void()>>>  m_all_dispatch;
+    mutable std::mutex                                 m_mtx;
 
 private:
     SignalManager(void);
     Task _runUser(void);
 
     template<typename... Args>
-    void _register(std::vector<std::function<void()>>&, Croutine<>&, std::atomic<bool>&, Signal<Args...>&, std::function<Task()>);
+    usize _register(std::vector<std::optional<std::function<void()>>>&, Croutine<>&, std::atomic<bool>&, Signal<Args...>&, std::function<Task()>);
 
 public:
     void dispatch(void);
     static SignalManager& getInstance(void);
-    template<typename... Args> void registerUser(Signal<Args...>&);
-    template<typename... Args> void registerDispatchOnly(Signal<Args...>&);
+    template<typename... Args> usize registerUser(Signal<Args...>&);
+    template<typename... Args> usize registerDispatchOnly(Signal<Args...>&);
+    void unregisterUser(usize) noexcept;
+    void unregisterDispatchOnly(usize) noexcept;
 
 public:
     friend class DeltaThreadConnector;
@@ -104,6 +100,11 @@ protected:
     std::tuple<Args...>                  m_pending_args;
     std::atomic<bool>                    m_previous_cond{false};
     EdgeMode                             m_edge_mode{EdgeMode::level};
+
+    usize m_slot_index{(usize)-1};
+    usize m_dispatch_index{(usize)-1};
+    bool  m_registered_user{false};
+    bool  m_registered_dispatch{false};
 
 public:
     Signal(void) = default;
@@ -166,7 +167,7 @@ private:
     template<typename...> friend class Croutine;
 
 public:
-    virtual ~Signal(void) = default;
+    virtual ~Signal(void);
 };
 
 template<typename... Args>

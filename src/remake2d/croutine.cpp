@@ -28,8 +28,12 @@ ThreadWorker::ThreadWorker(void) {
 }
 
 ThreadWorker::~ThreadWorker(void) {
-	std::lock_guard lock(m_mtx);
-	m_running = false;
+	{
+		std::lock_guard lock(m_mtx);
+		m_running = false;
+	}
+	m_thread.request_stop();
+	m_cv.notify_all();
 }
 
 void ThreadWorker::submit(_CroutineEntry entry) {
@@ -60,7 +64,7 @@ u64 ThreadWorker::ID(void) const noexcept {
 }
 
 void ThreadWorker::_loop(std::stop_token token) {
-    while (true) {
+    while (!token.stop_requested()) {
         _CroutineEntry entry{};
         {
             std::unique_lock lock(m_mtx);

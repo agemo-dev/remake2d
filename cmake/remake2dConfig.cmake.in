@@ -19,7 +19,7 @@ endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/remake2dTargets.cmake" OPTIONAL)
 
-if(WIN32)
+if(WIN32 AND REMAKE2D_BUILD_SHARED_LIBS)
 	include("${CMAKE_CURRENT_LIST_DIR}/copyDLL.cmake" OPTIONAL)
 endif()
 
