@@ -96,7 +96,6 @@ private:
 
 public:
     ThreadWorker(void);
-    ~ThreadWorker(void) = default;
     ThreadWorker(const ThreadWorker&)            = delete;
     ThreadWorker& operator=(const ThreadWorker&) = delete;
 
@@ -108,6 +107,9 @@ public:
 
 private:
     void _loop(std::stop_token);
+
+public:¬
+    ~ThreadWorker(void);
 };
 
 class CroutinePool {

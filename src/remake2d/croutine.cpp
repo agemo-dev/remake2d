@@ -26,16 +26,13 @@ ThreadWorker::ThreadWorker(void) {
         _loop(token);
     });
 }
-/*
+
 ThreadWorker::~ThreadWorker(void) {
-	{
-		std::lock_guard lock(m_mtx);
-		m_running = false;
-	}
+	m_running = false;
 	m_thread.request_stop();
 	m_cv.notify_all();
 }
-*/
+
 void ThreadWorker::submit(_CroutineEntry entry) {
     m_queue.push(entry);
     m_count.fetch_add(1);
