@@ -108,7 +108,7 @@ public:
 private:
     void _loop(std::stop_token);
 
-public:¬
+public:
     ~ThreadWorker(void);
 };
 
