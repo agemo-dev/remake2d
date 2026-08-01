@@ -1,0 +1,16 @@
+************************************************************************
+============================= PATCH FILE ===============================
+************************************************************************
+
+[!] THIS FILE EXPOSES ALL MANUAL CHANGES MADE TO DEPENDENCY FILES.
+[!] PATCHES DONE WITH CMAKE ARE NOT INCLUDED.
+
+VERSION: v1.0.0
+REASON: Clean up unused source files to prevent compilation conflicts.
+
+changed file: none
+
+removed files:
+	- lua.c
+	- luac.c
+	- makefile

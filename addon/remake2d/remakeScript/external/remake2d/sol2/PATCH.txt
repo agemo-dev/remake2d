@@ -1,0 +1,14 @@
+************************************************************************
+============================= PATCH FILE ===============================
+************************************************************************
+
+[!] THIS FILE EXPOSES ALL MANUAL CHANGES MADE TO DEPENDENCY FILES.
+[!] PATCHES DONE WITH CMAKE ARE NOT INCLUDED.
+
+VERSION: v1.0.0
+REASON: set include file directories to match .
+
+changed file:
+	- sol.hpp
+	
+removed files: none

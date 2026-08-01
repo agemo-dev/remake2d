@@ -1,0 +1,47 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+set(REMAKE2D_TERMUX_BUILD @TERMUX_BUILD@)
+set(REMAKE2D_BUILD_REMAKE_SCRIPT @BUILD_REMAKE_SCRIPT@)
+
+find_dependency(SDL2)
+find_dependency(SDL2_ttf)
+find_dependency(SDL2_image)
+find_dependency(SDL2_mixer)
+
+include("${CMAKE_CURRENT_LIST_DIR}/remake2dTargets.cmake" OPTIONAL)
+
+if(NOT TARGET remake2d::remake2d AND TARGET remake2d)
+    add_library(remake2d::remake2d ALIAS remake2d)
+endif()
+
+set(remake2d_Script_FOUND FALSE)
+if(REMAKE2D_BUILD_REMAKE_SCRIPT)
+    include("${CMAKE_CURRENT_LIST_DIR}/remakeScriptTargets.cmake" OPTIONAL)
+    if(TARGET remake2d::remakeScript)
+        set(remake2d_Script_FOUND TRUE)
+    endif()
+endif()
+
+if("All" IN_LIST remake2d_FIND_COMPONENTS)
+    set(remake2d_All_FOUND TRUE)
+    if(remake2d_Script_FOUND)
+        list(APPEND remake2d_FIND_COMPONENTS Script)
+    endif()
+    list(REMOVE_ITEM remake2d_FIND_COMPONENTS All)
+    list(REMOVE_DUPLICATES remake2d_FIND_COMPONENTS)
+endif()
+
+function(_remake2d_link_component component target)
+    if(remake2d_${component}_FOUND AND "${component}" IN_LIST remake2d_FIND_COMPONENTS)
+        get_target_property(_remake2d_linked remake2d::remake2d INTERFACE_LINK_LIBRARIES)
+        if(NOT _remake2d_linked OR NOT "${target}" IN_LIST _remake2d_linked)
+            set_property(TARGET remake2d::remake2d APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${target})
+        endif()
+    endif()
+endfunction()
+
+_remake2d_link_component(Script remake2d::remakeScript)
+
+check_required_components(remake2d)

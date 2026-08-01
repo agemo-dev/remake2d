@@ -1,0 +1,160 @@
+name: REMAKE2D - CI Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: REMAKE2D-${{ matrix.os }}-${{ matrix.mode }}-${{ matrix.type }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        mode: [Release, Debug]
+        type: [static, shared]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: lukka/get-cmake@latest
+      - uses: seanmiddleditch/gha-setup-ninja@master
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/build/_deps
+          key: REMAKE2D-${{ matrix.os }}-${{ matrix.mode }}-deps-cache
+
+      - name: Configure CMake Shared (Unix)
+        if: runner.os != 'Windows' && matrix.type == 'shared'
+        run: >
+          cmake -B "${{ github.workspace }}/build"
+          -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
+          -DBUILD_SHARED_LIBS=ON
+          -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install"
+          -G Ninja
+
+      - name: Configure CMake Static (Unix)
+        if: runner.os != 'Windows' && matrix.type == 'static'
+        run: >
+          cmake -B "${{ github.workspace }}/build"
+          -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
+          -DBUILD_SHARED_LIBS=OFF
+          -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install"
+          -G Ninja
+
+      - name: Configure CMake Shared (Windows)
+        if: runner.os == 'Windows' && matrix.type == 'shared'
+        run: >
+          cmake -B "${{ github.workspace }}/build"
+          -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
+          -DBUILD_SHARED_LIBS=ON
+          -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install"
+          -G Ninja
+
+      - name: Configure CMake Static (Windows)
+        if: runner.os == 'Windows' && matrix.type == 'static'
+        run: >
+          cmake -B "${{ github.workspace }}/build"
+          -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
+          -DBUILD_SHARED_LIBS=OFF
+          -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install"
+          -G Ninja
+
+      - name: Build Library
+        run: cmake --build "${{ github.workspace }}/build" --config ${{ matrix.mode }}
+
+      - name: Install Library
+        run: cmake --install "${{ github.workspace }}/build" --config ${{ matrix.mode }}
+
+      - name: Generate compile test (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p "${{ github.workspace }}/smoke"
+          cat > "${{ github.workspace }}/smoke/compile.cpp" << 'EOF'
+          #include <remake2d/system.hpp>
+          #include <iostream>
+
+          int main(void) {
+              rmk::system.init();
+              std::cout << "built success - plateform name : " << rmk::system.info.platform() << std::endl;
+              rmk::system.quit();
+              return 0;
+          }
+          EOF
+
+      - name: Generate compile test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\smoke"
+          @'
+          #include <remake2d/system.hpp>
+          #include <iostream>
+
+          int main(void) {
+              rmk::system.init();
+              std::cout << "built success - plateform name : " << rmk::system.info.platform() << std::endl;
+              rmk::system.quit();
+              return 0;
+          }
+          '@ | Set-Content -Path "${{ github.workspace }}\smoke\compile.cpp"
+
+      - name: Write smoke CMakeLists
+        shell: bash
+        run: |
+          cat > "${{ github.workspace }}/smoke/CMakeLists.txt" << 'EOF'
+          cmake_minimum_required(VERSION 3.32)
+          project(remake2d_smoke LANGUAGES CXX)
+          set(CMAKE_CXX_STANDARD 20)
+          set(CMAKE_CXX_STANDARD_REQUIRED ON)
+          find_package(remake2d REQUIRED)
+          add_executable(compile_test compile.cpp)
+          target_link_libraries(compile_test PRIVATE remake2d::remake2d)
+          EOF
+
+      - name: Configure compile test (Unix)
+        if: runner.os != 'Windows'
+        run: >
+          cmake -S "${{ github.workspace }}/smoke" -B "${{ github.workspace }}/smoke/build"
+          -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
+          -DCMAKE_PREFIX_PATH="${{ github.workspace }}/install"
+          -G Ninja
+
+      - name: Configure compile test (Windows)
+        if: runner.os == 'Windows'
+        run: >
+          cmake -S "${{ github.workspace }}/smoke" -B "${{ github.workspace }}/smoke/build"
+          -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
+          -DCMAKE_PREFIX_PATH="${{ github.workspace }}/install"
+          -G Ninja
+
+      - name: Build compile test
+        run: cmake --build "${{ github.workspace }}/smoke/build" --config ${{ matrix.mode }}
+
+      - name: Run compile test (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          export SDL_AUDIODRIVER=dummy
+          export SDL_VIDEODRIVER=dummy
+          export SDL_RENDER_DRIVER=software
+          "${{ github.workspace }}/smoke/build/compile_test"
+
+      - name: Run compile test (Windows)
+        if: runner.os == 'Windows'
+        timeout-minutes: 1
+        shell: pwsh
+        run: |
+          $env:PATH = "${{ github.workspace }}\install\bin;${{ github.workspace }}\install\lib;$env:PATH"
+          $env:SDL_AUDIODRIVER = "dummy"
+          $env:SDL_VIDEODRIVER = "dummy"
+          $env:SDL_RENDER_DRIVER = "software"
+          & "${{ github.workspace }}\smoke\build\compile_test.exe"
