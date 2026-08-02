@@ -32,7 +32,7 @@ void Shape<POINT_COUNT>::_triangulate(void) noexcept {
         m_contour_cache[i] = m_points[i];
     }
     m_contour_cache[m_n] = m_contour_cache[0];
-    
+
     m_is_changed = false;
 }
 
@@ -92,15 +92,16 @@ void Shape<POINT_COUNT>::scale(const Fact2d& scaling) noexcept {
 
 template<size_t POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COUNT <= (u8)point::max)
 void Shape<POINT_COUNT>::resize(const Dim2d& size) noexcept {
-	if (m_size.w == 0.0f || m_size.h == 0.0f) return;
-    Fact2d delta = { size.w  / m_size.w, size.h / m_size.h };
+	Dim2d from = { std::max(m_size.w, 1.0f), std::max(m_size.h, 1.0f) };
+	Dim2d to   = { std::max(size.w,   1.0f), std::max(size.h,   1.0f) };
+    Fact2d delta = { to.w / from.w, to.h / from.h };
     transform({0}, 0, delta);
-    m_size = size;
+    m_size = to;
 }
 
 template<size_t POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COUNT <= (u8)point::max)
 void Shape<POINT_COUNT>::transform(const Vec2d& delta, f32 angle, const Fact2d& scaling) noexcept {
-    
+
     f32 cosA = std::cos(angle);
     f32 sinA = std::sin(angle);
 

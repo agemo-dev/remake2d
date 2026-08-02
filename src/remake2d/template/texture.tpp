@@ -19,7 +19,7 @@ Texture<S>::Texture(std::string_view path, const S& shape)
         m_textures[e->m_renderer] = td;
     }
     m_use_clip = false;
-	m_shape.m_is_changed = true;
+	m_verts_dirty = true;
 	_calculateVertices();
 }
 
@@ -37,30 +37,35 @@ Texture<S>& Texture<S>::operator=(const Texture<S>& other) {
 template<IsShape S>
 void Texture<S>::move(const Vec2d& center) noexcept { 
 	m_shape.move(center);
+	m_verts_dirty = true;
 	_calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::rotate(f32 angle) noexcept {
 	m_shape.rotate(angle);
+	m_verts_dirty = true;
 	_calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::scale(const Fact2d& scaling) noexcept {
 	m_shape.scale(scaling);
+	m_verts_dirty = true;
 	_calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::resize(const Dim2d& size) noexcept {
 	m_shape.resize(size);
+	m_verts_dirty = true;
 	_calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::transform(const Vec2d& center, f32 angle, const Fact2d& scaling) noexcept {
 	m_shape.transform(center, angle, scaling);
+	m_verts_dirty = true;
 	_calculateVertices();
 }
 
@@ -112,7 +117,7 @@ void Texture<S>::clip(const Vec2d& clip_pos, const Dim2d& clip_size) noexcept {
         m_use_clip = false;
     }
 
-	m_shape.m_is_changed = true;
+	m_verts_dirty = true;
     _calculateVertices();
 }
 
@@ -122,7 +127,7 @@ void Texture<S>::unclip(void) noexcept {
     m_clip_size = {0, 0};
     m_use_clip = false;
 
-	m_shape.m_is_changed = true;
+	m_verts_dirty = true;
     _calculateVertices();
 }
 
@@ -147,11 +152,14 @@ void Texture<S>::_copy(const Texture<S>& other) noexcept {
         td.current_color = rmk::color::white;
         this->m_textures[renderer] = td;
     }
+    this->m_verts_dirty = true;
+    this->_calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::_calculateVertices(void) noexcept {
-    if (!m_shape.m_is_changed) return;
+    if (!m_verts_dirty) return;
+    m_verts_dirty = false;
     m_shape._triangulate();
 
     auto verts = m_shape._toVertices();

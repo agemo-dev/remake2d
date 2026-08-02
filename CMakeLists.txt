@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.32)
 
 project(
 	remake2d
-	VERSION 0.1.0
+	VERSION 0.2.0
 	DESCRIPTION "A cross-plateform 2D game engine"
 	LANGUAGES CXX C
 )

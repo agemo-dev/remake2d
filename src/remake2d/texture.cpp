@@ -5,6 +5,7 @@
 #include <remake2d/color.hpp>
 #include <remake2d/time.hpp>
 
+#include <cstdio>
 #include <memory>
 #include <string>
 #include <utility>
@@ -157,6 +158,8 @@ void Text::write(std::string_view text) {
         rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + TTF_GetError()));
     }
 
+    m_real_size = { (f32)m_surface.data->w, (f32)m_surface.data->h };
+
     float x = m_anchor_pos.x;
     float y = m_anchor_pos.y;
 	
@@ -189,6 +192,8 @@ void Text::write(std::string_view text) {
     }
     m_use_clip = false;
 	m_erase    = false;
+	m_verts_dirty = true;
+    _calculateVertices();
 }
 
 void Text::append(fmt txt) {
@@ -197,11 +202,11 @@ void Text::append(fmt txt) {
 		case fmt::nl :
 			append("\n");
 			break;
-		
+
 		case fmt::tab :
 			append("    ");
 			break;
-			
+
 		case fmt::endl :
 			m_erase = true;
 			break;
@@ -209,7 +214,6 @@ void Text::append(fmt txt) {
 		case fmt::flush :
 			clear();
 			break;
-		 
 	}
 }
 

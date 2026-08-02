@@ -62,6 +62,6 @@ int main(void) {
 ---
 
 !!! info
-    **RE:MAKE 2D** is currently at **0.1 version (beta)**.
+    **RE:MAKE 2D** is currently at **0.2 version (beta)**.
     The engine is functional but may contain bugs.
     Feel free to report an issue.

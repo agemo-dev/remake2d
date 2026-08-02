@@ -11,6 +11,7 @@
 #include <remake2d/config/resource.hpp>
 
 #include <map>
+#include <cstdio>
 #include <string>
 #include <vector>
 #include <memory>
@@ -88,6 +89,7 @@ protected:
     S                                       		m_shape;
     SDL_Rect                                		m_srcrect{0,0,0,0};
     bool                                    		m_use_clip{false};
+    bool                                    		m_verts_dirty{true};
     Vec2d                                   		m_clip_pos{0, 0};
     Dim2d                                   		m_clip_size{0, 0};
     Dim2d                                   		m_real_size{0, 0};

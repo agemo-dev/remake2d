@@ -201,16 +201,14 @@ void Window::_restoreViewport(void) noexcept {
     if (m_viewport_stack.empty()) return;
     Area previous = m_viewport_stack.top();
     m_viewport_stack.pop();
-    SDL_Rect zero{};
-    if (SDL_memcmp(&previous, &zero, sizeof(SDL_Rect)) == 0) {
+
+    if (previous.x == 0 && previous.y == 0 && previous.w == 0 && previous.h == 0) {
         SDL_RenderSetViewport(m_renderer, nullptr);
     } else {
-        SDL_Rect p = previous;
+        SDL_Rect p{ (int)previous.x, (int)previous.y, (int)previous.w, (int)previous.h };
         SDL_RenderSetViewport(m_renderer, &p);
     }
 }
-
-
 
 void Window::clear(Color color, std::string_view viewport) noexcept {
     const Viewport* vp = _resolveViewport(viewport);
@@ -224,11 +222,15 @@ void Window::draw(const TextureBase& tex, Color color, std::string_view viewport
     const Viewport* vp = _resolveViewport(viewport);
     _applyViewport(vp);
 
-    tex._applyColor(m_renderer, color);
-
     SDL_Texture* t = tex._ownerTexture(m_renderer);
     if (t) {
         auto verts = tex.vertices();
+        for (auto& v : verts) {
+            v.color.r = color.r;
+            v.color.g = color.g;
+            v.color.b = color.b;
+            v.color.a = color.a;
+        }
         SDL_RenderGeometry(m_renderer, t, verts.data(), (int)verts.size(), nullptr, 0);
     }
 
@@ -345,13 +347,13 @@ XWindow& XWindow::getInstance(void) noexcept {
     static XWindow instance;
     return instance;
  }
- 
+
 void XWindow::_registerWindow(Window* win) noexcept {
 	auto& vec = m_windows;
 	auto it   = std::find(vec.begin(), vec.end(), win);
     if(it == vec.end()) vec.push_back(win);
 }
-	
+
 void XWindow::_unregisterWindow(Window* win) noexcept {
 	auto& vec = m_windows;
 	auto it   = std::find(vec.begin(), vec.end(), win);
