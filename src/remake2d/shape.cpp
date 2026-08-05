@@ -3,8 +3,8 @@
 
 namespace rmk {
 
-Geometry::Geometry(const Vec2d& center, const Dim2d& size) 
-	: m_center(center), m_size(size) { 
+Geometry::Geometry(const Vec2d& center, const Dim2d& size)
+	: m_center(center), m_size(size) {
 		m_size.w = m_size.w == 0 ? 1 : m_size.w;
 		m_size.h = m_size.h == 0 ? 1 : m_size.h;
 	}
@@ -26,13 +26,13 @@ void Point::scale(const Fact2d& fact) noexcept {
 void Point::resize(const Dim2d& size) noexcept {
     return (void) size;
 }
-	
+
 Circle::Circle(const Vec2d& center, f32 diameter) : Shape<36>(center, diameter) {}
 
 void Circle::scale(const Fact2d& fact) noexcept {
     Shape<36>::scale(fact.x);
 }
-	
+
 void Circle::resize(const Dim2d& size) noexcept {
     Shape<36>::resize(size.w);
 }

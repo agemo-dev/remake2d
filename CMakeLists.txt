@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.32)
 
 project(
 	remake2d
-	VERSION 0.2.0
+	VERSION 0.3.0
 	DESCRIPTION "A cross-plateform 2D game engine"
 	LANGUAGES CXX C
 )
@@ -25,10 +25,12 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O2 -DNDEBUG")
+string(APPEND CMAKE_CXX_FLAGS_DEBUG  " -Wall -Wextra -Werror")
 
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(USE_NATIVE_OPT "Enable -march=native optimizations" OFF)
+option(USE_NATIVE_OPT      "Enable -march=native optimizations" OFF)
+option(BUILD_SHARED_LIBS   "Build shared libraries"              ON)
+option(BUILD_REMAKE_SCRIPT "Build add-on remakeScript"           ON)
 
 if(USE_NATIVE_OPT)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
@@ -236,6 +238,7 @@ target_include_directories(
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/assets>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/external>
         $<BUILD_INTERFACE:$<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

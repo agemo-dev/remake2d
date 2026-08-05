@@ -22,10 +22,7 @@
 
 namespace rmk {
 
-namespace fdata {
-inline static constexpr const char *droot = "data/remake2d/json";
-} //namespace rmk
-
+inline static constexpr const char *DATA_DEFAULT_ROOT = "data/remake2d/json";
 
 struct Data {
     using Value = std::variant<
@@ -49,7 +46,7 @@ struct Data {
     Value value;
 
     Data(void)                  : value(0) {}
-    Data(Nil v)                 : value(0) {}
+    Data(Nil v)                 : value(v) {}
     Data(byte v)                : value(v) {}
     Data(rune v)                : value(v) {}
     Data(imax v)                : value(v) {}
@@ -81,11 +78,11 @@ struct Data {
         if (it == m.end()) throw DataError(error::data::invalid_field);
         return it->second;
     }
-    
+
     const Data& operator[](const char* key) const {
         return (*this)[std::string_view(key)];
     }
-    
+
     const Data& operator[](usize idx) const {
         const auto& v = std::get<std::vector<Data>>(value);
         if (idx >= v.size()) throw DataError(error::data::invalid_field);
@@ -111,13 +108,13 @@ struct Data {
 };
 
 
-class ISavable {
+class Savable {
 public:
     virtual Data        sdata(void) const  = 0;
     virtual void        ldata(const Data&) = 0;
 
 public:
-    virtual ~ISavable(void) = default;
+    virtual ~Savable(void) = default;
 };
 
 
@@ -138,8 +135,8 @@ public:
 
     void load(Data&);
     void save(const Data&);
-    void load(ISavable&);
-    void save(const ISavable&);
+    void load(Savable&);
+    void save(const Savable&);
 
     void remove(void) 			 noexcept;
     bool exist(void) 	   const noexcept;
@@ -155,7 +152,7 @@ private:
 class SaveManager {
 private:
     bool               m_initialized{false};
-    std::string        m_root{fdata::droot};
+    std::string        m_root{DATA_DEFAULT_ROOT};
 
 private:
     SaveManager(void) = default;
@@ -170,7 +167,7 @@ public:
 
 private:
     void _init(void);
-    
+
 private:
     friend class DataFile;
 };

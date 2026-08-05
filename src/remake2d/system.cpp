@@ -1,4 +1,5 @@
 #include <remake2d/system.hpp>
+#include <remake2d/utility.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/sound.hpp>
 
@@ -7,19 +8,10 @@
 #include <time.h>
 #include <sstream>
 
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-	#include <SDL2/SDL_ttf.h>
-	#include <SDL2/SDL_image.h>
-	#include <SDL2/SDL_mixer.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-	#include <SDL_ttf.h>
-	#include <SDL_image.h>
-	#include <SDL_mixer.h>
-#else
-    #error "SDL not found."
-#endif
+rmk_searchIncludeF2(<SDL2/SDL.h>,       <SDL.h>)
+rmk_searchIncludeF2(<SDL2/SDL_ttf.h>,   <SDL_ttf.h>)
+rmk_searchIncludeF2(<SDL2/SDL_image.h>, <SDL_image.h>)
+rmk_searchIncludeF2(<SDL2/SDL_mixer.h>, <SDL_mixer.h>)
 
 
 namespace rmk {
@@ -29,6 +21,7 @@ void System::Setup::scalingMode(std::string_view mode) {
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, std::string(mode).c_str());
     #endif
+	return (void) mode;
 }
 
 void System::Setup::backend(std::string_view bcknd) {
@@ -36,6 +29,7 @@ void System::Setup::backend(std::string_view bcknd) {
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, std::string(bcknd).c_str());
     #endif
+	return (void) bcknd;
 }
 
 void System::Setup::audioMode(std::string_view mode) {
@@ -43,6 +37,7 @@ void System::Setup::audioMode(std::string_view mode) {
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     SDL_SetHint(SDL_AUDIO_RESAMPLING_MODE, std::string(mode).c_str());
     #endif
+	return (void) mode;
 }
 
 void System::Setup::audioCategory(std::string_view category) {
@@ -50,6 +45,7 @@ void System::Setup::audioCategory(std::string_view category) {
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     SDL_SetHint(SDL_AUDIO_CATEGORY, std::string(category).c_str());
     #endif
+	return (void) category;
 }
 
 void System::Setup::mouseRelativeMode(std::string_view mode) {
@@ -57,6 +53,7 @@ void System::Setup::mouseRelativeMode(std::string_view mode) {
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, std::string(mode).c_str());
     #endif
+	return (void) mode;
 }
 
 void System::Setup::mobileOrientation(std::span<std::string_view> orients) {
@@ -66,6 +63,7 @@ void System::Setup::mobileOrientation(std::span<std::string_view> orients) {
     for(const auto& e : orients) flags += std::string(e) + " ";
     SDL_SetHint(SDL_HINT_ORIENTATION, flags.c_str());
     #endif
+	return (void) orients;
 }
 
 
@@ -80,6 +78,7 @@ void System::Toggle::vsync(bool statut) {
     std::string s = std::to_string((int)statut);
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, s.c_str());
     #endif
+	return (void) statut;
 }
 
 void System::Toggle::blockOnPause(bool statut) {
@@ -88,6 +87,7 @@ void System::Toggle::blockOnPause(bool statut) {
     std::string s = std::to_string((int)statut);
     SDL_SetHint(SDL_HINT_ANDROID_BLOCK_ON_PAUSE, s.c_str());
     #endif
+	return (void) statut;
 }
 
 void System::Toggle::hideHomeIndicator(bool statut) {
@@ -96,6 +96,7 @@ void System::Toggle::hideHomeIndicator(bool statut) {
     std::string s = std::to_string((int)statut);
     SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, s.c_str());
     #endif
+	return (void) statut;
 }
 
 void System::Toggle::relativeMouseMode(bool statut) {
@@ -109,6 +110,7 @@ void System::Toggle::materialAcceleration(bool statut) {
     std::string s = std::to_string((int)statut);
     SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, s.c_str());
     #endif
+	return (void) statut;
 }
 
 void System::Toggle::gameController(bool statut) {
@@ -118,6 +120,7 @@ void System::Toggle::gameController(bool statut) {
     if (statut) SDL_InitSubSystem(flags);
     else SDL_QuitSubSystem(flags);
     #endif
+	return (void) statut;
 }
 
 void System::Toggle::accelerometerAsJoystick(bool statut) {
@@ -126,6 +129,7 @@ void System::Toggle::accelerometerAsJoystick(bool statut) {
     std::string s = std::to_string((int)statut);
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, s.c_str());
     #endif
+	return (void) statut;
 }
 
 u32 System::Info::ramMB(void) {

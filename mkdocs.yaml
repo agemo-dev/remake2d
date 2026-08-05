@@ -1,5 +1,5 @@
 site_name: RE:MAKE 2D
-site_description: full code game engine for 2D game in C++
+site_description: A cross-plateform 2D engine
 site_author: agemo-dev
 
 theme:
@@ -87,6 +87,7 @@ nav:
         - Error:    learn/core/error.md
         - Signal:   learn/core/signal.md
         - Event:    learn/core/event.md
+        - Tracker:  learn/core/tracker.md
         - Croutine: learn/core/croutine.md
         - System:   learn/core/system.md
   - Examples:
@@ -100,6 +101,8 @@ nav:
     - Contributors:       more/contributor.md
 
 extra:
+  version:
+    provider: mike
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/agemo-dev

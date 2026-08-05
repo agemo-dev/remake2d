@@ -32,6 +32,8 @@ bool     isFocus(void) const noexcept;      // check if window has input focus
 std::string title(void) noexcept;           // get current window title
 void     blendMode(window::blendmode) noexcept; // set SDL blend mode
 
+void     present(void);                     // present current frame
+void     screenshot(std::string_view path)  // take a screenshot of current frame
 void     clear(Color = rmk::color::black, std::string_view viewport = "") noexcept; // clear window with a solid color
 
 void     draw(const TextureBase&, Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw a texture

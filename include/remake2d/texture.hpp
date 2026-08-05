@@ -7,6 +7,7 @@
 #include <remake2d/system.hpp>
 #include <remake2d/signal.hpp>
 #include <remake2d/concept.hpp>
+#include <remake2d/utility.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/resource.hpp>
 
@@ -18,17 +19,10 @@
 #include <utility>
 #include <filesystem>
 
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-	#include <SDL2/SDL_ttf.h>
-	#include <SDL2/SDL_image.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-	#include <SDL_ttf.h>
-	#include <SDL_image.h>
-#else
-    #error "SDL not found."
-#endif
+rmk_searchIncludeF2(<SDL2/SDL.h>,       <SDL.h>)
+rmk_searchIncludeF2(<SDL2/SDL_ttf.h>,   <SDL_ttf.h>)
+rmk_searchIncludeF2(<SDL2/SDL_image.h>, <SDL_image.h>)
+rmk_searchIncludeF2(<SDL2/SDL_mixer.h>, <SDL_mixer.h>)
 
 
 namespace rmk {
@@ -68,10 +62,10 @@ public:
 
     virtual const SDL_Rect* getClipRect(void) 		const noexcept = 0;
     virtual std::vector<SDL_Vertex> vertices(void)	const noexcept = 0;
-    
+
 public:
     virtual ~TextureBase(void) = default;
-    
+
 private:
     friend class Window;
 };
@@ -129,7 +123,7 @@ public:
 
     void unclip(void) 					  noexcept override;
     void clip(const Vec2d&, const Dim2d&) noexcept override;
-	
+
     bool hasIntersected(const Geometry&) 	const noexcept override;
     const SDL_Rect* getClipRect(void) 		const noexcept override;
     std::vector<SDL_Vertex> vertices(void)  const noexcept override;
@@ -174,7 +168,6 @@ public:
     ~GlyphAtlas(void);
 };
 
-
 class FontManager {
 private:
     struct FontEntry {
@@ -202,7 +195,7 @@ private:
 
 public:
     ~FontManager(void);
-	
+
 private:
     friend class Text;
 };
@@ -212,10 +205,9 @@ inline FontManager& font = FontManager::getInstance();
 
 
 namespace anchor {
-    enum class x : u8 { left, center, right };
-    enum class y : u8 { top, middle, bottom };
-}
-
+enum class x : u8 { left, center, right };
+enum class y : u8 { top, middle, bottom };
+} // namespace anchor
 
 enum fmt : u8 {
 	nl,
@@ -225,12 +217,12 @@ enum fmt : u8 {
 };
 
 class Text : public Texture<Rectangle> {
-    
+
 private:
-    TTF_Font*               m_font;
-    std::string             m_font_name;
+    TTF_Font*               m_font{nullptr};
+    std::string             m_font_name{""};
     std::string             m_current_text{""};
-    Vec2d                   m_anchor_pos;
+    Vec2d                   m_anchor_pos{0};
     anchor::x               m_anchor_x{anchor::x::left};
     anchor::y               m_anchor_y{anchor::y::top};
     u16                     m_max_lengh{0};
@@ -261,7 +253,7 @@ public:
 public:
 	void maxLengh(u16) 		  noexcept;
 	u16  maxLengh(void) const noexcept;
-	
+
 private:
     void _textCopy(const Text&);
     void _updateWidth(const GlyphAtlas&) noexcept;

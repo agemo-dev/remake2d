@@ -2,9 +2,9 @@ name: REMAKE2D - CI Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [contribut]
 
 jobs:
   build:

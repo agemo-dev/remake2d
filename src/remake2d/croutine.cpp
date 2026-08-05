@@ -111,8 +111,9 @@ void CroutinePool::start(void) {
     m_max_user = std::max(1u, std::thread::hardware_concurrency());
 
     u32 initial = std::max(1u, m_max_user / 4u);
-    for (u32 i = 0; i < initial; i++)
+    for (u32 i = 0; i < initial; i++) {
         m_user.emplace_back(std::make_unique<ThreadWorker>());
+	}
 
 	m_is_init = true;
 }

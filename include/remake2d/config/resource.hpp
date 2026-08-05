@@ -1,20 +1,12 @@
 #ifndef REMAKE2D_RESSOURCE_
 #define REMAKE2D_RESSOURCE_
 
+#include<remake2d/utility.hpp>
 
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-	#include <SDL2/SDL_ttf.h>
-	#include <SDL2/SDL_image.h>
-	#include <SDL2/SDL_mixer.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-	#include <SDL_ttf.h>
-	#include <SDL_image.h>
-	#include <SDL_mixer.h>
-#else
-    #error "SDL not found."
-#endif
+rmk_searchIncludeF2(<SDL2/SDL.h>,       <SDL.h>)
+rmk_searchIncludeF2(<SDL2/SDL_ttf.h>,   <SDL_ttf.h>)
+rmk_searchIncludeF2(<SDL2/SDL_image.h>, <SDL_image.h>)
+rmk_searchIncludeF2(<SDL2/SDL_mixer.h>, <SDL_mixer.h>)
 
 namespace rmk {
 
@@ -26,6 +18,7 @@ private:
     u32* m_refcount{nullptr};
 
 public:
+    Resource(T*);
     Resource(void);
     Resource(const Resource&);
     Resource(Resource&&) noexcept;

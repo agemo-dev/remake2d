@@ -58,8 +58,17 @@ void FontManager::_buildAtlas(FontEntry& entry, SDL_Renderer* renderer) {
 
     for (int c = firstChar; c <= lastChar; ++c) {
         char ch = static_cast<char>(c);
-        SDL_Surface* surf = TTF_RenderGlyph_Blended(font, ch, color::white._data());
-        if (!surf) continue;
+        SDL_Surface* surf = nullptr;
+        int tryCount = 0;
+
+        do {
+            surf = TTF_RenderGlyph_Blended(font, ch, color::white._data());
+        } while (!surf && tryCount++ < 3);
+
+        if (!surf) {
+            rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::atlas_no_build) + " : " + TTF_GetError()));
+        }
+
         surfaces.push_back(surf);
         maxWidth = std::max(maxWidth, surf->w);
     }
@@ -72,12 +81,12 @@ void FontManager::_buildAtlas(FontEntry& entry, SDL_Renderer* renderer) {
     int atlasWidth = maxWidth * numChars;
 
     SDL_Texture* atlasTex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, atlasWidth, atlasHeight);
-	
+
     if (!atlasTex) {
         for (auto* s : surfaces) SDL_FreeSurface(s);
         return;
     }
-	
+
     SDL_SetTextureBlendMode(atlasTex, SDL_BLENDMODE_BLEND);
     SDL_Texture* oldTarget = SDL_GetRenderTarget(renderer);
     SDL_SetRenderTarget(renderer, atlasTex);
@@ -111,7 +120,6 @@ void FontManager::_buildAtlas(FontEntry& entry, SDL_Renderer* renderer) {
 const GlyphAtlas* FontManager::atlas(std::string_view tag) const noexcept {
     auto it = m_fonts.find(std::string(tag));
     if (it != m_fonts.end()) return &it->second.atlas;
-	
     return nullptr;
 }
 
@@ -153,8 +161,8 @@ void Text::write(std::string_view text) {
 
     m_current_text  = txt;
 
-    m_surface.data = TTF_RenderUTF8_Blended_Wrapped(m_font, txt.c_str(), color::white._data(), (int)m_max_lengh);
-    if (!m_surface.data) {
+    m_surface = Surface(TTF_RenderUTF8_Blended_Wrapped(m_font, txt.c_str(), color::white._data(), (int)m_max_lengh));
+	if (!m_surface.data) {
         rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + TTF_GetError()));
     }
 
@@ -162,12 +170,13 @@ void Text::write(std::string_view text) {
 
     float x = m_anchor_pos.x;
     float y = m_anchor_pos.y;
-	
+
     switch (m_anchor_x) {
         case anchor::x::left:   x += m_surface.data->w / 2.0f; break;
         case anchor::x::center: break;
         case anchor::x::right:  x -= m_surface.data->w / 2.0f; break;
     }
+
     switch (m_anchor_y) {
         case anchor::y::top:    y += m_surface.data->h / 2.0f; break;
         case anchor::y::middle: break;

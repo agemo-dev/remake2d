@@ -3,15 +3,10 @@
 
 #include <remake2d/lock.hpp>
 #include <remake2d/error.hpp>
+#include <remake2d/utility.hpp>
 #include <remake2d/croutine.hpp>
 
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-#else
-    #error "SDL not found."
-#endif
+rmk_searchIncludeF2(<SDL2/SDL.h>, <SDL.h>)
 
 #include <vector>
 #include <mutex>

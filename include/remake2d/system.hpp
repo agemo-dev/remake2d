@@ -73,7 +73,7 @@ public:
 
 public:
     static System &getInstance(void) noexcept;
-    
+
 private:
     void _init(void);
     void _quit(void);
@@ -82,9 +82,9 @@ public:
     ~System(void) = default;
 
 public:
-    friend class Setup;
-    friend class Toggle;
-    friend class Info;
+    friend struct Setup;
+    friend struct Toggle;
+    friend struct Info;
     friend class Window;
     friend class SFX;
     friend class Timer;

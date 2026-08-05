@@ -16,7 +16,7 @@
 namespace rmk {
 
 class ActorBase {
-  
+
 protected:
     std::vector<ActorBase*>         m_children;
     ActorBase*                      m_parent{nullptr};
@@ -45,7 +45,7 @@ private:
 
 public:
     virtual ~ActorBase(void);
-    
+
 private:
     friend class Scene;
 };

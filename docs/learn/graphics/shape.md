@@ -126,7 +126,9 @@ namespace window {
 enum class blendmode : u8 {
 	none		= (u8)SDL_BLENDMODE_NONE,
 	normal		= (u8)SDL_BLENDMODE_BLEND,
-	add			= (u8)SDL_BLENDMODE_ADD
+	add			= (u8)SDL_BLENDMODE_ADD,
+	mod			= (u8)SDL_BLENDMODE_MOD,
+	mul			= (u8)SDL_BLENDMODE_MUL
 };
 
 }
@@ -135,6 +137,8 @@ enum class blendmode : u8 {
 - `none`   : disable transparency on the window
 - `normal` : default transparency mode
 - `add`    : additive mode with the background color
+- `mod`    : modulate mode with the background color
+- `mul`    : multiply mode with the background color
 
 example:
 

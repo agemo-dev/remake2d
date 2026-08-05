@@ -6,9 +6,8 @@ namespace solstat {
 
 void initLuaUtility(sol::table& rmk) noexcept {
 
-	rmk["version"].get_or_create<sol::table>();
-	rmk["version"]["current"] = &version::current;
-	
+	rmk["currentVersion"] = &currentVersion;
+
     rmk["angle"].get_or_create<sol::table>();
     rmk["angle"]["degToRad"] = &angle::degToRad;
     rmk["angle"]["radToDeg"] = &angle::radToDeg;

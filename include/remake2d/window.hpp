@@ -15,14 +15,7 @@
 #include <stack>
 #include <map>
 
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-#else
-    #error "SDL not found."
-#endif
-
+rmk_searchIncludeF2(<SDL2/SDL.h>, <SDL.h>)
 
 namespace rmk {
 
@@ -45,7 +38,9 @@ inline constexpr Dim2d uhd    = { 3840, 2160 };
 enum class blendmode : u8 {
 	none		= (u8)SDL_BLENDMODE_NONE,
 	normal		= (u8)SDL_BLENDMODE_BLEND,
-	add			= (u8)SDL_BLENDMODE_ADD
+	add			= (u8)SDL_BLENDMODE_ADD,
+	mod			= (u8)SDL_BLENDMODE_MOD,
+	mul			= (u8)SDL_BLENDMODE_MUL
 };
 
 } //namespace window
@@ -77,10 +72,10 @@ private:
     Vec2d                            m_center;
     std::string                      m_title{};
     std::string                      m_active_viewport{};
-    std::stack<Area>                 m_viewport_stack{}; 
+    std::stack<Area>                 m_viewport_stack{};
     std::vector<SDL_Vertex>          m_screen_vertices{};
     std::map<std::string, Viewport>  m_viewports;
-    
+
 public:
     Window(void);
     Window(Window&&)                    = default;
@@ -88,7 +83,7 @@ public:
     Window& operator=(Window&&)         = default;
     Window& operator=(const Window&)    = delete;
     Window(std::string_view, Vec2d = window::pos::undefined, Dim2d = window::size::hd);
-    
+
 public:
     u32 ID(void)       const noexcept;
     Vec2d pos(void)    const noexcept;
@@ -116,6 +111,7 @@ public:
     void icon(std::string_view);
     void close(void)                  noexcept;
     void present(void)                noexcept;
+	void screenshot(std::string_view) noexcept;
 
 public:
     std::string title(void)           noexcept;
@@ -141,12 +137,12 @@ private:
     void _newCenter(void)				 noexcept;
     void _restoreViewport(void)          noexcept;
     void _applyViewport(const Viewport*) noexcept;
-    const Viewport* _resolveViewport(std::string_view) const noexcept;
+    const Viewport* _resolveViewport(std::string_view)     const noexcept;
     void _buildScreenVertices(const TextureBase&, const Camera&) noexcept;
 
 public:
     ~Window(void);
-	
+
 private:
     friend class Text;
     friend class TileMap;
@@ -161,14 +157,14 @@ private:
 class XWindow {
 private:
     std::vector<Window*> m_windows;
-    
+
 private:
     XWindow(void)					   = default;
     XWindow(XWindow&&)				   = default;
     XWindow(const XWindow&) 		   = delete;
     XWindow& operator=(XWindow&&)      = default;
     XWindow& operator=(const XWindow&) = delete;
-    
+
 private:
     void _registerWindow(Window*)   noexcept;
     void _unregisterWindow(Window*) noexcept;

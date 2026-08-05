@@ -14,7 +14,7 @@
 namespace rmk {
 
 class Scene {
-    
+
 public:
     using Frame = std::function<void(void)>;
 

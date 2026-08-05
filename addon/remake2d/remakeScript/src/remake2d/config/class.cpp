@@ -25,6 +25,7 @@ void initLuaClass(void) noexcept {
         ut["isFocus"]        = &Window::isFocus;
         ut["clear"]          = &Window::clear;
         ut["present"]        = &Window::present;
+        ut["screenshot"]     = &Window::screenshot;
         ut["addViewport"]    = &Window::addViewport;
         ut["useViewport"]    = &Window::useViewport;
         ut["resetViewport"]  = &Window::resetViewport;
@@ -39,14 +40,14 @@ void initLuaClass(void) noexcept {
             [](Window& win, Geometry    & g)   { win.draw(g); },
             [](Window& win, PhysicBody  & b)   { win.draw(b); },
             [](Window& win, TileGrid    & g)   { win.draw(g); },
-            [](Window& win, TextureBase& tex, Color c)  { win.draw(tex, c); },
+            [](Window& win, TextureBase & tex, Color c)  { win.draw(tex, c); },
             [](Window& win, TileMap     & tile, Color c) { win.draw(tile, c); },
             [](Window& win, Parallax    & para, Color c) { win.draw(para, c); },
             [](Window& win, Area        & a, Color c)   { win.draw(a, c); },
             [](Window& win, Geometry    & g, Color c)   { win.draw(g, c); },
             [](Window& win, PhysicBody  & b, Color c)   { win.draw(b, c); },
             [](Window& win, TileGrid    & g, Color c)   { win.draw(g, c); },
-            [](Window& win, TextureBase& tex, Color c, std::string_view v)  { win.draw(tex, c, v); },
+            [](Window& win, TextureBase & tex, Color c, std::string_view v)  { win.draw(tex, c, v); },
             [](Window& win, TileMap     & tile, Color c, std::string_view v) { win.draw(tile, c, v); },
             [](Window& win, Parallax    & para, Color c, std::string_view v) { win.draw(para, c, v); },
             [](Window& win, Area        & a, Color c, std::string_view v)   { win.draw(a, c, v); },
@@ -58,12 +59,12 @@ void initLuaClass(void) noexcept {
             [](Window& win, Area        & a)   { win.draw(a); },
             [](Window& win, Geometry    & g)   { win.draw(g); },
             [](Window& win, PhysicBody  & b)   { win.draw(b); },
-            [](Window& win, Area       & a, Color c)   { win.fill(a, c); },
-            [](Window& win, Geometry   & g, Color c)   { win.fill(g, c); },
-            [](Window& win, PhysicBody & b, Color c)   { win.fill(b, c); },
-            [](Window& win, Area       & a, Color c, std::string_view v)   { win.fill(a, c, v); },
-            [](Window& win, Geometry   & g, Color c, std::string_view v)   { win.fill(g, c, v); },
-            [](Window& win, PhysicBody & b, Color c, std::string_view v)   { win.fill(b, c, v); }
+            [](Window& win, Area        & a, Color c)   { win.fill(a, c); },
+            [](Window& win, Geometry    & g, Color c)   { win.fill(g, c); },
+            [](Window& win, PhysicBody  & b, Color c)   { win.fill(b, c); },
+            [](Window& win, Area        & a, Color c, std::string_view v)   { win.fill(a, c, v); },
+            [](Window& win, Geometry    & g, Color c, std::string_view v)   { win.fill(g, c, v); },
+            [](Window& win, PhysicBody  & b, Color c, std::string_view v)   { win.fill(b, c, v); }
         );
     });
 
@@ -71,7 +72,6 @@ void initLuaClass(void) noexcept {
 	    "zone"   , &Window::Viewport::zone,
 	    "camera" , &Window::Viewport::camera
 	);
-
 
     script._registerEngineType<Camera,
         Camera(),
@@ -102,16 +102,16 @@ void initLuaClass(void) noexcept {
     }, type::base<>,
 	    "onMove" , &Camera::onMove
 	);
-	
+
     script._registerEngineType<Geometry>("Geometry", [](SolState::Type& ut) {
-        ut["move"]        = &Geometry::move;
-        ut["rotate"]      = &Geometry::rotate;
-        ut["resize"]      = &Geometry::resize;
-        ut["scale"]       = &Geometry::scale;
-        ut["transform"]   = &Geometry::transform;
-        ut["center"]      = &Geometry::center;
-        ut["size"]        = &Geometry::size;
-        ut["points"]      = &Geometry::points;
+        ut["move"]           = &Geometry::move;
+        ut["rotate"]         = &Geometry::rotate;
+        ut["resize"]         = &Geometry::resize;
+        ut["scale"]          = &Geometry::scale;
+        ut["transform"]      = &Geometry::transform;
+        ut["center"]         = &Geometry::center;
+        ut["size"]           = &Geometry::size;
+        ut["points"]         = &Geometry::points;
 		ut["hasIntersected"] = &Geometry::hasIntersected;
     });
 
@@ -388,6 +388,7 @@ void initLuaClass(void) noexcept {
         ut["start"]       = &Timer::start;
         ut["pause"]       = &Timer::pause;
         ut["resume"]      = &Timer::resume;
+        ut["repeat"]      = &Timer::repeat;
         ut["stop"]        = &Timer::stop;
         ut["limit"]       = sol::overload(
 			[](Timer& t) { return t.limit(); },
@@ -396,7 +397,9 @@ void initLuaClass(void) noexcept {
         ut["isActive"]    = &Timer::isActive;
         ut["isElapsed"]   = &Timer::isElapsed;
         ut["elapsedTime"] = &Timer::elapsedTime;
-    });
+    }, rmk::type::base<>,
+		"onTimeout" , &Timer::onTimeout
+	);
 }
 
 } // namespace solstat

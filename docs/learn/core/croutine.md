@@ -200,5 +200,5 @@ reader.run();
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](event.md){ .md-button }
+[:octicons-arrow-left-24: Previous chapter](tracker.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](system.md){ .md-button .md-button--primary }

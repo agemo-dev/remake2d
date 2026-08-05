@@ -125,6 +125,28 @@ void Window::present(void) noexcept {
     SDL_RenderPresent(m_renderer);
 }
 
+void Window::screenshot(std::string_view path) noexcept {
+    int w = 0, h = 0;
+    SDL_GetRendererOutputSize(m_renderer, &w, &h);
+    if (w <= 0 || h <= 0) return;
+
+    std::filesystem::path fs_path(path);
+    if (fs_path.has_parent_path()) {
+        std::error_code ec;
+        std::filesystem::create_directories(fs_path.parent_path(), ec);
+        if (ec) return;
+    }
+
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_RGBA32);
+    if (!surf) return;
+
+    if (SDL_RenderReadPixels(m_renderer, nullptr, SDL_PIXELFORMAT_RGBA32, surf->pixels, surf->pitch) == 0) {
+        IMG_SavePNG(surf, std::string(path).c_str());
+    }
+
+    SDL_FreeSurface(surf);
+}
+
 bool Window::isOpen(void) const noexcept {
     return m_is_open;
 }

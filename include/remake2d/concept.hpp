@@ -21,12 +21,18 @@ template<typename S>
 concept IsSignal = std::derived_from<S, class SignalBase>;
 
 template<typename S>
-concept IsSavable = std::derived_from<S, class ISavable>;
+concept IsSavable = std::derived_from<S, class Savable>;
 
 template<typename T>
-concept IsBasicType = std::same_as<T, struct Vec2d>  		|| 
-                      std::same_as<T, struct Fact2d> 		|| 
-                      std::same_as<T, struct Grid2d> 		|| 
+concept IsTrackable = std::derived_from<T, class TrackerBase>;
+
+template<typename F>
+concept IsFollowable = std::derived_from<F, class Followable>;
+
+template<typename T>
+concept IsBasicType = std::same_as<T, struct Vec2d>  		||
+                      std::same_as<T, struct Fact2d> 		||
+                      std::same_as<T, struct Grid2d> 		||
                       std::same_as<T, struct Dim2d>  		||
                       std::same_as<T, struct Area>   		||
                       std::same_as<T, struct Triangulation> ||

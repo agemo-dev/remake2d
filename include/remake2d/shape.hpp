@@ -2,10 +2,13 @@
 #define REMAKE2D_SHAPE_
 
 #include <remake2d/vector.hpp>
+#include <remake2d/camera.hpp>
+#include <remake2d/utility.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/config/forward.hpp>
 
-#include <SDL2/SDL.h>
+rmk_searchIncludeF2(<SDL2/SDL.h>, <SDL.h>)
 
 #include <array>
 #include <vector>
@@ -13,13 +16,11 @@
 
 namespace rmk {
 
-class Color;
-
-class Geometry {
+class Geometry : public Followable {
 
 protected:
-    Dim2d             m_size{0.0f, 0.0f};
-    Vec2d             m_center{0.0f, 0.0f};
+    Vec2d             m_center{0.0f};
+    Dim2d             m_size{0.0f};
     bool              m_is_changed{false};
 
 protected:
@@ -43,7 +44,7 @@ public:
 
 public:
     template<IsShape S> S as(void) const noexcept;
-    
+
 public:
 
     virtual void rotate(f32) 		  noexcept = 0;
@@ -54,9 +55,9 @@ public:
 
     virtual u8 points(void)   			 const noexcept = 0;
     virtual Dim2d size(void)   			 const noexcept = 0;
-    virtual Vec2d center(void) 			 const noexcept = 0;
     virtual const Vec2d* pointsPos(void) const noexcept = 0;
-  
+    virtual Vec2d center(void)           const noexcept override = 0;
+
 
     virtual bool hasIntersected(const Geometry&) const noexcept = 0;
 
@@ -68,7 +69,6 @@ private:
     friend class Camera;
     friend class PhysicBody;
     template<IsShape S> friend class Texture;
-    
 };
 
 
@@ -92,9 +92,9 @@ protected:
     virtual void _build(void) noexcept override;
 
 protected:
-    const Triangulation* _triangulations(void) const noexcept override;
     std::vector<SDL_FPoint> _toContour(void)   const noexcept override;
     std::vector<SDL_Vertex> _toVertices(void)  const noexcept override;
+    const Triangulation* _triangulations(void) const noexcept override;
 
 public:
   Shape(void) 									= default;
@@ -122,9 +122,9 @@ public:
 public:
   bool hasIntersected(const Geometry&) const noexcept override;
 
-public: 
+public:
   virtual ~Shape(void) = default;
-  
+
 private:
     friend class Window;
     friend class Camera;
@@ -143,11 +143,11 @@ public:
 
 public:
     Point(const Vec2d&);
-	
+
 public:
     void scale(const Fact2d&) noexcept override;
     void resize(const Dim2d&) noexcept override;
-    
+
 public:
     friend class Window;
     friend class Camera;
@@ -169,7 +169,7 @@ public:
 public:
     void scale(const Fact2d&) noexcept override;
     void resize(const Dim2d&) noexcept override;
-    
+
 public:
     friend class Window;
     friend class Camera;
@@ -187,7 +187,7 @@ public:
 
 public:
     Triangle(const Vec2d&, const Dim2d&);
-    
+
 public:
     friend class Window;
     friend class Camera;
@@ -208,7 +208,7 @@ public:
 
 private:
     void _build(void) noexcept override;
-    
+
 private:
     friend class Window;
     friend class Camera;
@@ -230,7 +230,7 @@ public:
 public:
 	void scale(const Fact2d&) noexcept override;
     void resize(const Dim2d&) noexcept override;
-    
+
 public:
     friend class Window;
     friend class Camera;

@@ -1,8 +1,14 @@
 #ifndef REMAKE2D_VERSION_
 #define REMAKE2D_VERSION_
 
-#define REMAKE2D_VERSION_MAJOR 0
-#define REMAKE2D_VERSION_MINOR 2
-#define REMAKE2D_VERSION_PATCH 0
+namespace rmk {
+
+enum class version : u8 {
+	major = 0,
+	minor = 3,
+	patch = 0
+};
+
+} // namespace rmk
 
 #endif

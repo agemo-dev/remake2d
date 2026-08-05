@@ -139,14 +139,14 @@ void DataFile::load(Data& dat) {
     dat = Data::_fromJson(j);
 }
 
-void DataFile::save(const ISavable& obj) {
+void DataFile::save(const Savable& obj) {
     Data d = obj.sdata();
     nlohmann::json j = d._toJson();
     std::ofstream file(m_path);
     file << j.dump(4);
 }
 
-void DataFile::load(ISavable& obj) {
+void DataFile::load(Savable& obj) {
     if (!std::filesystem::exists(m_path)) {
         rmk_dynamicAssert(rmk::DataError, error::data::file_not_found);
     }

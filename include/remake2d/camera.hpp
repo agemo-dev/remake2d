@@ -1,27 +1,43 @@
 #ifndef REMAKE2D_CAMERA_
 #define REMAKE2D_CAMERA_
 
+#include <functional>
+
 #include <remake2d/time.hpp>
 #include <remake2d/signal.hpp>
+#include <remake2d/tracker.hpp>
 #include <remake2d/vector.hpp>
+#include <remake2d/concept.hpp>
 #include <remake2d/config/forward.hpp>
 
 namespace rmk {
 
-class Window;
+class Followable : public Trackable<Followable> {
+public:
+	Followable(void)                         = default;
+	Followable(Followable&&)                 = default;
+    Followable(const Followable&)            = default;
+    Followable& operator=(Followable&&)      = default;
+    Followable& operator=(const Followable&) = default;
+
+public:
+	virtual Vec2d center(void) const noexcept = 0;
+
+public:
+	virtual ~Followable(void) = default;
+};
 
 class Camera {
-
 private:
-    Vec2d           m_center;
-    Dim2d           m_size;
-    Dim2d           m_limit;
-    Vec2d           m_offset;
-    Vec2d           m_ghost;
-    Vec2d           m_lasted_point;
-    f32             m_zoom{1.0f};
-    f32             m_smoothing{0.0f};
-    const Vec2d*    m_followed_point{nullptr};
+    Tracker<Followable>        m_tracker;
+    Vec2d                      m_center;
+    Dim2d                      m_size;
+    Dim2d                      m_limit;
+    Vec2d                      m_offset;
+    Vec2d                      m_ghost;
+    Vec2d                      m_lasted_point;
+    f32                        m_zoom{1.0f};
+    f32                        m_smoothing{0.0f};
 
 public:
     Signal<> onMove;
@@ -41,6 +57,7 @@ public:
     void  limit(const Dim2d&)  noexcept;
     void  resize(const Dim2d&) noexcept;
     void  smoothing(f32)       noexcept;
+
     f32  zoom(void)           const noexcept;
     Dim2d size(void)          const noexcept;
     Vec2d center(void)        const noexcept;
@@ -50,9 +67,8 @@ public:
     f32   smoothing(void)     const noexcept;
 
 public:
-    void follow(Vec2d&)      noexcept;
-    void follow(Geometry&)   noexcept;
-    void follow(PhysicBody&) noexcept;
+    void unfollow(void)            noexcept;
+	void follow(const Followable&) noexcept;
 
 private:
     void _offset(void)  noexcept;
@@ -61,4 +77,7 @@ private:
 };
 
 }//namespace rmk
+
+#include<remake2d/template/camera.tpp>
+
 #endif

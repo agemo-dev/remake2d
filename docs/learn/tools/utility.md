@@ -148,19 +148,19 @@ rmk::Color color = rmk::color::HSLToRGB(hsl);
 
 ## Version
 
-This header also contains macros and a function to find out the current version of the engine being used: 
+This header also contains enumeration and a function to find out the current version of the engine being used:
 
 ```cpp
-// version macro
+// version enum
 
-REMAKE2D_VERSION_MAJOR // major version x
-REMAKE2D_VERSION_MINOR // minor version y
-REMAKE2D_VERSION_PATCH // patch version z
+enum class version : u8 {
+	major = 0,
+	minor = 1,
+	patch = 0
+};
 
 // Helper function
-namespace version {
-std::string current(void) noexcept; // full current version (x.y.z)
-}
+std::string currentVersion(void) noexcept; // full current version (x.y.z)
 ```
 
 ---

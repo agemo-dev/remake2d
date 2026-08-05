@@ -1,4 +1,5 @@
 #include <remake2d/utility.hpp>
+#include <remake2d/all/types.hpp>
 #include <remake2d/physic.hpp>
 #include <remake2d/clock.hpp>
 #include <remake2d/math.hpp>
@@ -10,17 +11,14 @@
 
 namespace rmk {
 
-namespace version {
-std::string current(void) noexcept {
+std::string currentVersion(void) noexcept {
 	std::ostringstream oss;
-	oss << REMAKE2D_VERSION_MAJOR << '.' << REMAKE2D_VERSION_MINOR << '.' << REMAKE2D_VERSION_PATCH;
+	oss << (int) version::major << "." << (int) version::minor << "." << (int) version::patch;
 	return oss.str();
 }
-} // namespace version
 
 namespace color {
 HSL RGBToHSL(const Color& c) {
-    
     f32 rf = c.r / 255.0f;
     f32 gf = c.g / 255.0f;
     f32 bf = c.b / 255.0f;

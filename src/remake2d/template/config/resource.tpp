@@ -4,6 +4,12 @@
 namespace rmk {
 
 template<typename T, void(*F)(T*)>
+Resource<T, F>::Resource(T* d) : data(d) {
+    rmk::system._init();
+    m_refcount = new u32(1);
+}
+
+template<typename T, void(*F)(T*)>
 Resource<T, F>::Resource(void) {
     rmk::system._init();
     m_refcount = new u32(1);

@@ -143,7 +143,8 @@ void TileMap::_draw(Window& win, Color color, const Camera& cam) const noexcept 
     for (int rw = row.x; rw < row.y; rw++) {
         for (int cl = col.x; cl < col.y; cl++) {
             int    idx = rw * (int)m_data.cut.x + cl;
-            TileID id  = m_template[idx];
+			TileID id = 0;
+            if (idx < m_template.size()) id  = m_template[idx];
 
             Vec2d world_pos = {
                 m_data.center.x + cl * tw,

@@ -2,13 +2,21 @@
 #define REMAKE2D_UTILITY_
 
 #include <remake2d/time.hpp>
-#include <remake2d/color.hpp>
-#include <remake2d/vector.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/forward.hpp>
 #include <remake2d/config/version.hpp>
 
 #include <span>
+
+#define rmk_searchIncludeF2(first, second) \
+#if __has_include(first) \
+	#include first \
+#elif __has_include(second) \
+	#include second \
+#else \
+	#error "[!] error generate : any file found : first and second" \
+#endif
+
 
 namespace rmk {
 
@@ -27,10 +35,7 @@ private:
 
 inline constexpr Nil nil;
 
-
-namespace version {
-std::string current(void) noexcept;
-} // namespace version
+std::string currentVersion(void) noexcept;
 
 namespace layer {
 inline static constexpr i16 min = -256;

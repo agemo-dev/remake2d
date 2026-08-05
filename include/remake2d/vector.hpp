@@ -1,15 +1,10 @@
 #ifndef REMAKE2D_VECTOR_
 #define REMAKE2D_VECTOR_
 
+#include <remake2d/utility.hpp>
 #include <remake2d/numeric.hpp>
 
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-#else
-    #error "SDL not found."
-#endif
+rmk_searchIncludeF2(<SDL2/SDL.h>, <SDL.h>)
 
 #include <compare>
 
@@ -19,21 +14,21 @@ struct Fact2d;
 struct Grid2d;
 
 struct Vec2d {
-    f32 x, y;
-    
+    f32 x{0.0f}, y{0.0f};
+
 public:
     constexpr Vec2d(void)                     = default;
     constexpr Vec2d(Vec2d&&)                  = default;
     constexpr Vec2d(const Vec2d&)             = default;
     constexpr Vec2d& operator=(Vec2d&&)       = default;
     constexpr Vec2d& operator=(const Vec2d&)  = default;
-    
+
 public:
     operator Fact2d(void);
     operator Grid2d(void);
     constexpr Vec2d(f32 XY) 	  : x(XY), y(XY) {}
     constexpr Vec2d(f32 X, f32 Y) : x(X), y(Y)   {}
-    
+
 public:
     operator SDL_FPoint(void) { return SDL_FPoint{x, y}; }
     constexpr auto operator<=>(const Vec2d&) const noexcept = default;
@@ -41,8 +36,8 @@ public:
 
 
 struct Dim2d {
-    f32 w, h;
-    
+    f32 w{0.0f}, h{0.0f};
+
 public:
     constexpr Dim2d(void)                     = default;
     constexpr Dim2d(Dim2d&&)                  = default;
@@ -59,7 +54,7 @@ public:
 };
 
 struct Fact2d {
-    f32 x, y;
+    f32 x{0.0f}, y{0.0f};
     
 public:
     constexpr Fact2d(void)                      = default;
@@ -79,7 +74,7 @@ public:
 };
 
 struct Grid2d {
-    usize x, y;
+    usize x{0}, y{0};
 
 public:
     constexpr Grid2d(void)                      = default;
@@ -99,7 +94,7 @@ public:
 };
 
 struct Area {
-    i32 x, y, w, h;
+    i32 x{0}, y{0}, w{0}, h{0};
 
 public:
     constexpr Area(void)                    = default;

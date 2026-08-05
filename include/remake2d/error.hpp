@@ -1,7 +1,6 @@
 #ifndef REMAKE2D_ERROR_
 #define REMAKE2D_ERROR_
 
-
 #include <iostream>
 #include <exception>
 #include <source_location>
@@ -28,10 +27,10 @@ private:
 
 public:
     mutable std::source_location info;
- 
+
 public:
     Error(std::string_view msg) : m_msg(msg) {}
-    
+
     const char *what() const noexcept override { return m_msg.c_str(); }
 };
 
@@ -153,6 +152,7 @@ inline static constexpr const char *font_no_load    = "font no load — initiali
 inline static constexpr const char *glyph_no_load   = "glyph no load — initialization failed";
 inline static constexpr const char *texture_no_load = "texture no load — initialization failed";
 inline static constexpr const char *surface_no_load = "surface no load — initialization failed";
+inline static constexpr const char *atlas_no_build  = "atlas no build — initialization failed";
 inline static constexpr const char *font_unexist    = "font don\'t exist";
 }//namespace texture
 

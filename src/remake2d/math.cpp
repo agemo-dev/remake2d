@@ -139,7 +139,7 @@ Fact2d operator%(const Fact2d& lhs, const Fact2d& rhs) noexcept {
 }
 
 Grid2d& operator+=(Grid2d& lhs, const Grid2d& rhs) noexcept {
-    return lhs = lhs - rhs;
+    return lhs = lhs + rhs;
 }
 
 Grid2d& operator-=(Grid2d& lhs, const Grid2d& rhs) noexcept {

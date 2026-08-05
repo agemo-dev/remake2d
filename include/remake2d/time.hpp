@@ -84,7 +84,7 @@ public:
 };
 
 
-struct DeltaThreadConnector {
+class DeltaThreadConnector {
 public:
 	static DeltaThreadConnector& getInstance(void);
 
@@ -203,7 +203,7 @@ public:
 	
 private:
 	friend class Timer;
-	friend struct DeltaThreadConnector;
+	friend class DeltaThreadConnector;
 };
 
 inline TimerManager& timer = TimerManager::getInstance();

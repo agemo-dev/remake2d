@@ -16,10 +16,54 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O2 -DNDEBUG")
+string(APPEND CMAKE_CXX_FLAGS_DEBUG   " -Wall -Wextra -Werror")
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+
+set(LOSLIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/lua/loslib.c")
+
+if(EXISTS "${LOSLIB_PATH}")
+    file(READ "${LOSLIB_PATH}" FILE_CONTENTS)
+
+    set(OLD_MACRO_REGEX "#define[ \t]+lua_tmpnam\\(b,e\\)[ \t]+\\{[ \t]+e[ \t]+=[ \t]+\\(tmpnam\\(b\\)[ \t]+==[ \t]+NULL\\);[ \t]+\\}")
+
+    set(NEW_MULTI_MACRO [[
+#include <stdlib.h>
+#include <string.h>
+
+#if defined(_WIN32)
+#include <io.h>
+#include <process.h>
+#define lua_tmpnam(b,e) { \
+  char *tmp_dir = getenv("TMP"); \
+  if (!tmp_dir) tmp_dir = getenv("TEMP"); \
+  if (!tmp_dir) tmp_dir = "."; \
+  snprintf(b, LUA_TMPNAMBUFSIZE, "%s\\lua_XXXXXX", tmp_dir); \
+  e = (_mktemp_s(b, strlen(b) + 1) != 0); \
+}
+#else
+#include <unistd.h>
+#define lua_tmpnam(b,e) { \
+  char *tmp_dir = getenv("TMPDIR"); \
+  if (!tmp_dir) tmp_dir = "/tmp"; \
+  snprintf(b, LUA_TMPNAMBUFSIZE, "%s/lua_XXXXXX", tmp_dir); \
+  int fd = mkstemp(b); \
+  if (fd != -1) { \
+    close(fd); \
+    e = 0; \
+  } else { \
+    e = 1; \
+  } \
+}
+#endif]])
+
+    if(FILE_CONTENTS MATCHES "tmpnam\\(b\\)")
+        string(REGEX REPLACE "${OLD_MACRO_REGEX}" "${NEW_MULTI_MACRO}" MODIFIED_CONTENTS "${FILE_CONTENTS}")
+        file(WRITE "${LOSLIB_PATH}" "${MODIFIED_CONTENTS}")
+    endif()
+endif()
 
 file(GLOB_RECURSE SOL2_PATCH_HEADERS external/remake2d/sol2/*.hpp)
 foreach(SOL2_HPP ${SOL2_PATCH_HEADERS})

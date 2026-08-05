@@ -6,11 +6,16 @@ namespace solstat {
 
 void initLuaGlobal(sol::table& rmk) noexcept {
 
+	rmk["version"].get_or_create<sol::table>();
+	rmk["version"]["major"] = version::major;
+	rmk["version"]["minor"] = version::minor;
+	rmk["version"]["patch"] = version::patch;
+
     rmk["window"].get_or_create<sol::table>();
     rmk["window"]["pos"].get_or_create<sol::table>();
     rmk["window"]["pos"]["centered"]  = window::pos::centered;
     rmk["window"]["pos"]["undefined"] = window::pos::undefined;
-	
+
     rmk["window"]["size"].get_or_create<sol::table>();
     rmk["window"]["size"]["svga"]   = window::size::svga;
     rmk["window"]["size"]["vga"]    = window::size::vga;
@@ -22,8 +27,10 @@ void initLuaGlobal(sol::table& rmk) noexcept {
     rmk["window"]["blendmode"].get_or_create<sol::table>();
     rmk["window"]["blendmode"]["none"]     = window::blendmode::none;
     rmk["window"]["blendmode"]["normal"]   = window::blendmode::normal;
-    rmk["window"]["blendmode"]["advanced"] = window::blendmode::add;
-	
+    rmk["window"]["blendmode"]["add"]      = window::blendmode::add;
+    rmk["window"]["blendmode"]["mod"]      = window::blendmode::mod;
+    rmk["window"]["blendmode"]["mul"]      = window::blendmode::mul;
+
     rmk["channel"].get_or_create<sol::table>();
     rmk["channel"]["min"] = channel::min;
     rmk["channel"]["mid"] = channel::mid;
@@ -44,6 +51,7 @@ void initLuaGlobal(sol::table& rmk) noexcept {
     rmk["anchor"]["x"]["left"]   = anchor::x::left;
     rmk["anchor"]["x"]["center"] = anchor::x::center;
     rmk["anchor"]["x"]["right"]  = anchor::x::right;
+
     rmk["anchor"]["y"].get_or_create<sol::table>();
     rmk["anchor"]["y"]["top"]    = anchor::y::top;
     rmk["anchor"]["y"]["middle"] = anchor::y::middle;
@@ -84,7 +92,7 @@ void initLuaGlobal(sol::table& rmk) noexcept {
     rmk["color"]["darkblue"]   = color::darkblue;
     rmk["color"]["darkgreen"]  = color::darkgreen;
     rmk["color"]["raywhite"]   = color::raywhite;
-    
+
     rmk["orientation"].get_or_create<sol::table>();
     rmk["orientation"]["normal"]    = orientation::normal;
     rmk["orientation"]["reverse"]   = orientation::reverse;
@@ -93,12 +101,12 @@ void initLuaGlobal(sol::table& rmk) noexcept {
     rmk["orientation"]["portrait"]  = orientation::portrait;
     rmk["orientation"]["landscape"] = orientation::landscape;
     rmk["orientation"]["free"]      = orientation::any;
-    
+
     rmk["scaling"].get_or_create<sol::table>();
     rmk["scaling"]["nearest"]     = scaling::nearest;
     rmk["scaling"]["linear"]      = scaling::linear;
     rmk["scaling"]["anisotropic"] = scaling::anisotropic;
-    
+
     rmk["backend"].get_or_create<sol::table>();
     rmk["backend"]["opengl"]   = backend::opengl;
     rmk["backend"]["opengles"] = backend::opengles;
@@ -106,17 +114,17 @@ void initLuaGlobal(sol::table& rmk) noexcept {
     rmk["backend"]["vulkan"]   = backend::vulkan;
     rmk["backend"]["metal"]    = backend::metal;
     rmk["backend"]["software"] = backend::software;
-    
+
     rmk["audiomode"].get_or_create<sol::table>();
     rmk["audiomode"]["fast"]   = audiomode::fast;
     rmk["audiomode"]["medium"] = audiomode::medium;
     rmk["audiomode"]["best"]   = audiomode::best;
-    
+
     rmk["audiocategory"].get_or_create<sol::table>();
     rmk["audiocategory"]["media"] = audiocategory::media;
     rmk["audiocategory"]["voice"] = audiocategory::voice;
     rmk["audiocategory"]["alarm"] = audiocategory::alarm;
-    
+
     rmk["relmode"].get_or_create<sol::table>();
     rmk["relmode"]["raw"]  = relmode::raw;
     rmk["relmode"]["warp"] = relmode::warp;

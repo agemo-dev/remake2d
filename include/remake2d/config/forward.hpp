@@ -5,6 +5,15 @@
 
 namespace rmk {
 
+struct Area;
+struct Vec2d;
+struct Dim2d;
+struct Grid2d;
+struct Fact2d;
+
+struct HSL;
+struct Color;
+
 class PhysicBody;
 class StaticBody;
 class DynamicBody;
@@ -19,6 +28,8 @@ template<IsShape S> class Texture;
 
 class Date;
 class Clock;
+class Timer;
+class Chronometer;
 
 class Camera;
 class Window;
@@ -26,7 +37,10 @@ class TileMap;
 class TileGrid;
 class Parallax;
 
-class ISavable;
+class Savable;
+class Followable;
+
+template<typename... Args> class Signal;
 template<typename... Args> class Croutine;
 
 }//namespace rmk

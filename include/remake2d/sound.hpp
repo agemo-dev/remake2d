@@ -3,6 +3,7 @@
 
 #include <remake2d/signal.hpp>
 #include <remake2d/system.hpp>
+#include <remake2d/utility.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/config.hpp>
 #include <remake2d/config/resource.hpp>
@@ -10,14 +11,7 @@
 #include <array>
 #include <memory>
 
-#if __has_include(<SDL2/SDL_mixer.h>)
-    #include <SDL2/SDL_mixer.h>
-#elif __has_include(<SDL_mixer.h>)
-    #include <SDL_mixer.h>
-#else
-    #error "SDL_mixer not found."
-#endif
-
+rmk_searchIncludeF2(<SDL2/SDL_mixer.h>, <SDL_mixer.h>)
 
 namespace rmk {
 
