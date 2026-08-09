@@ -73,6 +73,7 @@ private:
     friend void config::solstat::initLuaClass(void)			   noexcept;
     friend void config::solstat::initLuaEntity(void) 		   noexcept;
     friend void config::solstat::initLuaSignal(void) 		   noexcept;
+    friend void config::solstat::initLuaTracker(void) 		   noexcept;
     friend void config::solstat::initLuaEvent(sol::table&)     noexcept;
     friend void config::solstat::initLuaGlobal(sol::table&)    noexcept;
     friend void config::solstat::initLuaUtility(sol::table&)   noexcept;

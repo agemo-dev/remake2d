@@ -24,7 +24,10 @@ template<typename S>
 concept IsSavable = std::derived_from<S, class Savable>;
 
 template<typename T>
-concept IsTrackable = std::derived_from<T, class TrackerBase>;
+concept IsTracker = std::derived_from<T, class TrackerBase>;
+
+template<typename T>
+concept IsTrackable = std::derived_from<T, class TrackableBase>;
 
 template<typename F>
 concept IsFollowable = std::derived_from<F, class Followable>;

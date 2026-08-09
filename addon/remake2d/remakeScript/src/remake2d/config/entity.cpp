@@ -111,7 +111,6 @@ void initLuaEntity(void) noexcept {
             [](ActorBase& self, bool a) { self.active(a); }
         );
     });
-
 }
 
 } // namespace solstat

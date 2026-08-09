@@ -16,15 +16,14 @@ namespace rmk {
 TileMapData::TileMapData(Vec2d c, Dim2d s, Grid2d ct, Dim2d csize, Vec2d cstart, u32 marg)
 	: center(c), size(s), cut(ct), clip_size(csize), clip_start(cstart), margin(marg)   {}
 
-TileMap::TileMap(std::string_view path, TileMapData data)
-    : m_tileset(path, Rectangle(data.center, data.size)),
-      m_data(data) {}
+TileMap::TileMap(std::string_view path, TileMapData data) : m_data(data)
+    , m_tileset(path, Rectangle(data.center, data.size)) {}
 
 void TileMap::_buildClipPositions(void) noexcept {
     m_clip_positions.clear();
     i16 current_id = m_counter_start;
-    for (int row = 0; row < m_data.cut.y; row++) {
-        for (int col = 0; col < m_data.cut.x; col++) {
+    for (usize row = 0; row < m_data.cut.y; row++) {
+        for (usize col = 0; col < m_data.cut.x; col++) {
             m_clip_positions[current_id] = {
                 m_data.clip_start.x + col * (m_data.clip_size.w + m_data.margin),
                 m_data.clip_start.y + row * (m_data.clip_size.h + m_data.margin)
@@ -59,7 +58,7 @@ void TileMap::build(void) noexcept {
 
 void TileMap::_applyAttributes(void) noexcept {
 
-    int col = 0, row = 0;
+    usize col = 0, row = 0;
     m_body_slot.assign(m_template.size(), NO_BODY_SLOT);
 
     for (usize idx = 0; idx < m_template.size(); idx++) {
@@ -84,7 +83,7 @@ void TileMap::_applyAttributes(void) noexcept {
 
 
 
-void TileMap::_visibleRange(Vec2d world_tl, Dim2d world_view, Vec2d& col, Vec2d& row) const noexcept {
+void TileMap::_visibleRange(Vec2d world_tl, Dim2d world_view, Grid2d& col, Grid2d& row) const noexcept {
     f32 tw = m_data.clip_size.w + m_data.margin;
     f32 th = m_data.clip_size.h + m_data.margin;
 
@@ -101,7 +100,7 @@ void TileMap::_visibleRange(Vec2d world_tl, Dim2d world_view, Vec2d& col, Vec2d&
 
 void TileMap::_draw(Window& win, Color color) const noexcept {
     if (m_build_future.valid()) m_build_future.wait();
-    int col = 0, row = 0;
+    usize col = 0, row = 0;
 
     for (usize idx = 0; idx < m_template.size(); idx++) {
         TileID id = m_template[idx];
@@ -133,16 +132,16 @@ void TileMap::_draw(Window& win, Color color, const Camera& cam) const noexcept 
     Dim2d screen     = win.size();
     Dim2d world_view = { screen.w / zoom, screen.h / zoom };
 
-    Vec2d col, row;
+    Grid2d col, row;
     _visibleRange(world_tl, world_view, col, row);
 
 
     f32 tw = m_data.clip_size.w + m_data.margin;
     f32 th = m_data.clip_size.h + m_data.margin;
 
-    for (int rw = row.x; rw < row.y; rw++) {
-        for (int cl = col.x; cl < col.y; cl++) {
-            int    idx = rw * (int)m_data.cut.x + cl;
+    for (usize rw = row.x; rw < row.y; rw++) {
+        for (usize cl = col.x; cl < col.y; cl++) {
+            usize idx = rw * m_data.cut.x + cl;
 			TileID id = 0;
             if (idx < m_template.size()) id  = m_template[idx];
 

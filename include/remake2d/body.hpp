@@ -105,7 +105,7 @@ private:
 };
 
 
-class StaticBody : public PhysicBody {
+class StaticBody : public PhysicBody, public Trackable<StaticBody> {
 public:
     StaticBody(const StaticBody&);
     explicit StaticBody(const Geometry&);
@@ -129,7 +129,7 @@ private:
 };
 
 
-class DynamicBody : public PhysicBody {
+class DynamicBody : public PhysicBody, public Trackable<DynamicBody> {
 protected:
     f32  m_mass{1.0f};
     f32  m_density{1.0f};

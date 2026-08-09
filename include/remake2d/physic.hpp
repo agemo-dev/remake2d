@@ -7,18 +7,18 @@ namespace rmk {
 
 class PhysicManager {
 private:
-    b2WorldId                              m_world{b2_nullWorldId};
-    std::vector<PhysicBody*>               m_bodies;
-    std::vector<StaticBody*>               m_statics;
-    std::vector<DynamicBody*>              m_dynamics;
-    std::unordered_map<u64, PhysicBody*>   m_body_map;
-    f32                                    m_gravity{9.8f};
-    f32                                    m_ptm{32.0f};
-    Area                                   m_world_size{0, 0, 0, 0};
-    bool                                   m_use_fixed_step{false};
-    f32                                    m_fixed_step{1.0f / 60.0f};
-    fmax                                   m_accumulator{0.0};
-    std::vector<std::unique_ptr<StaticBody>>       m_boundary_walls;
+    b2WorldId                                    m_world{b2_nullWorldId};
+    std::vector<Tracker<PhysicBody>>             m_bodies;
+    std::vector<Tracker<StaticBody>>             m_statics;
+    std::vector<Tracker<DynamicBody>>            m_dynamics;
+    std::unordered_map<u64, Tracker<PhysicBody>> m_body_map;
+    f32                                          m_gravity{9.8f};
+    f32                                          m_ptm{32.0f};
+    Area                                         m_world_size{0, 0, 0, 0};
+    bool                                         m_use_fixed_step{false};
+    f32                                          m_fixed_step{1.0f / 60.0f};
+    fmax                                         m_accumulator{0.0};
+    std::vector<std::unique_ptr<StaticBody>>     m_boundary_walls;
 
 public:
     static PhysicManager& getInstance(void);
@@ -39,9 +39,9 @@ public:
     void fixedStep(f32)                    noexcept;
     f32  fixedStep(void)             const noexcept;
 
-    std::vector<PhysicBody*>&  bodies(void)    noexcept;
-    std::vector<StaticBody*>&  statics(void)   noexcept;
-    std::vector<DynamicBody*>& dynamics(void)  noexcept;
+    std::vector<Tracker<PhysicBody>>  bodies(void)    noexcept;
+    std::vector<Tracker<StaticBody>>  statics(void)   noexcept;
+    std::vector<Tracker<DynamicBody>> dynamics(void)  noexcept;
 
     void update(void);
 
@@ -55,8 +55,7 @@ private:
     void _registerBody(PhysicBody*)   noexcept;
     void _unregisterBody(PhysicBody*) noexcept;
 
-    void _stepAndDispatch(f32, i32)            noexcept;
-    void _rebindBody(PhysicBody*, PhysicBody*) noexcept;
+    void _stepAndDispatch(f32, i32) noexcept;
 
     static PhysicBody* _ownerOf(void*) noexcept;
 
@@ -64,7 +63,7 @@ public:
     ~PhysicManager(void);
 
 private:
-	friend class PhysicBody;
+    friend class PhysicBody;
     friend class StaticBody;
     friend class DynamicBody;
 };

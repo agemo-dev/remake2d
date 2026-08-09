@@ -19,11 +19,9 @@
 #include <utility>
 #include <filesystem>
 
-rmk_searchIncludeF2(<SDL2/SDL.h>,       <SDL.h>)
-rmk_searchIncludeF2(<SDL2/SDL_ttf.h>,   <SDL_ttf.h>)
-rmk_searchIncludeF2(<SDL2/SDL_image.h>, <SDL_image.h>)
-rmk_searchIncludeF2(<SDL2/SDL_mixer.h>, <SDL_mixer.h>)
-
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 namespace rmk {
 
@@ -84,9 +82,9 @@ protected:
     SDL_Rect                                		m_srcrect{0,0,0,0};
     bool                                    		m_use_clip{false};
     bool                                    		m_verts_dirty{true};
-    Vec2d                                   		m_clip_pos{0, 0};
-    Dim2d                                   		m_clip_size{0, 0};
-    Dim2d                                   		m_real_size{0, 0};
+    Vec2d                                   		m_clip_pos{0};
+    Dim2d                                   		m_clip_size{0};
+    Dim2d                                   		m_real_size{0};
     std::vector<SDL_Vertex>                 		m_vertices;
     Surface              							m_surface;
     mutable std::map<SDL_Renderer*, TextureData>    m_textures;
@@ -264,7 +262,7 @@ public:
     friend class Window;
 };
 
-class Animation : public Sprite {
+class Animation : public Sprite, public Trackable<Animation> {
 private:
     i8    	m_current_clip{0};
     u8    	m_loops_remaining{0};
@@ -311,7 +309,7 @@ private:
 
 class AnimationManager {
 private:
-    std::vector<Animation*> m_animations;
+    std::vector<Tracker<Animation>> m_animations;
 
 private:
     AnimationManager(void) = default;

@@ -735,11 +735,14 @@ Dim2d limit(void) const noexcept;                                // get world bo
 Vec2d offset(void) const noexcept;                               // get last frame offset
 Vec2d followedPoint(void) const noexcept;                        // get tracked point
 f32   smoothing(void) const noexcept;                            // get smoothing factor
-void  follow(Vec2d&) noexcept;                                   // track a point
-void  follow(Geometry&) noexcept;                                // track a shape
-void  follow(PhysicBody&) noexcept;                              // track a physics body
+void  follow(const Followable&) noexcept;                        // track a followable object
+void  unfollow(void) noexcept;                                   // track a followable object
 Signal<> onMove;                                                 // emitted when camera moves
 ```
+
+### Followable
+
+virtual Vec2d center(void) const noexcept = 0;
 
 ---
 

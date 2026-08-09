@@ -1,12 +1,12 @@
 #ifndef REMAKE2D_WINDOW_
 #define REMAKE2D_WINDOW_
 
-#include <remake2d/vector.hpp>
 #include <remake2d/system.hpp>
 #include <remake2d/camera.hpp>
+#include <remake2d/tracker.hpp>
 #include <remake2d/utility.hpp>
-#include <remake2d/numeric.hpp>
 #include <remake2d/concept.hpp>
+#include <remake2d/all/types.hpp>
 #include <remake2d/config/forward.hpp>
 
 #include <algorithm>
@@ -15,7 +15,7 @@
 #include <stack>
 #include <map>
 
-rmk_searchIncludeF2(<SDL2/SDL.h>, <SDL.h>)
+#include <SDL2/SDL.h>
 
 namespace rmk {
 
@@ -46,7 +46,7 @@ enum class blendmode : u8 {
 } //namespace window
 
 
-class Window {
+class Window : public Trackable<Window> {
 public:
     struct Viewport {
 	public:
@@ -78,9 +78,9 @@ private:
 
 public:
     Window(void);
-    Window(Window&&)                    = default;
+    Window(Window&&)                    noexcept;
     Window(const Window&)               = delete;
-    Window& operator=(Window&&)         = default;
+    Window& operator=(Window&&)         noexcept;
     Window& operator=(const Window&)    = delete;
     Window(std::string_view, Vec2d = window::pos::undefined, Dim2d = window::size::hd);
 
@@ -145,6 +145,7 @@ public:
 
 private:
     friend class Text;
+    friend class XWindow;
     friend class TileMap;
     friend class TileGrid;
     friend class Parallax;
@@ -156,10 +157,10 @@ private:
 
 class XWindow {
 private:
-    std::vector<Window*> m_windows;
+    std::vector<Tracker<Window>> m_windows;
 
 private:
-    XWindow(void)					   = default;
+    XWindow(void);
     XWindow(XWindow&&)				   = default;
     XWindow(const XWindow&) 		   = delete;
     XWindow& operator=(XWindow&&)      = default;

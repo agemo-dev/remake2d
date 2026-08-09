@@ -1,0 +1,33 @@
+revision generale du code interne pour renforcer la lecture sur pointeur et les operation arithmetiques internes .
+
+## Window
+
+- ajout blendmode : blendmode::mod, blendmode::mul
+- ajout de la methode Window::screenshot
+- la classe Geometry devient Followable
+
+## Camera
+
+- changement de l'api du module camera pour integration des **Trackers** .
+- ajout de la methode Camera::unfollow
+
+## Tools
+
+- macro REMAKE2D_VERSION* -> enum class version
+- ajout de version a l interface lua
+- ajout de la class Tracker et Trackable
+- ajout du concept IsTracker, IsTrackable et IsFollowable
+
+## Physic
+
+- meilleur separation du module physique
+- les classe de corps physique (PhysicBody, StaticBody, DynamicBody) deviennet des objets Trackable
+- utilisation de tracker plutot que de pointeur par PhysicManager
+
+## Texture
+
+- la classe Animation deviens Trackable
+
+## Lua scripting
+
+- remakeScript est officiellement fonctionnel et utilisable via les options cmake dediées

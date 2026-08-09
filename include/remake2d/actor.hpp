@@ -1,11 +1,9 @@
 #ifndef REMAKE2D_ACTOR_
 #define REMAKE2D_ACTOR_
 
-#include <remake2d/math.hpp>
+#include <remake2d/body.hpp>
 #include <remake2d/shape.hpp>
 #include <remake2d/vector.hpp>
-#include <remake2d/physic.hpp>
-#include <remake2d/utility.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/config/forward.hpp>
 

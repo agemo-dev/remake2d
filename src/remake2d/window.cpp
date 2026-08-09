@@ -20,7 +20,7 @@ Window::Viewport::Viewport(const Area& z) : zone(z) {}
 Window::Viewport::Viewport(const Area& z, Camera& cam) : zone(z), camera(&cam) {}
 
 Window::Window(void) : Window("RE:MAKE 2D") {}
-Window::Window(std::string_view name, Vec2d pos, Dim2d size) : m_title(name), m_size(size) {
+Window::Window(std::string_view name, Vec2d pos, Dim2d size) : m_size(size), m_title(name) {
     int x, y;
 
     rmk::system._init();
@@ -37,24 +37,62 @@ Window::Window(std::string_view name, Vec2d pos, Dim2d size) : m_title(name), m_
     m_window_id = (u32)SDL_GetWindowID(m_window);
     SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 
-    event.onWindowClose.joinPriority([this] (u32 id) {
-        if(id == this->m_window_id) this->close();
-    });
-    event.onWindowMoved.joinPriority([this] (u32 id, Vec2d pos) { 
-        if(id == this->m_window_id) {
-            this->m_pos = pos;
-            this->_newCenter();
-        }
-    });
-    event.onWindowResized.joinPriority([this] (u32 id, Dim2d size) { 
-        if(id == this->m_window_id) {
-            this->m_size = size;
-            this->_newCenter();
-        } 
-    });
-	
     _newCenter();
     xwindow._registerWindow(this);
+}
+
+Window::Window(Window&& other) noexcept
+    : Trackable<Window>(std::move(other))
+    , m_window_id(other.m_window_id)
+    , m_window(other.m_window)
+    , m_renderer(other.m_renderer)
+    , m_is_resizable(other.m_is_resizable)
+    , m_is_open(other.m_is_open)
+    , m_pos(other.m_pos)
+    , m_size(other.m_size)
+    , m_center(other.m_center)
+    , m_title(std::move(other.m_title))
+    , m_active_viewport(std::move(other.m_active_viewport))
+    , m_viewport_stack(std::move(other.m_viewport_stack))
+    , m_screen_vertices(std::move(other.m_screen_vertices))
+    , m_viewports(std::move(other.m_viewports))
+{
+    other.m_window   = nullptr;
+    other.m_renderer = nullptr;
+    other.m_is_open  = false;
+    other.m_window_id = 0;
+
+    relocate();
+}
+
+Window& Window::operator=(Window&& other) noexcept {
+    if (this != &other) {
+        close();
+
+        Trackable<Window>::operator=(std::move(other));
+
+        m_window_id        = other.m_window_id;
+        m_window            = other.m_window;
+        m_renderer          = other.m_renderer;
+        m_is_resizable       = other.m_is_resizable;
+        m_is_open           = other.m_is_open;
+        m_pos               = other.m_pos;
+        m_size               = other.m_size;
+        m_center            = other.m_center;
+        m_title              = std::move(other.m_title);
+        m_active_viewport    = std::move(other.m_active_viewport);
+        m_viewport_stack     = std::move(other.m_viewport_stack);
+        m_screen_vertices    = std::move(other.m_screen_vertices);
+        m_viewports          = std::move(other.m_viewports);
+
+        other.m_window   = nullptr;
+        other.m_renderer = nullptr;
+        other.m_is_open  = false;
+        other.m_window_id = 0;
+
+        relocate();
+    }
+    return *this;
 }
 
 u32 Window::ID(void) const noexcept {
@@ -365,21 +403,50 @@ void Window::_buildScreenVertices(const TextureBase& tex, const Camera& cam) noe
 }
 
 
+XWindow::XWindow(void) {
+    event.onWindowClose.joinPriority([this] (u32 id) {
+        for (auto& t : m_windows) {
+            Window* w = t.locate();
+            if (w && w->m_window_id == id) { w->close(); return; }
+        }
+    });
+    event.onWindowMoved.joinPriority([this] (u32 id, Vec2d pos) {
+        for (auto& t : m_windows) {
+            Window* w = t.locate();
+            if (w && w->m_window_id == id) {
+                w->m_pos = pos;
+                w->_newCenter();
+                return;
+            }
+        }
+    });
+    event.onWindowResized.joinPriority([this] (u32 id, Dim2d size) {
+        for (auto& t : m_windows) {
+            Window* w = t.locate();
+            if (w && w->m_window_id == id) {
+                w->m_size = size;
+                w->_newCenter();
+                return;
+            }
+        }
+    });
+}
+
 XWindow& XWindow::getInstance(void) noexcept {
     static XWindow instance;
     return instance;
  }
 
 void XWindow::_registerWindow(Window* win) noexcept {
-	auto& vec = m_windows;
-	auto it   = std::find(vec.begin(), vec.end(), win);
-    if(it == vec.end()) vec.push_back(win);
+    for (auto& t : m_windows) if (t.locate() == win) return;
+	auto tracker = win->tracker();
+    m_windows.push_back(tracker);
 }
 
 void XWindow::_unregisterWindow(Window* win) noexcept {
-	auto& vec = m_windows;
-	auto it   = std::find(vec.begin(), vec.end(), win);
-    if(it != vec.end()) vec.erase(it);
+    auto it = std::find_if(m_windows.begin(), m_windows.end(),
+        [win](Tracker<Window>& t) { return t.locate() == win; });
+    if (it != m_windows.end()) m_windows.erase(it);
 }
 
 } // namespace rmk

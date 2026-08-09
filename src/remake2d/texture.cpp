@@ -291,7 +291,10 @@ void Animation::_animationCopy(const Animation& other) noexcept {
     m_is_paused 		= other.m_is_paused;
     m_timer 			= other.m_timer;
     m_clip_duration 	= other.m_clip_duration;
-}Animation::Animation(std::string_view path, const Rectangle& shape, u8 total_clips, Dim2d clip_size, Vec2d start_pos, u8 spacing)
+	relocate();
+}
+
+Animation::Animation(std::string_view path, const Rectangle& shape, u8 total_clips, Dim2d clip_size, Vec2d start_pos, u8 spacing)
     : Sprite(path, shape) {
     this->m_clip_size = clip_size;
     this->m_start_pos = start_pos;
@@ -365,17 +368,17 @@ AnimationManager& AnimationManager::getInstance(void) noexcept {
 }
 
 void AnimationManager::_registerAnimation(Animation* a) noexcept {
-    auto it = std::find(m_animations.begin(), m_animations.end(), a);
-    if (it == m_animations.end()) m_animations.push_back(a);
+    auto it = std::find(m_animations.begin(), m_animations.end(), a->tracker());
+    if (it == m_animations.end()) m_animations.push_back(a->tracker());
 }
 
 void AnimationManager::_unregisterAnimation(Animation* a) noexcept {
-    auto it = std::find(m_animations.begin(), m_animations.end(), a);
+    auto it = std::find(m_animations.begin(), m_animations.end(), a->tracker());
     if (it != m_animations.end()) m_animations.erase(it);
 }
 
 void AnimationManager::update(void) {
-    for (auto* a : m_animations) a->_advance();
+    for (auto& a : m_animations) a->_advance();
 }
 
 } // namespace rmk

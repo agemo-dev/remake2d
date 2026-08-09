@@ -106,8 +106,8 @@ private:
 private:
     void _applyAttributes(void)		noexcept;
     void _buildClipPositions(void)	noexcept;
-    void _visibleRange(Vec2d, Dim2d, Vec2d&, Vec2d&) const noexcept;
     StaticBody* _bodyAt(usize tile_index) const noexcept;
+    void _visibleRange(Vec2d, Dim2d, Grid2d&, Grid2d&) const noexcept;
 
 public:
     ~TileMap(void) = default;

@@ -45,6 +45,10 @@ void SolState::_registerEngineType(std::string_view name, std::function<void(Sol
         ut["reserve"]          = &T::reserve;
     }
 
+	if constexpr (IsTracker<T>) {
+		ut["locate"] = &T::locate;
+	}
+
     if (init) init(ut);
 
     m_loaded_types.insert(std::string(name));

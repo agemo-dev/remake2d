@@ -8,16 +8,6 @@
 
 #include <span>
 
-#define rmk_searchIncludeF2(first, second) \
-#if __has_include(first) \
-	#include first \
-#elif __has_include(second) \
-	#include second \
-#else \
-	#error "[!] error generate : any file found : first and second" \
-#endif
-
-
 namespace rmk {
 
 class Nil {

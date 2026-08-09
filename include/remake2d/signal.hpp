@@ -3,10 +3,9 @@
 
 #include <remake2d/lock.hpp>
 #include <remake2d/error.hpp>
-#include <remake2d/utility.hpp>
 #include <remake2d/croutine.hpp>
 
-rmk_searchIncludeF2(<SDL2/SDL.h>, <SDL.h>)
+#include <SDL2/SDL.h>
 
 #include <vector>
 #include <mutex>

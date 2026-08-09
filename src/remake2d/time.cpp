@@ -151,9 +151,9 @@ Timer::Timer(time::Second l) : Timer(l.count()) {}
 
 Timer::Timer(Timer&& other)
     : m_limit(other.m_limit.load())
-    , m_current_time(other.m_current_time.load())
     , m_active(other.m_active.load())
     , m_elapsed(other.m_elapsed.load())
+    , m_current_time(other.m_current_time.load())
     , onTimeout(other.onTimeout)
 {
 	timer._registerTimer(this);
@@ -161,9 +161,9 @@ Timer::Timer(Timer&& other)
 
 Timer::Timer(const Timer& other)
     : m_limit(other.m_limit.load())
-    , m_current_time(other.m_current_time.load())
     , m_active(other.m_active.load())
     , m_elapsed(other.m_elapsed.load())
+    , m_current_time(other.m_current_time.load())
     , onTimeout(other.onTimeout)
 {
 	timer._registerTimer(this);
@@ -172,9 +172,9 @@ Timer::Timer(const Timer& other)
 Timer& Timer::operator=(Timer&& other) {
     if (this != &other) {
         m_limit.store(other.m_limit.load());
-        m_current_time.store(other.m_current_time.load());
         m_active.store(other.m_active.load());
         m_elapsed.store(other.m_elapsed.load());
+        m_current_time.store(other.m_current_time.load());
     }
 	timer._registerTimer(this);
     return *this;
@@ -183,9 +183,9 @@ Timer& Timer::operator=(Timer&& other) {
 Timer& Timer::operator=(const Timer& other) {
     if (this != &other) {
         m_limit.store(other.m_limit.load());
-        m_current_time.store(other.m_current_time.load());
         m_active.store(other.m_active.load());
         m_elapsed.store(other.m_elapsed.load());
+        m_current_time.store(other.m_current_time.load());
     }
 	timer._registerTimer(this);
     return *this;

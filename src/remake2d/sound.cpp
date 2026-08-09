@@ -1,4 +1,5 @@
 #include <remake2d/sound.hpp>
+#include <remake2d/config/config.hpp>
 
 #include <string>
 #include <stdlib.h>

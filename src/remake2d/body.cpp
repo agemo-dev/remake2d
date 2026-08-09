@@ -401,8 +401,6 @@ void PhysicBody::_rebuildShape(void) {
     }
 
     if (b2Shape_IsValid(m_shape_id)) {
-        // m_slot existe déjà (créé/lié par _initBody via tracker()) : pas besoin
-        // de rappeler tracker() ici, juste réutiliser le même Slot<PhysicBody>.
         b2Shape_SetUserData(m_shape_id, reinterpret_cast<void*>(m_slot.get()));
         b2Shape_SetFriction(m_shape_id, friction);
         b2Shape_SetRestitution(m_shape_id, restitution);
@@ -476,16 +474,18 @@ StaticBody& StaticBody::operator=(const StaticBody& other) {
     return *this;
 }
 
-StaticBody::StaticBody(StaticBody&& other) noexcept : PhysicBody(std::move(other)) {
-    // PhysicBody(std::move(other)) a déjà appelé physics._rebindBody(&other, this)
-    // et relocate() pour le sous-objet PhysicBody -- rien de plus à faire ici.
+StaticBody::StaticBody(StaticBody&& other) noexcept
+    : PhysicBody(std::move(other))
+    , Trackable<StaticBody>(std::move(other)) {
+    Trackable<StaticBody>::relocate();
 }
 
 StaticBody& StaticBody::operator=(StaticBody&& other) noexcept {
     if (this != &other) {
         physics._unregisterBody(this);
         PhysicBody::operator=(std::move(other));
-        // PhysicBody::operator=(std::move(other)) a déjà fait le rebind et relocate().
+        Trackable<StaticBody>::operator=(std::move(other));
+        Trackable<StaticBody>::relocate();
     }
     return *this;
 }
@@ -528,6 +528,7 @@ DynamicBody& DynamicBody::operator=(const DynamicBody& other) {
 
 DynamicBody::DynamicBody(DynamicBody&& other) noexcept
     : PhysicBody(std::move(other))
+    , Trackable<DynamicBody>(std::move(other))
     , m_mass(other.m_mass)
     , m_bounce(other.m_bounce)
     , m_bounce_threshold(other.m_bounce_threshold)
@@ -543,12 +544,15 @@ DynamicBody::DynamicBody(DynamicBody&& other) noexcept
     onMoveDown  = std::move(other.onMoveDown);
     onMoveLeft  = std::move(other.onMoveLeft);
     onMoveRight = std::move(other.onMoveRight);
+    Trackable<DynamicBody>::relocate();
 }
 
 DynamicBody& DynamicBody::operator=(DynamicBody&& other) noexcept {
     if (this != &other) {
         physics._unregisterBody(this);
         PhysicBody::operator=(std::move(other));
+        Trackable<DynamicBody>::operator=(std::move(other));
+
         m_mass             = other.m_mass;
         m_bounce           = other.m_bounce;
         m_bounce_threshold = other.m_bounce_threshold;
@@ -564,6 +568,8 @@ DynamicBody& DynamicBody::operator=(DynamicBody&& other) noexcept {
         onMoveDown  = std::move(other.onMoveDown);
         onMoveLeft  = std::move(other.onMoveLeft);
         onMoveRight = std::move(other.onMoveRight);
+
+        Trackable<DynamicBody>::relocate();
     }
     return *this;
 }

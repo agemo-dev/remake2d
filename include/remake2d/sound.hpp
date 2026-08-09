@@ -2,16 +2,13 @@
 #define REMAKE2D_SOUND_
 
 #include <remake2d/signal.hpp>
-#include <remake2d/system.hpp>
-#include <remake2d/utility.hpp>
 #include <remake2d/numeric.hpp>
-#include <remake2d/config/config.hpp>
 #include <remake2d/config/resource.hpp>
 
 #include <array>
 #include <memory>
 
-rmk_searchIncludeF2(<SDL2/SDL_mixer.h>, <SDL_mixer.h>)
+#include <SDL2/SDL_mixer.h>
 
 namespace rmk {
 

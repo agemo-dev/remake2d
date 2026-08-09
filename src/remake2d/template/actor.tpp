@@ -4,9 +4,7 @@
 namespace rmk {
 
 template<IsPhysic P>
-PhysicActor<P>::PhysicActor(const Geometry& shape) : ActorBase() {
-	body = P(shape);
-}
+PhysicActor<P>::PhysicActor(const Geometry& shape) : ActorBase(), body(shape) {}
 
 } // namespace rmk
 

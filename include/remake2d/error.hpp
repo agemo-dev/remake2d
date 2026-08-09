@@ -112,6 +112,10 @@ class SignalError : public OutOfRangeError {
     using OutOfRangeError::OutOfRangeError;
 };
 
+class TrackerError : public RunTimeError {
+    using RunTimeError::RunTimeError;
+};
+
 
 
 namespace error {
@@ -202,6 +206,9 @@ inline static constexpr const char *invalid_time      = "invalid time string —
 inline static constexpr const char *invalid_separator = "invalid separator — use ':', '-' or '*'";
 }
 
+namespace tracker {
+inline static constexpr const char *null_ptr_deref = "dereferencement of a null pointeur";
+}
 
 } // namespace error
 } // namespace rmk

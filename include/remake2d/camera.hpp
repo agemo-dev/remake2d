@@ -78,6 +78,4 @@ private:
 
 }//namespace rmk
 
-#include<remake2d/template/camera.tpp>
-
 #endif

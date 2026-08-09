@@ -208,7 +208,13 @@ template<IsShape S>
 SDL_Texture* Texture<S>::_ownerTexture(SDL_Renderer* renderer) const noexcept {
     auto it = m_textures.find(renderer);
     if (it != m_textures.end()) return it->second.texture;
-	return nullptr;
+
+	TextureData td;
+	td.texture = SDL_CreateTextureFromSurface(renderer, m_surface.data);
+	if (!td.texture) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + SDL_GetError()));
+	m_textures[renderer] = td;
+
+	return td.texture;
 }
 
 

@@ -1,12 +1,9 @@
 #ifndef REMAKE2D_RESSOURCE_
 #define REMAKE2D_RESSOURCE_
 
-#include<remake2d/utility.hpp>
-
-rmk_searchIncludeF2(<SDL2/SDL.h>,       <SDL.h>)
-rmk_searchIncludeF2(<SDL2/SDL_ttf.h>,   <SDL_ttf.h>)
-rmk_searchIncludeF2(<SDL2/SDL_image.h>, <SDL_image.h>)
-rmk_searchIncludeF2(<SDL2/SDL_mixer.h>, <SDL_mixer.h>)
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 namespace rmk {
 

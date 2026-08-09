@@ -8,7 +8,7 @@
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/forward.hpp>
 
-rmk_searchIncludeF2(<SDL2/SDL.h>, <SDL.h>)
+#include <SDL2/SDL.h>
 
 #include <array>
 #include <vector>

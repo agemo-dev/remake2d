@@ -12,6 +12,7 @@ void initLuaType(void)   		   noexcept;
 void initLuaClass(void)  		   noexcept;
 void initLuaEntity(void)		   noexcept;
 void initLuaSignal(void)		   noexcept;
+void initLuaTracker(void)		   noexcept;
 void initLuaEvent(sol::table&)     noexcept;
 void initLuaGlobal(sol::table&)    noexcept;
 void initLuaUtility(sol::table&)   noexcept;

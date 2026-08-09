@@ -73,6 +73,8 @@ void initLuaClass(void) noexcept {
 	    "camera" , &Window::Viewport::camera
 	);
 
+    script._registerEngineType<Followable>("Followable");
+
     script._registerEngineType<Camera,
         Camera(),
         Camera(const Vec2d&, const Dim2d&, const Dim2d&)
@@ -94,11 +96,8 @@ void initLuaClass(void) noexcept {
         ut["center"]    = &Camera::center;
         ut["size"]      = &Camera::size;
         ut["offset"]    = &Camera::offset;
-        ut["follow"]    = sol::overload(
-            [](Camera& cam, Vec2d& p) { cam.follow(p); },
-            [](Camera& cam, Geometry& g) { cam.follow(g); },
-            [](Camera& cam, PhysicBody& b) { cam.follow(b); }
-        );
+        ut["follow"]    = &Camera::follow;
+        ut["unfollow"]  = &Camera::unfollow;
     }, type::base<>,
 	    "onMove" , &Camera::onMove
 	);
@@ -113,7 +112,7 @@ void initLuaClass(void) noexcept {
         ut["size"]           = &Geometry::size;
         ut["points"]         = &Geometry::points;
 		ut["hasIntersected"] = &Geometry::hasIntersected;
-    });
+    }, type::base<Followable>);
 
     script._registerEngineType<Point, Point(), Point(const Vec2d&)>("Point", nullptr, type::base<Geometry>);
 

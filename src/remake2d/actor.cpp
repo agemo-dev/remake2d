@@ -1,4 +1,5 @@
 #include <remake2d/actor.hpp>
+#include <remake2d/math.hpp>
 
 namespace rmk {
 

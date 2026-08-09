@@ -4,7 +4,7 @@
 namespace rmk {
 
 TileGrid::TileGrid(const Vec2d& center, const Dim2d& size, const Grid2d& cut)
-        : m_center(center), m_size(size), m_cut(cut) {
+        : m_cut(cut), m_size(size), m_center(center) {
     _build();
 }
 
