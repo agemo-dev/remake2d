@@ -43,5 +43,10 @@ concept IsBasicType = std::same_as<T, struct Vec2d>  		||
                       std::same_as<T, struct HSL>			||
 					  std::is_arithmetic_v<T>;
 
+template<typename U, typename T>
+concept IsRelatedTo = std::same_as<U, T>        ||
+                      std::derived_from<T, U>   ||
+                      std::derived_from<U, T>   ||
+                      std::same_as<U, void>;
 } // namespace rmk
 #endif

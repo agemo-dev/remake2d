@@ -2,19 +2,21 @@
 #define REMAKE2D_TRACKER_
 
 #include <remake2d/error.hpp>
+#include <remake2d/concept.hpp>
 
 #include <memory>
 #include <compare>
+#include <concepts>
 
 namespace rmk {
 
-template<typename T> class Slot {
+template<IsTrackable T> struct Slot {
 public:
     const T* ptr{nullptr};
 
     static std::shared_ptr<Slot<T>> make(void) noexcept;
-	bool operator==(const Slot<T>&) const noexcept;
-	bool operator!=(const Slot<T>&) const noexcept;
+	bool operator==(const Slot<T>&)      const noexcept;
+	bool operator!=(const Slot<T>&)      const noexcept;
 };
 
 
@@ -25,12 +27,9 @@ public:
     TrackerBase(const TrackerBase&)            = default;
     TrackerBase& operator=(TrackerBase&&)      = default;
     TrackerBase& operator=(const TrackerBase&) = default;
-
-public:
-	virtual void locate(void) noexcept = 0
 };
 
-template<typename T> class Tracker : private TrackerBase {
+template<IsTrackable T> class Tracker : private TrackerBase {
 private:
     std::weak_ptr<Slot<T>> m_tracked;
 
@@ -52,13 +51,18 @@ public:
 	T*       operator->(void);
 	const T& operator*(void)  const;
 	const T* operator->(void) const;
+	explicit operator bool() const;
 	bool     operator==(const Tracker<T>&) const noexcept;
 	bool     operator!=(const Tracker<T>&) const noexcept;
 
 public:
-    T* locate(void)             noexcept;
-    void track(const Balise&)   noexcept;
-    const T* locate(void) const noexcept override;
+    void track(const Balise&) noexcept;
+
+    template<typename U = T> requires IsRelatedTo<U, T>
+    U* locate(void) noexcept;
+
+    template<typename U = T> requires IsRelatedTo<U, T>
+    const U* locate(void) const noexcept;
 };
 
 class TrackableBase {
@@ -68,9 +72,6 @@ public:
     TrackableBase(const TrackableBase&)            = default;
     TrackableBase& operator=(TrackableBase&&)      = default;
     TrackableBase& operator=(const TrackableBase&) = default;
-
-public:
-	virtual void relocate(void) noexcept = 0;
 };
 
 template<typename Derived> class Trackable : private TrackableBase {
@@ -87,8 +88,8 @@ public:
     Trackable& operator=(Trackable&&);
 
 public:
-    void relocate(void) noexcept override;
-    Tracker<Derived> tracker(void) noexcept;
+    void relocate(void)                  noexcept;
+    Tracker<Derived> tracker(void)       noexcept;
     Tracker<Derived> tracker(void) const noexcept;
 
 public:

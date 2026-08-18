@@ -9,7 +9,7 @@ namespace rmk {
 
 
 u64 PhysicBody::_nextId(void) {
-    static std::atomic<u64> counter{1};
+    static std::atomic<umax> counter{1};
     return counter.fetch_add(1);
 }
 
@@ -87,7 +87,6 @@ PhysicBody::PhysicBody(PhysicBody&& other) noexcept
     other.m_id        = 0;
     other.m_current_angle = 0.0f;
 
-    physics._rebindBody(&other, this);
     relocate();
 }
 
@@ -121,7 +120,6 @@ PhysicBody& PhysicBody::operator=(PhysicBody&& other) noexcept {
         other.m_id       = 0;
         other.m_current_angle = 0.0f;
 
-        physics._rebindBody(&other, this);
         relocate();
     }
     return *this;
@@ -162,10 +160,7 @@ void PhysicBody::move(const Vec2d& pos) noexcept {
 
     m_shape_cache.center = pos;
 
-    for (auto& p : m_shape_cache.points) {
-        p.x += offset.x;
-        p.y += offset.y;
-    }
+    for (auto& p : m_shape_cache.points) p += offset;
 
     if (b2Body_IsValid(m_body)) {
         Vec2d pm = physic::pixelToMeter(m_shape_cache.center);
@@ -341,13 +336,6 @@ void PhysicBody::_initBody(b2WorldId world, b2BodyType type,
     bodyDef.type         = type;
     bodyDef.position     = {pm.x, pm.y};
 
-    // userData points at the Slot<PhysicBody> owned by this instance's own
-    // Trackable<PhysicBody> base, never at `this` directly: `this` can become
-    // dangling if the owning PhysicBody lives inside a container that
-    // reallocates (e.g. std::vector<DynamicBody>). tracker() lazily creates
-    // the slot if it doesn't exist yet and always binds it to the current
-    // address, so the raw pointer handed to Box2D stays valid across moves
-    // as long as every move-ctor/move-assign calls relocate() afterwards.
     tracker();
     bodyDef.userData     = reinterpret_cast<void*>(m_slot.get());
 
@@ -476,16 +464,12 @@ StaticBody& StaticBody::operator=(const StaticBody& other) {
 
 StaticBody::StaticBody(StaticBody&& other) noexcept
     : PhysicBody(std::move(other))
-    , Trackable<StaticBody>(std::move(other)) {
-    Trackable<StaticBody>::relocate();
-}
+{}
 
 StaticBody& StaticBody::operator=(StaticBody&& other) noexcept {
     if (this != &other) {
         physics._unregisterBody(this);
         PhysicBody::operator=(std::move(other));
-        Trackable<StaticBody>::operator=(std::move(other));
-        Trackable<StaticBody>::relocate();
     }
     return *this;
 }
@@ -528,7 +512,6 @@ DynamicBody& DynamicBody::operator=(const DynamicBody& other) {
 
 DynamicBody::DynamicBody(DynamicBody&& other) noexcept
     : PhysicBody(std::move(other))
-    , Trackable<DynamicBody>(std::move(other))
     , m_mass(other.m_mass)
     , m_bounce(other.m_bounce)
     , m_bounce_threshold(other.m_bounce_threshold)
@@ -544,14 +527,12 @@ DynamicBody::DynamicBody(DynamicBody&& other) noexcept
     onMoveDown  = std::move(other.onMoveDown);
     onMoveLeft  = std::move(other.onMoveLeft);
     onMoveRight = std::move(other.onMoveRight);
-    Trackable<DynamicBody>::relocate();
 }
 
 DynamicBody& DynamicBody::operator=(DynamicBody&& other) noexcept {
     if (this != &other) {
         physics._unregisterBody(this);
         PhysicBody::operator=(std::move(other));
-        Trackable<DynamicBody>::operator=(std::move(other));
 
         m_mass             = other.m_mass;
         m_bounce           = other.m_bounce;
@@ -568,8 +549,6 @@ DynamicBody& DynamicBody::operator=(DynamicBody&& other) noexcept {
         onMoveDown  = std::move(other.onMoveDown);
         onMoveLeft  = std::move(other.onMoveLeft);
         onMoveRight = std::move(other.onMoveRight);
-
-        Trackable<DynamicBody>::relocate();
     }
     return *this;
 }

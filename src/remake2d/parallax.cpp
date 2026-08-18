@@ -1,8 +1,10 @@
 #include <remake2d/parallax.hpp>
+#include <remake2d/texture.hpp>
+#include <remake2d/vector.hpp>
+#include <remake2d/camera.hpp>
 #include <remake2d/window.hpp>
 #include <remake2d/time.hpp>
 
-#include <vector>
 #include <utility>
 #include <algorithm>
 

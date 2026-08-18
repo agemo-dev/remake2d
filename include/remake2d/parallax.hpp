@@ -2,9 +2,7 @@
 #define REMAKE2D_PARALLAX_
 
 #include <remake2d/numeric.hpp>
-#include <remake2d/texture.hpp>
-#include <remake2d/vector.hpp>
-#include <remake2d/camera.hpp>
+#include <remake2d/config/forward.hpp>
 #include <vector>
 
 

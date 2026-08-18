@@ -258,12 +258,12 @@ void initLuaClass(void) noexcept {
 
     script._registerEngineType<DataFile, DataFile(std::string_view)>("DataFile", [](SolState::Type& ut) {
         ut["save"]   = sol::overload(
-			[](DataFile& df, const Data& d)     { df.save(d); },
-			[](DataFile& df, const ISavable& d) { df.save(d); }
+			[](DataFile& df, const Data& d)    { df.save(d); },
+			[](DataFile& df, const Savable& d) { df.save(d); }
 		);
         ut["load"]   = sol::overload(
-			[](DataFile& df, Data *d)     { df.load(*d); },
-			[](DataFile& df, ISavable *d) { df.load(*d); }
+			[](DataFile& df, Data *d)    { df.load(*d); },
+			[](DataFile& df, Savable *d) { df.load(*d); }
 		);
         ut["path"]   = &DataFile::path;
         ut["name"]   = &DataFile::name;

@@ -5,6 +5,7 @@
 #include <remake2d/concept.hpp>
 #include <remake2d/utility.hpp>
 #include <remake2d/croutine.hpp>
+#include <remake2d/tracker.hpp>
 #include <remake2d/math.hpp>
 #include <remake2d/lock.hpp>
 #include <remake2d/error.hpp>

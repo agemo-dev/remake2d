@@ -2,8 +2,8 @@
 #include <remake2d/utility.hpp>
 
 #include <functional>
-#include <utility>
 #include <algorithm>
+#include <utility>
 #include <string>
 #include <vector>
 
@@ -12,15 +12,18 @@ namespace rmk {
 void Scene::_rebuildCache(void) {
     m_actors_cache.clear();
     m_layers_cache.clear();
-    
-    for (auto& [layer, actor] : m_actors_map) {
+
+	m_actors_cache.reserve(m_actors_map.size());
+	m_layers_cache.reserve(m_layers_map.size());
+
+    for (const auto& [layer, actor] : m_actors_map) {
         m_actors_cache.push_back(actor);
     }
-    
-    for (auto& [layer, frame] : m_layers_map) {
+
+    for (const auto& [layer, frame] : m_layers_map) {
         m_layers_cache.push_back(frame);
     }
-    
+
     m_cache_dirty = false;
 }
 
@@ -28,25 +31,25 @@ void Scene::execute(const Frame& function) {
     m_main = function;
 }
 
-void Scene::add(const Frame& function, i16 layer_value) {
-    if (layer_value < (i16)layer::min || layer_value > (i16)layer::max) {
+void Scene::add(const Frame& function, i16 layer) {
+    if (layer < (i16)layer::min || layer > (i16)layer::max) {
         rmk_dynamicAssert(rmk::SceneError, error::scene::layer_is_overlimits);
     }
-    m_layers_map.emplace(layer_value, function);
+    m_layers_map.emplace(layer, function);
     m_cache_dirty = true;
 }
 
-void Scene::add(ActorBase& actor, i16 layer_value) {
-    if (layer_value < (i16)layer::min || layer_value > (i16)layer::max) {
+void Scene::add(ActorBase& actor, i16 layer) {
+    if (layer < (i16)layer::min || layer > (i16)layer::max) {
         rmk_dynamicAssert(rmk::SceneError, error::scene::layer_is_overlimits);
     }
-    m_actors_map.emplace(layer_value, &actor);
+    m_actors_map.emplace(layer, actor.tracker());
     m_cache_dirty = true;
 }
 
-void Scene::remove(ActorBase& actor) {
+void Scene::remove(const ActorBase& actor) {
     for (auto it = m_actors_map.begin(); it != m_actors_map.end(); ++it) {
-        if (it->second == &actor) {
+        if (it->second == actor.tracker()) {
             m_actors_map.erase(it);
             m_cache_dirty = true;
             break;
@@ -65,35 +68,27 @@ void Scene::setActorActive(ActorBase& actor, bool active) {
     actor.active(active);
 }
 
-void Scene::enable(void) noexcept {
-	m_enabled = true;
+void Scene::active(bool stat) noexcept {
+	m_is_active = true;
 }
 
-void Scene::disable(void) noexcept {
-	m_enabled = false;
+bool Scene::active(void) const noexcept {
+	return m_is_active;
 }
 
-bool Scene::isEnabled(void) const noexcept {
-	return m_enabled;
-}
+void Scene::update(void) const {
 
-void Scene::update(void) {
-    if (!m_enabled) return;
+    if (!m_is_active)    return;
+    if (m_main)          m_main();
+    if (m_cache_dirty)   _rebuildCache();
     
-    if (m_main) m_main();
-    
-    if (m_cache_dirty) _rebuildCache();
-    
-    for (auto* actor : m_actors_cache) {
-        if (actor->active()) {
-            actor->update();
-            actor->_updates();
-        }
+    for (auto& actor : m_actors_cache) {
+        if (!actor->active()) continue;
+		actor->update();
+		actor->_updates();
     }
     
-    for (auto& frame : m_layers_cache) {
-        frame();
-    }
+    for (const auto& frame : m_layers_cache) frame();
 }
 
 void Act::add(std::string_view tag, Scene& scene) {
@@ -101,7 +96,7 @@ void Act::add(std::string_view tag, Scene& scene) {
     if (m_scenes.count(key)) {
         rmk_dynamicAssert(rmk::SceneError, error::scene::multiple_scene_declared);
     }
-    m_scenes.emplace(key, &scene);
+    m_scenes.emplace(key, scene.tracker());
 }
     
 void Act::link(std::string_view tag, std::span<std::string_view> scenes) {
@@ -132,9 +127,9 @@ std::vector<std::string> Act::_resolveTag(std::string_view tag) const {
     return result;
 }
 
-void Act::_rebuildFocusCache(void) {
+void Act::_rebuildFocusCache(void) const {
     m_focused_cache.clear();
-    for (auto& tag : m_focused_tags) {
+    for (const auto& tag : m_focused_tags) {
         auto it = m_scenes.find(tag);
         if (it != m_scenes.end()) {
             m_focused_cache.push_back(it->second);
@@ -163,28 +158,31 @@ void Act::update(void) const {
         rmk_dynamicAssert(rmk::SceneError, error::scene::any_focus);
     }
     
-    if (m_focus_dirty) {
-        const_cast<Act*>(this)->_rebuildFocusCache();
-    }
+    if (m_focus_dirty) _rebuildFocusCache();
     
-    for (auto* scene : m_focused_cache) {
-        scene->update();
+    for (const auto& scene : m_focused_cache) {
+        scene.update();
     }
 }
 
 void Act::updates(void) const {
-    for (auto& entry : m_scenes) {
-        entry.second->update();
+    for (const auto& [tag, scene] : m_scenes) {
+        scene.update();
     }
 }
 
-Scene* Act::scene(std::string_view tag) const {
+Scene& Act::scene(std::string_view tag) {
     std::string key(tag);
     auto it = m_scenes.find(key);
-    if (it != m_scenes.end()) {
-        return it->second;
-    }
-    return nullptr;
+    if (it != m_scenes.end()) return it->second;
+    rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
+}
+
+const Scene& Act::scene(std::string_view tag) const {
+    std::string key(tag);
+    auto it = m_scenes.find(key);
+    if (it != m_scenes.end()) return it->second;
+    rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
 }
 
 } // namespace rmk

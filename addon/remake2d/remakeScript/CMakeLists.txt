@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.32)
 
 project(
 	remakeScript
-	VERSION 0.1.0
+	VERSION 0.2.0
 	DESCRIPTION "A remake2d add-on for lua scripting"
 	LANGUAGES CXX C
 )

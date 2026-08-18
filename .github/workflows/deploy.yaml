@@ -12,13 +12,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+
       - run: echo "cache_id=$(date --utc +%Y%m%d)" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
           key: mkdocs-material-${{ env.cache_id }}
           path: .cache
-      - run: pip install mkdocs-material
-      - run: mkdocs gh-deploy --force
+
+      - run: pip install mkdocs-material mike
+
+      - name: Configure git for mike's commits
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Extract version from version.hpp
+        id: version
+        run: |
+          MAJOR=$(grep -oP 'major\s*=\s*\K[0-9]+' include/remake2d/config/version.hpp)
+          MINOR=$(grep -oP 'minor\s*=\s*\K[0-9]+' include/remake2d/config/version.hpp)
+          echo "short=${MAJOR}.${MINOR}" >> $GITHUB_OUTPUT
+
+      - name: Deploy with mike
+        run: |
+          mike deploy --push --update-aliases "${{ steps.version.outputs.short }}" latest
+          mike set-default --push latest

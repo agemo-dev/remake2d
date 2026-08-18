@@ -24,10 +24,10 @@ Area world(void)                 const noexcept; // get world boundaries
 f32  pixelsPerMeter(void)        const noexcept; // get pixel-to-meter ratio
 f32  gravitationalConstant(void) const noexcept; // get gravity
 
-const std::vector<PhysicBody*>&  bodies(void)   const noexcept; // all physics bodies
-const std::vector<StaticBody*>&  statics(void)  const noexcept; // static bodies only
-const std::vector<DynamicBody*>& dynamics(void) const noexcept; // dynamic bodies only
 
+std::vector<Tracker<PhysicBody>>& bodies(void)   const noexcept; // all physics bodies
+std::vector<Tracker<PhysicBody>>& statics(void)  const noexcept; // static bodies only
+std::vector<Tracker<PhysicBody>>& dynamics(void) const noexcept; // dynamic bodies only
 void update(void); // step the simulation (called by loop)
 ```
 

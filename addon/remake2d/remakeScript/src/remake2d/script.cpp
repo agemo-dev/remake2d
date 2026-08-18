@@ -49,7 +49,6 @@ void SolState::_placeInTable(std::string_view path, SolState::Type ut) noexcept 
 }
 
 Script::Script(std::string_view id) : m_file(id) {
-    if (!script.m_is_init) config::solstat::initLua();
     if (!std::filesystem::exists(m_file)) {
         rmk_dynamicAssert(rmk::ScriptError, std::string(error::script::file_unexist) + " : " + std::string(m_file));
     }
@@ -67,6 +66,8 @@ Script::Script(std::string_view id) : m_file(id) {
 }
 
 void Script::update(void) {
+	if (!script.m_is_init) config::solstat::initLua();
+
     try {
         script.m_state.script_file(m_file, m_env);
     } catch (const sol::error& e) {

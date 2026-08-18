@@ -2,7 +2,6 @@
 #define REMAKE2D_SCENE_
 
 #include <remake2d/actor.hpp>
-#include <remake2d/window.hpp>
 #include <remake2d/numeric.hpp>
 
 #include <map>
@@ -19,13 +18,13 @@ public:
     using Frame = std::function<void(void)>;
 
 private:
-    std::multimap<i16, ActorBase*>  m_actors_map;
-    std::multimap<i16, Frame>       m_layers_map;
-    std::vector<ActorBase*>         m_actors_cache;
-    std::vector<Frame>              m_layers_cache;
-    Frame                           m_main;
-    bool                            m_cache_dirty{true};
-    bool                            m_enabled{true};
+    std::multimap<i16, Tracker<ActorBase>>  m_actors_map;
+    std::multimap<i16, Frame>               m_layers_map;
+    mutable std::vector<Tracker<ActorBase>> m_actors_cache;
+    mutable std::vector<Frame>              m_layers_cache;
+    Frame                                   m_main;
+    bool                                    m_cache_dirty{true};
+    bool                                    m_is_active{true};
 
 public:
     Scene(void)						= default;
@@ -43,9 +42,8 @@ public:
 
 public:
     void setLayerActive(i16, bool);
-    void enable(void) 		   noexcept;
-    void disable(void) 		   noexcept;
-    bool isEnabled(void) const noexcept;
+    void active(bool) 		  noexcept;
+    bool active(void)   const noexcept;
     void setActorActive(ActorBase&, bool);
 
 private:
@@ -55,11 +53,11 @@ private:
 
 class Act {
 private:
-    std::map<std::string, Scene*>               m_scenes;
     std::map<std::string, std::vector<std::string>> m_links;
-    std::vector<std::string>                    m_focused_tags;
-    std::vector<Scene*>                         m_focused_cache;
-    bool                                        m_focus_dirty{true};
+    std::map<std::string, Scene>                    m_scenes;
+    std::vector<std::string>                        m_focused_tags;
+    mutable std::vector<Scene>                      m_focused_cache;
+    bool                                            m_focus_dirty{true};
 
 public:
     Act(void)					= default;
@@ -70,7 +68,7 @@ public:
 
 public:
     void focus(std::string_view);
-    void add(std::string_view, Scene&);
+    void add(std::string_view, const Scene&);
     void link(std::string_view, std::span<std::string_view>);
 
 public:
@@ -79,10 +77,11 @@ public:
     void update(std::string_view)	const;
 
 public:
-    Scene* scene(std::string_view) const;
+    Scene& scene(std::string_view);
+    const Scene& scene(std::string_view) const;
 
 private:
-    void _rebuildFocusCache(void);
+    void _rebuildFocusCache(void) const;
     std::vector<std::string> _resolveTag(std::string_view) const;
 };
 

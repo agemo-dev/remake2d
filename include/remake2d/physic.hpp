@@ -9,8 +9,8 @@ class PhysicManager {
 private:
     b2WorldId                                    m_world{b2_nullWorldId};
     std::vector<Tracker<PhysicBody>>             m_bodies;
-    std::vector<Tracker<StaticBody>>             m_statics;
-    std::vector<Tracker<DynamicBody>>            m_dynamics;
+    std::vector<Tracker<PhysicBody>>             m_statics;
+    std::vector<Tracker<PhysicBody>>             m_dynamics;
     std::unordered_map<u64, Tracker<PhysicBody>> m_body_map;
     f32                                          m_gravity{9.8f};
     f32                                          m_ptm{32.0f};
@@ -40,8 +40,8 @@ public:
     f32  fixedStep(void)             const noexcept;
 
     std::vector<Tracker<PhysicBody>>  bodies(void)    noexcept;
-    std::vector<Tracker<StaticBody>>  statics(void)   noexcept;
-    std::vector<Tracker<DynamicBody>> dynamics(void)  noexcept;
+    std::vector<Tracker<PhysicBody>>  statics(void)   noexcept;
+    std::vector<Tracker<PhysicBody>>  dynamics(void)  noexcept;
 
     void update(void);
 
@@ -63,7 +63,7 @@ public:
     ~PhysicManager(void);
 
 private:
-    friend class PhysicBody;
+	friend class PhysicBody;
     friend class StaticBody;
     friend class DynamicBody;
 };

@@ -506,9 +506,10 @@ void  pixelsPerMeter(f32) noexcept;                // set pixel-to-meter ratio
 Area  world(void) const noexcept;                  // get world boundaries
 void  world(const Area&) noexcept;                 // set world boundaries (creates boundary walls)
 void  remove(PhysicBody&);                         // remove a body from the simulation
-const std::vector<PhysicBody*>&  bodies(void) const noexcept;   // all physics bodies
-const std::vector<StaticBody*>&  statics(void) const noexcept;  // static bodies only
-const std::vector<DynamicBody*>& dynamics(void) const noexcept; // dynamic bodies only
+
+std::vector<Tracker<PhysicBody>>& bodies(void)   const noexcept; // all physics bodies
+std::vector<Tracker<PhysicBody>>& statics(void)  const noexcept; // static bodies only
+std::vector<Tracker<PhysicBody>>& dynamics(void) const noexcept; // dynamic bodies only
 ```
 
 ---
@@ -722,7 +723,7 @@ Signal<> onFinish; // emit when animation ended (in last remaining)
 
 ```cpp
 Camera(void);                                                    // default camera
-Camera(const Vec2d& center, const Dim2d& size, const Dim2d& limit); // camera with bounds
+Camera(const Vec2d& center, const Dim2d& size, const Dim2d& limit = nil); // camera with bounds
 void  zoom(f32) noexcept;                                        // set zoom level
 void  move(const Vec2d&) noexcept;                               // move camera
 void  limit(const Dim2d&) noexcept;                              // set world boundaries

@@ -6,11 +6,10 @@ namespace solstat {
 
 void initLuaTracker(void) noexcept {
 
-    script._registerEngineType<Tracker<Followable>>  ("FollowableTracker");
-    script._registerEngineType<Tracker<Window>>       ("WindowTracker");
-    script._registerEngineType<Tracker<PhysicBody>>   ("PhysicBodyTracker");
-    script._registerEngineType<Tracker<StaticBody>>   ("StaticBodyTracker");
-    script._registerEngineType<Tracker<DynamicBody>>  ("DynamicBodyTracker");
+    script._registerEngineType<Tracker<Window>>       ("Tracker::Window");
+    script._registerEngineType<Tracker<ActorBase>>    ("Tracker::ActorBase");
+    script._registerEngineType<Tracker<Followable>>   ("Tracker::Followable");
+    script._registerEngineType<Tracker<PhysicBody>>   ("Tracker::PhysicBody");
 
 }
 

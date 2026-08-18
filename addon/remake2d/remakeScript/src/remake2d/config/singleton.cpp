@@ -52,7 +52,7 @@ void initLuaSingleton(sol::table& rmk) noexcept {
         );
         ut["mixColor"] = &Random::mixColor;
         ut["choice"] = [](Random& self, std::vector<sol::object> vec) -> sol::object {
-		    return random.choice<sol::object>(vec);
+		    return self.choice<sol::object>(vec);
 		};
     });
     rmk["random"] = &random;
@@ -74,8 +74,8 @@ void initLuaSingleton(sol::table& rmk) noexcept {
         ut["update"]    = &MainRenderLoop::update;
         ut["isRunning"] = &MainRenderLoop::isRunning;
         ut["execute"] = sol::overload(
-            [](MainRenderLoop& self, Window& win, sol::function body) { loop.execute(win, [body]() { body(); }); },
-            [](MainRenderLoop& self, sol::function condition, sol::function body) { loop.execute([condition]() -> bool { return condition(); }, [body]() { body(); }); }
+            [](MainRenderLoop& self, Window& win, sol::function body) { self.execute(win, [body]() { body(); }); },
+            [](MainRenderLoop& self, sol::function condition, sol::function body) { self.execute([condition]() -> bool { return condition(); }, [body]() { body(); }); }
         );
     });
     rmk["loop"] = &loop;

@@ -2,8 +2,6 @@
 #define REMAKE2D_ACTOR_
 
 #include <remake2d/body.hpp>
-#include <remake2d/shape.hpp>
-#include <remake2d/vector.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/config/forward.hpp>
 
@@ -13,11 +11,11 @@
 
 namespace rmk {
 
-class ActorBase {
+class ActorBase : Trackable<ActorBase> {
 
 protected:
-    std::vector<ActorBase*>         m_children;
-    ActorBase*                      m_parent{nullptr};
+    std::vector<Tracker<ActorBase>> m_children;
+    Tracker<ActorBase>              m_parent;
     bool                            m_active{true};
 
 public:
@@ -28,14 +26,18 @@ public:
     ActorBase& operator=(const ActorBase&)  = default;
 
 public:
-    void addChild(ActorBase*)     noexcept;
-    void removeChild(ActorBase*)  noexcept;
-    ActorBase* parent(void) const noexcept;
-    const std::vector<ActorBase*>& children(void) const noexcept;
+    void addChild(ActorBase&)           noexcept;
+    void removeChild(ActorBase&)        noexcept;
+
+    Tracker<ActorBase>& parent(void)             noexcept;
+    const Tracker<ActorBase>& parent(void) const noexcept;
+
+    std::vector<Tracker<ActorBase>>& children(void) noexcept;
+    const std::vector<Tracker<ActorBase>>& children(void) const noexcept;
 
 public:
     virtual void update(void) = 0;
-    void active(bool) noexcept;
+    void active(bool)       noexcept;
     bool active(void) const noexcept;
 
 private:

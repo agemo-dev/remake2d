@@ -4,10 +4,11 @@
 #include <functional>
 
 #include <remake2d/time.hpp>
+#include <remake2d/vector.hpp>
 #include <remake2d/signal.hpp>
 #include <remake2d/tracker.hpp>
-#include <remake2d/vector.hpp>
 #include <remake2d/concept.hpp>
+#include <remake2d/utility.hpp>
 #include <remake2d/config/forward.hpp>
 
 namespace rmk {
@@ -27,7 +28,7 @@ public:
 	virtual ~Followable(void) = default;
 };
 
-class Camera {
+class Camera : public Trackable<Camera> {
 private:
     Tracker<Followable>        m_tracker;
     Vec2d                      m_center;
@@ -44,7 +45,7 @@ public:
 
 public:
     Camera(void);
-    Camera(const Vec2d&, const Dim2d&, const Dim2d&);
+    Camera(const Vec2d&, const Dim2d&, const Dim2d& = nil);
 
     Camera(Camera&&)                 = default;
     Camera(const Camera&)            = default;

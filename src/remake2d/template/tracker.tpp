@@ -3,77 +3,89 @@
 
 namespace rmk {
 
-template<typename T>
+template<IsTrackable T>
 std::shared_ptr<Slot<T>> Slot<T>::make(void) noexcept {
 	return std::make_shared<Slot<T>>();
 }
 
-template<typename T>
+template<IsTrackable T>
 bool Slot<T>::operator==(const Slot<T>& other) const noexcept {
 	return this->ptr == other.ptr;
 }
 
-template<typename T>
+template<IsTrackable T>
 bool Slot<T>::operator!=(const Slot<T>& other) const noexcept {
 	return this->ptr != other.ptr;
 }
 
-template<typename T>
+template<IsTrackable T>
 Tracker<T>::Tracker(const Balise& src) : m_tracked(src) {}
 
-template<typename T>
+template<IsTrackable T>
 void Tracker<T>::track(const Balise& b) noexcept {
 	m_tracked = b;
 }
 
-template<typename T>
+template<IsTrackable T>
 T& Tracker<T>::operator*(void) {
-	if (auto tmp = m_tracked.lock()) return const_cast<T&>(*tmp->ptr);
+	if (T* p = locate<T>()) return *p;
 	rmk_dynamicAssert(rmk::TrackerError, error::tracker::null_ptr_deref);
 }
 
-template<typename T>
+template<IsTrackable T>
 const T& Tracker<T>::operator*(void) const {
-	if (auto tmp = m_tracked.lock()) return *tmp->ptr;
+	if (const T* p = locate<T>()) return *p;
 	rmk_dynamicAssert(rmk::TrackerError, error::tracker::null_ptr_deref);
 }
 
-template<typename T>
+template<IsTrackable T>
 T* Tracker<T>::operator->(void) {
-	if (auto tmp = m_tracked.lock()) return const_cast<T*>(tmp->ptr);
-	return nullptr;
+	return locate<T>();
 }
 
-template<typename T>
+template<IsTrackable T>
 const T* Tracker<T>::operator->(void) const {
-	if (auto tmp = m_tracked.lock()) return tmp->ptr;
-	return nullptr;
+	return locate<T>();
 }
 
-template<typename T>
+template<IsTrackable T>
+Tracker<T>::operator bool() const {
+	return locate() != nullptr;
+}
+template<IsTrackable T>
 bool Tracker<T>::operator==(const Tracker<T>& other) const noexcept {
 	auto ptr1 = this->m_tracked.lock();
 	auto ptr2 = other.m_tracked.lock();
 	return ptr1 && ptr2 ? (*ptr1) == (*ptr2) : ptr1 == ptr2;
 }
 
-template<typename T>
+template<IsTrackable T>
 bool Tracker<T>::operator!=(const Tracker<T>& other) const noexcept {
 	auto ptr1 = this->m_tracked.lock();
 	auto ptr2 = other.m_tracked.lock();
 	return ptr1 && ptr2 ? ptr1->ptr != ptr2->ptr : ptr1 != ptr2;
 }
 
-template<typename T>
-T* Tracker<T>::locate(void) noexcept {
-	if (auto tmp = m_tracked.lock()) return const_cast<T*>(tmp->ptr);
-	return nullptr;
+template<IsTrackable T>
+template<IsTrackable U> requires IsRelatedTo<U, T>
+U* Tracker<T>::locate(void) noexcept {
+	auto tmp = m_tracked.lock();
+	if (!tmp || !tmp->ptr) return nullptr;
+	T* p = const_cast<T*>(tmp->ptr);
+	if constexpr (std::same_as<U, void>)        return static_cast<void*>(p);
+	else if constexpr (std::derived_from<T, U>) return static_cast<U*>(p);
+	else                                        return dynamic_cast<U*>(p);
 }
 
-template<typename T>
-const T* Tracker<T>::locate(void) const noexcept {
-	if (auto tmp = m_tracked.lock()) return tmp->ptr;
-	return nullptr;
+template<IsTrackable T>
+template<typename U> requires IsRelatedTo<U, T>
+const U* Tracker<T>::locate(void) const noexcept {
+	auto tmp = m_tracked.lock();
+	if (!tmp || !tmp->ptr) return nullptr;
+	const T* p = tmp->ptr;
+	if constexpr (std::same_as<U, void>)        return static_cast<const void*>(p);
+	else if constexpr (std::derived_from<T, U>) return static_cast<const U*>(p);
+	else                                        return dynamic_cast<const U*>(p);
 }
 
 template<typename Derived>

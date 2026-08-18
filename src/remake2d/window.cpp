@@ -17,7 +17,7 @@
 namespace rmk {
 
 Window::Viewport::Viewport(const Area& z) : zone(z) {}
-Window::Viewport::Viewport(const Area& z, Camera& cam) : zone(z), camera(&cam) {}
+Window::Viewport::Viewport(const Area& z, Camera& cam) : zone(z), camera(cam.tracker()) {}
 
 Window::Window(void) : Window("RE:MAKE 2D") {}
 Window::Window(std::string_view name, Vec2d pos, Dim2d size) : m_size(size), m_title(name) {
@@ -168,10 +168,10 @@ void Window::screenshot(std::string_view path) noexcept {
     SDL_GetRendererOutputSize(m_renderer, &w, &h);
     if (w <= 0 || h <= 0) return;
 
-    std::filesystem::path fs_path(path);
-    if (fs_path.has_parent_path()) {
+    std::filesystem::path p(path);
+    if (p.has_parent_path()) {
         std::error_code ec;
-        std::filesystem::create_directories(fs_path.parent_path(), ec);
+        std::filesystem::create_directories(p.parent_path(), ec);
         if (ec) return;
     }
 
@@ -214,12 +214,12 @@ void Window::addViewport(std::string_view name, Viewport v) noexcept {
 
 void Window::linkCamera(std::string_view viewport, Camera& cam) noexcept {
     auto it = m_viewports.find(std::string(viewport));
-    if (it != m_viewports.end()) it->second.camera = &cam;
+    if (it != m_viewports.end()) it->second.camera = cam.tracker();
 }
 
 void Window::unlinkCamera(std::string_view viewport) noexcept {
     auto it = m_viewports.find(std::string(viewport));
-    if (it != m_viewports.end()) it->second.camera = nullptr;
+    if (it != m_viewports.end()) it->second.camera = nil;
 }
 
 void Window::removeViewport(std::string_view name) noexcept {
@@ -307,7 +307,7 @@ void Window::draw(const Parallax& para, Color color, std::string_view viewport) 
 void Window::draw(const TileMap& tile, Color color, std::string_view viewport) noexcept {
     const Viewport* vp = _resolveViewport(viewport);
     _applyViewport(vp);
-    if(vp && vp->camera) tile._draw(*this, color, *vp->camera);
+    if(vp && vp->camera) tile._draw(*this, color, *(vp->camera));
     else tile._draw(*this, color);
     _restoreViewport();
 }

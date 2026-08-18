@@ -1,4 +1,3 @@
-
 #include <remake2d/physic.hpp>
 #include <remake2d/tracker.hpp>
 #include <remake2d/utility.hpp>
@@ -36,7 +35,7 @@ PhysicManager& PhysicManager::getInstance(void) {
 
 PhysicBody* PhysicManager::_ownerOf(void* shapeUserData) noexcept {
     if (!shapeUserData) return nullptr;
-    return reinterpret_cast<Slot<PhysicBody>*>(shapeUserData)->ptr;
+    return const_cast<PhysicBody*>(reinterpret_cast<Slot<PhysicBody>*>(shapeUserData)->ptr);
 }
 
 void PhysicManager::remove(PhysicBody& body) {
@@ -50,19 +49,14 @@ void PhysicManager::remove(PhysicBody& body) {
     body._detachFromWorld();
     m_bodies.erase(it);
 
-    auto* dyn = dynamic_cast<DynamicBody*>(&body);
-    if (dyn) {
-        auto it2 = std::find_if(m_dynamics.begin(), m_dynamics.end(),
-            [dyn](Tracker<DynamicBody>& t) { return t.locate() == dyn; });
-        if (it2 != m_dynamics.end()) m_dynamics.erase(it2);
-    } else {
-        auto* stc = dynamic_cast<StaticBody*>(&body);
-        if (stc) {
-            auto it3 = std::find_if(m_statics.begin(), m_statics.end(),
-                [stc](Tracker<StaticBody>& t) { return t.locate() == stc; });
-            if (it3 != m_statics.end()) m_statics.erase(it3);
-        }
-    }
+    auto eraseFrom = [&body](std::vector<Tracker<PhysicBody>>& vec) {
+        auto found = std::find_if(vec.begin(), vec.end(),
+            [&body](Tracker<PhysicBody>& t) { return t.locate() == &body; });
+        if (found != vec.end()) vec.erase(found);
+    };
+
+    if (dynamic_cast<DynamicBody*>(&body)) eraseFrom(m_dynamics);
+    else if (dynamic_cast<StaticBody*>(&body)) eraseFrom(m_statics);
 }
 
 Area PhysicManager::world(void) const noexcept { return m_world_size; }
@@ -85,8 +79,8 @@ void PhysicManager::fixedStep(f32 s) noexcept { m_fixed_step = s > 0.0f ? s : 1.
 f32  PhysicManager::fixedStep(void)  const noexcept { return m_fixed_step; }
 
 std::vector<Tracker<PhysicBody>>  PhysicManager::bodies(void)    noexcept { return m_bodies;   }
-std::vector<Tracker<StaticBody>>  PhysicManager::statics(void)   noexcept { return m_statics;  }
-std::vector<Tracker<DynamicBody>> PhysicManager::dynamics(void)  noexcept { return m_dynamics; }
+std::vector<Tracker<PhysicBody>>  PhysicManager::statics(void)   noexcept { return m_statics;  }
+std::vector<Tracker<PhysicBody>>  PhysicManager::dynamics(void)  noexcept { return m_dynamics; }
 
 void PhysicManager::world(const Area& area) noexcept {
     if (m_world_size.x == area.x && m_world_size.y == area.y &&
@@ -97,8 +91,6 @@ void PhysicManager::world(const Area& area) noexcept {
 }
 
 void PhysicManager::_rebuildBoundary(void) {
-    // Destroy previous boundary walls first: each StaticBody unregisters and
-    // detaches its own Box2D body via its destructor.
     m_boundary_walls.clear();
 
     if (m_world_size.w <= 0 || m_world_size.h <= 0) return;
@@ -135,38 +127,33 @@ void PhysicManager::_rebuildBoundary(void) {
 }
 
 void PhysicManager::_registerBody(PhysicBody *body) noexcept {
-    // If this id was already registered (e.g. copy-assignment reusing a
-    // still-registered body, or a stale entry), detach the old Box2D body
-    // first so we never leak or double-register the same id.
     auto existing = m_body_map.find(body->m_id);
     if (existing != m_body_map.end() && existing->second.locate() != body) {
-        // Different object claiming an id already in use: never happens with
-        // _nextId()-assigned ids, but guard defensively.
         return;
     }
 
     body->_build(m_world);
-    m_bodies.push_back(body->tracker());
+    Tracker<PhysicBody> t = body->tracker();
+    m_bodies.push_back(t);
 
-    if (auto* s = dynamic_cast<StaticBody*>(body))       m_statics.push_back(s->tracker());
-    else if (auto* d = dynamic_cast<DynamicBody*>(body)) m_dynamics.push_back(d->tracker());
+    if (dynamic_cast<StaticBody*>(body))       m_statics.push_back(t);
+    else if (dynamic_cast<DynamicBody*>(body)) m_dynamics.push_back(t);
 
-    m_body_map[body->m_id] = body->tracker();
+    m_body_map[body->m_id] = t;
 }
 
 void PhysicManager::_unregisterBody(PhysicBody *body) noexcept {
     m_body_map.erase(body->m_id);
 
-    m_bodies.erase(std::remove_if(m_bodies.begin(), m_bodies.end(),
-        [body](Tracker<PhysicBody>& t) { return t.locate() == body; }), m_bodies.end());
+    auto eraseFrom = [body](std::vector<Tracker<PhysicBody>>& vec) {
+        vec.erase(std::remove_if(vec.begin(), vec.end(),
+            [body](Tracker<PhysicBody>& t) { return t.locate() == body; }), vec.end());
+    };
 
-    if (auto* s = dynamic_cast<StaticBody*>(body)) {
-        m_statics.erase(std::remove_if(m_statics.begin(), m_statics.end(),
-            [s](Tracker<StaticBody>& t) { return t.locate() == s; }), m_statics.end());
-    } else if (auto* d = dynamic_cast<DynamicBody*>(body)) {
-        m_dynamics.erase(std::remove_if(m_dynamics.begin(), m_dynamics.end(),
-            [d](Tracker<DynamicBody>& t) { return t.locate() == d; }), m_dynamics.end());
-    }
+    eraseFrom(m_bodies);
+
+    if (dynamic_cast<StaticBody*>(body))       eraseFrom(m_statics);
+    else if (dynamic_cast<DynamicBody*>(body)) eraseFrom(m_dynamics);
 }
 
 bool PhysicManager::_isValidBody(PhysicBody *body) const {

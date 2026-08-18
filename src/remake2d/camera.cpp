@@ -1,7 +1,5 @@
 #include <remake2d/camera.hpp>
 #include <remake2d/shape.hpp>
-#include <remake2d/physic.hpp>
-#include <remake2d/utility.hpp>
 
 #include <utility>
 
@@ -98,8 +96,10 @@ void Camera::_offset(void) noexcept {
         m_ghost = followed;
     }
 
-    m_ghost.x = std::clamp(m_ghost.x, 0.0f, std::max<f32>(0.0f, m_limit.w - m_size.w));
-    m_ghost.y = std::clamp(m_ghost.y, 0.0f, std::max<f32>(0.0f, m_limit.h - m_size.h));
+	if (m_limit != nil) {
+	    m_ghost.x = std::clamp(m_ghost.x, 0.0f, std::max<f32>(0.0f, m_limit.w - m_size.w));
+	    m_ghost.y = std::clamp(m_ghost.y, 0.0f, std::max<f32>(0.0f, m_limit.h - m_size.h));
+	}
 
     Vec2d& last = m_lasted_point;
     m_offset = {m_ghost.x - last.x, m_ghost.y - last.y};

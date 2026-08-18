@@ -181,11 +181,13 @@ map.counterStart(1);
 
 ---
 
-## Following a map with a camera
+## Following
 
-A map larger than the window can't be displayed entirely at scale without becoming unreadable; that's where a `Camera` comes in, attached
-to the viewport the map is drawn through, exactly like any other draw call. What changes with a linked camera is that `TileMap` automatically
-culls and rescales only the tiles currently visible, instead of drawing the whole grid every frame.
+A map larger than the window can't be displayed entirely at scale without becoming unreadable. That's where a `Camera` comes in, attached
+to the viewport the map is drawn through, exactly like any other draw call.
+
+What changes with a linked camera is that `TileMap` automatically culls and rescales only the tiles currently visible, instead of drawing the
+whole grid every frame:
 
 ```cpp
 rmk::Window win;
@@ -193,24 +195,13 @@ rmk::Camera cam({0, 0}, win.size(), {2000, 1200}); // world is 2000x1200
 
 win.addViewport("world", { rmk::Area(0, win.size()), cam });
 
-// or with linkCamera after creating the "world" viewport without a camera
-// win.linkCamera("world", cam);
-```
-
-- The viewport's `Area` defines the screen region the map will render into.
-- `cam`'s size should match that screen region, while its third constructor argument (limit) defines the boundaries of the world the camera
-- is allowed to scroll within.
-
-Once the camera is linked, the map draws through that viewport, simply by naming it:
-
-```cpp
 rmk::loop.execute(win, [&](void) {
-    cam.follow(player.shape()); // or any Geometry/PhysicBody/Vec2d
+    cam.follow(player_shape);
     win.draw(map, rmk::color::white, "world");
 });
 ```
 
-Draw looks up the `"world"` viewport, finds its linked camera, and passes it down to the map's internal draw call, which computes which 
+Draw looks up the `"world"` viewport, finds its linked camera, and passes it down to the map's internal draw call, which computes which
 rows and columns fall inside the camera's current view, and only clips, moves and draws those.
 
 !!! info

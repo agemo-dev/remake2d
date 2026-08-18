@@ -50,6 +50,7 @@ nav:
         - Loop:     learn/graphics/loop.md
         - Shape:    learn/graphics/shape.md
         - Viewport: learn/graphics/viewport.md
+        - Camera:   learn/graphics/camera.md
     - Texture:
         - Texture:   learn/texture/texture.md
         - Text:      learn/texture/text.md
@@ -70,12 +71,13 @@ nav:
         - Date:        learn/time/date.md
         - Clock:       learn/time/clock.md
     - Tools:
-        - Math:        learn/tools/math.md
-        - Stream:      learn/tools/stream.md
-        - Concept:     learn/tools/concept.md
-        - Utility:     learn/tools/utility.md
-        - Random:      learn/tools/random.md
-        - Scene & act: learn/tools/scene.md
+        - Math:              learn/tools/math.md
+        - Stream:            learn/tools/stream.md
+        - Concept:           learn/tools/concept.md
+        - Utility:           learn/tools/utility.md
+        - Random:            learn/tools/random.md
+        - Scene & act:       learn/tools/scene.md
+        - Interface Headers: learn/tools/headers.md
     - Data & Script:
         - Save & load data:    learn/data/data.md
         - Data file:           learn/data/datafile.md

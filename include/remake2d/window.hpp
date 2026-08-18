@@ -44,14 +44,32 @@ enum class blendmode : u8 {
 };
 
 } //namespace window
+/*
+template<typename Derived> class Drawable {
+private:
+	f32             m_zoom;
+	Color           m_color;
+	bool            m_is_dirty;
 
+public:
+	Drawable(void)                       = default;
+	Drawable(Drawable&&)                 = default;
+	Drawable(const Drawable&)            = default;
+	Drawable& operator=(Drawable&&)      = default;
+	Drawable& operator=(const Drawable&) = default;
+
+public:
+	void fill(Window&) const { dynamic_cast<const Derived*>(this)->fill(); }
+	void draw(Window&) const { dynamic_cast<const Derived*>(this)->draw(); }
+};
+*/
 
 class Window : public Trackable<Window> {
 public:
     struct Viewport {
 	public:
-        Area       	zone;
-        Camera*     camera{nullptr};
+        Area             zone;
+        Tracker<Camera>  camera;
 
 	public:
 		Viewport(void) = default;

@@ -51,10 +51,10 @@ private:
 
 public:
 	template<typename T, typename... Ctors, typename B = const std::tuple<>, typename... Fields>
-	void _registerEngineType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
+	void registerType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
 
 	template<typename T, typename... Ctors, typename B = const std::tuple<>, typename... Fields>
-	void registerType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
+	void _registerEngineType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
 
     template<typename T> void loadVar(std::string_view id, T&) noexcept;
 
@@ -85,8 +85,8 @@ inline SolState& script = SolState::getInstance();
 
 class  Script {
 private:
-    sol::environment    m_env;
-    std::string         m_file;
+    sol::environment  m_env;
+    std::string       m_file;
 
 public:
     Signal<> onFileChanged;
