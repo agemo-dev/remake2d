@@ -1,12 +1,15 @@
 #ifndef REMAKE2D_WINDOW_
 #define REMAKE2D_WINDOW_
 
+#include <remake2d/draw.hpp>
+#include <remake2d/layer.hpp>
 #include <remake2d/system.hpp>
 #include <remake2d/camera.hpp>
 #include <remake2d/tracker.hpp>
 #include <remake2d/utility.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/all/types.hpp>
+#include <remake2d/private/nil.hpp>
 #include <remake2d/config/forward.hpp>
 
 #include <algorithm>
@@ -15,15 +18,13 @@
 #include <stack>
 #include <map>
 
-#include <SDL2/SDL.h>
-
 namespace rmk {
 
 namespace window {
 
 namespace pos {
-inline constexpr Vec2d centered  = { SDL_WINDOWPOS_CENTERED,  SDL_WINDOWPOS_CENTERED  };
-inline constexpr Vec2d undefined = { SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED };
+inline constexpr Vec2d centered  = { -1 };
+inline constexpr Vec2d undefined = { -2 };
 } //namespace pos
 
 namespace size {
@@ -36,47 +37,38 @@ inline constexpr Dim2d uhd    = { 3840, 2160 };
 } //namespace size
 
 enum class blendmode : u8 {
-	none		= (u8)SDL_BLENDMODE_NONE,
-	normal		= (u8)SDL_BLENDMODE_BLEND,
-	add			= (u8)SDL_BLENDMODE_ADD,
-	mod			= (u8)SDL_BLENDMODE_MOD,
-	mul			= (u8)SDL_BLENDMODE_MUL
+    none,
+    normal,
+    add,
+    mod,
+    mul
 };
 
 } //namespace window
-/*
-template<typename Derived> class Drawable {
-private:
-	f32             m_zoom;
-	Color           m_color;
-	bool            m_is_dirty;
-
-public:
-	Drawable(void)                       = default;
-	Drawable(Drawable&&)                 = default;
-	Drawable(const Drawable&)            = default;
-	Drawable& operator=(Drawable&&)      = default;
-	Drawable& operator=(const Drawable&) = default;
-
-public:
-	void fill(Window&) const { dynamic_cast<const Derived*>(this)->fill(); }
-	void draw(Window&) const { dynamic_cast<const Derived*>(this)->draw(); }
-};
-*/
 
 class Window : public Trackable<Window> {
 public:
-    struct Viewport {
-	public:
-        Area             zone;
-        Tracker<Camera>  camera;
+    class Viewport : public Trackable<Viewport> {
+    public:
+        Area    zone;
+        Camera  camera;
 
-	public:
-		Viewport(void) = default;
+    public:
+        Viewport(void) = default;
 
-	public:
-		Viewport(const Area&);
-		Viewport(const Area&, Camera&);
+    public:
+        Viewport(const Area&);
+        Viewport(const Area&, const Camera&);
+
+    public:
+        void draw(const Drawable&, u16 = 0) noexcept;
+        void fill(const Fillable&, u16 = 0) noexcept;
+
+    private:
+        Tracker<Window> m_window{nil};
+
+    private:
+        friend class Window;
     };
 
 private:
@@ -89,10 +81,14 @@ private:
     Dim2d                            m_size;
     Vec2d                            m_center;
     std::string                      m_title{};
-    std::string                      m_active_viewport{};
-    std::stack<Area>                 m_viewport_stack{};
-    std::vector<SDL_Vertex>          m_screen_vertices{};
-    std::map<std::string, Viewport>  m_viewports;
+    Camera                           m_camera;
+
+private:
+    std::map<u16, std::vector<DrawPack>>     m_draw_layers;
+    std::map<u16, std::vector<VertexBatch>>  m_fill_layers;
+    std::vector<Tracker<Viewport>>           m_viewports;
+    Tracker<Viewport>                        m_active_viewport{};
+    std::stack<Area>                         m_viewport_stack{};
 
 public:
     Window(void);
@@ -107,56 +103,50 @@ public:
     Vec2d pos(void)    const noexcept;
     Dim2d size(void)   const noexcept;
     Vec2d center(void) const noexcept;
+    SDL_Renderer* renderer(void) const noexcept;
 
 public:
-    void move(Vec2d)			  noexcept;
-    void border(bool)			  noexcept;
-    void resize(Dim2d)		   	  noexcept;
-    void maxSize(Dim2d) 		  noexcept;
-    void resizable(bool)		  noexcept;
+    void move(Vec2d)              noexcept;
+    void border(bool)             noexcept;
+    void resize(Dim2d)            noexcept;
+    void maxSize(Dim2d)           noexcept;
+    void resizable(bool)          noexcept;
     void fullScreen(bool)         noexcept;
     void rename(std::string_view) noexcept;
 
 public:
-    void resetViewport(void)				   		noexcept;
-    void useViewport(std::string_view)		   		noexcept;
-    void unlinkCamera(std::string_view) 	   		noexcept;
-    void removeViewport(std::string_view)      		noexcept;
-    void linkCamera(std::string_view, Camera&) 		noexcept;
-    void addViewport(std::string_view, Viewport)	noexcept;
+    void resetViewport(void)               noexcept;
+    void useViewport(Viewport&)            noexcept;
+    void connectViewport(Viewport&)        noexcept;
+    void disconnectViewport(Viewport&)     noexcept;
 
 public:
     void icon(std::string_view);
     void close(void)                  noexcept;
     void present(void)                noexcept;
-	void screenshot(std::string_view) noexcept;
+    void screenshot(std::string_view) noexcept;
 
 public:
     std::string title(void)           noexcept;
-	Area area(void)				const noexcept;
+    Camera& camera(void)              noexcept;
+    const Camera& camera(void)  const noexcept;
+    Area area(void)             const noexcept;
     bool isOpen(void)           const noexcept;
     bool isFocus(void)          const noexcept;
     bool isResizable(void)      const noexcept;
     void blendMode(window::blendmode) noexcept;
 
-    void clear(Color = rmk::color::black, std::string_view = "") 					  noexcept;
-    void draw(const TileMap&,     Color = rmk::color::white, std::string_view = "") noexcept;
-    void draw(const Parallax&,    Color = rmk::color::white, std::string_view = "") noexcept;
-    void draw(const TextureBase&, Color = rmk::color::white, std::string_view = "") noexcept;
-    void draw(const Area&,        Color = rmk::color::white, std::string_view = "") noexcept;
-    void draw(const TileGrid&,    Color = rmk::color::white, std::string_view = "") noexcept;
-    void draw(const Geometry&,    Color = rmk::color::white, std::string_view = "") noexcept;
-    void draw(const PhysicBody&,  Color = rmk::color::white, std::string_view = "") noexcept;
-    void fill(const Area&,        Color = rmk::color::white, std::string_view = "") noexcept;
-    void fill(const Geometry&,    Color = rmk::color::white, std::string_view = "") noexcept;
-    void fill(const PhysicBody&,  Color = rmk::color::white, std::string_view = "") noexcept;
+    void clear(Color = rmk::color::black)    noexcept;
+    void draw(const Drawable&, u16 = 0)      noexcept;
+    void fill(const Fillable&, u16 = 0)      noexcept;
 
 private:
-    void _newCenter(void)				 noexcept;
+    void _newCenter(void)                noexcept;
     void _restoreViewport(void)          noexcept;
     void _applyViewport(const Viewport*) noexcept;
-    const Viewport* _resolveViewport(std::string_view)     const noexcept;
-    void _buildScreenVertices(const TextureBase&, const Camera&) noexcept;
+    void _flushLayer(u16)                noexcept;
+    void _pushDraw(const std::vector<DrawPack>&, u16, const Viewport* = nullptr)  noexcept;
+    void _pushFill(const std::vector<VertexBatch>&, u16, const Viewport* = nullptr) noexcept;
 
 public:
     ~Window(void);
@@ -164,9 +154,6 @@ public:
 private:
     friend class Text;
     friend class XWindow;
-    friend class TileMap;
-    friend class TileGrid;
-    friend class Parallax;
     friend class FontManager;
     template<IsShape> friend class Texture;
 };
@@ -176,32 +163,36 @@ private:
 class XWindow {
 private:
     std::vector<Tracker<Window>> m_windows;
+    Tracker<Window>               m_last_drawn_window{};
 
 private:
     XWindow(void);
-    XWindow(XWindow&&)				   = default;
-    XWindow(const XWindow&) 		   = delete;
+    XWindow(XWindow&&)                 = default;
+    XWindow(const XWindow&)            = delete;
     XWindow& operator=(XWindow&&)      = default;
     XWindow& operator=(const XWindow&) = delete;
 
 private:
-    void _registerWindow(Window*)   noexcept;
-    void _unregisterWindow(Window*) noexcept;
+    void _registerWindow(Window*)     noexcept;
+    void _unregisterWindow(Window*)   noexcept;
+    void _setLastDrawnWindow(Window*) noexcept;
 
 public:
     static XWindow& getInstance(void) noexcept;
 
+public:
+    Window* lastDrawnWindow(void) const noexcept;
+
 private:
     friend class Text;
     friend class Window;
-    friend class TileMap;
-    friend class Parallax;
     friend class FontManager;
-	friend class MainRenderLoop;
+    friend class MainRenderLoop;
     template<IsShape> friend class Texture;
 };
 
 inline XWindow& xwindow = XWindow::getInstance();
 
 } //namespace rmk
+
 #endif

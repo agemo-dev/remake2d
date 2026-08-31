@@ -1,7 +1,7 @@
 #ifndef REMAKE2D_PHYSIC_
 #define REMAKE2D_PHYSIC_
 
-#include <remake2d/body.hpp>
+#include <remake2d/private/body.hpp>
 
 namespace rmk {
 

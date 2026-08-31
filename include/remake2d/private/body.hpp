@@ -21,7 +21,7 @@
 
 namespace rmk {
 
-class PhysicBody : public Trackable<PhysicBody> {
+class PhysicBody : public Trackable<PhysicBody>, public Drawable, public Fillable {
 public:
     using AnimMap   = std::map<std::string,  Animation>;
 
@@ -90,6 +90,10 @@ protected:
     void         _calculateVertices(void) noexcept;
     void         _initBody(b2WorldId, b2BodyType, f32, f32, f32);
     void         _detachFromWorld(void) noexcept;
+
+private:
+    void draw(const Drawable&) const noexcept override;
+    void fill(const Fillable&) const noexcept override;
 
 protected:
 	b2Circle  _makeB2Circle(const PhysicBody::ShapeCache&);

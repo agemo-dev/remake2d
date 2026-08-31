@@ -1,11 +1,14 @@
 #ifndef REMAKE2D_RESSOURCE_
 #define REMAKE2D_RESSOURCE_
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
+#include <remake2d/config/sdl.hpp>
+#include <remake2d/config/forward.hpp>
 
 namespace rmk {
+
+inline void _resourceFreeSurface(SDL_Surface* s)  { sdl.freeSurface(s); }
+inline void _resourceFreeChunk(Mix_Chunk* c)      { sdl.freeChunk(c);   }
+inline void _resourceFreeMusic(Mix_Music* m)      { sdl.freeMusic(m);   }
 
 template<typename T, void(*F)(T*)> struct Resource {
 public:
@@ -29,9 +32,9 @@ private:
     void release(void);
 };
 
-using Surface = Resource<SDL_Surface, SDL_FreeSurface>;
-using CHK     = Resource<Mix_Chunk,     Mix_FreeChunk>;
-using MUS     = Resource<Mix_Music,     Mix_FreeMusic>;
+using Surface = Resource<SDL_Surface, _resourceFreeSurface>;
+using CHK     = Resource<Mix_Chunk,   _resourceFreeChunk>;
+using MUS     = Resource<Mix_Music,   _resourceFreeMusic>;
 
 } // namespace rmk
 

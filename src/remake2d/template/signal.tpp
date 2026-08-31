@@ -439,24 +439,24 @@ void _EngineSignal<Args...>::_refreshState(void) {
 }
 
 template<typename... Args>
-void _EventSignal<Args...>::_setScancode(SDL_Scancode sc) noexcept {
+void _EventSignal<Args...>::_setScancode(i32 sc) noexcept {
     m_scancode = sc;
 }
 
 template<typename... Args>
-void _EventSignal<Args...>::_setButton(SDL_GameControllerButton b) noexcept {
+void _EventSignal<Args...>::_setButton(i32 b) noexcept {
     m_button = b;
 }
 
 template<typename... Args>
 bool _EventSignal<Args...>::isActive(void) const noexcept {
-    if (m_scancode != SDL_SCANCODE_UNKNOWN)
-        return SDL_GetKeyboardState(nullptr)[m_scancode];
-    if (m_button != SDL_CONTROLLER_BUTTON_INVALID) {
-        for (int i = 0; i < SDL_NumJoysticks(); i++) {
-            SDL_JoystickID id = SDL_JoystickGetDeviceInstanceID(i);
+    if (m_scancode != 0)
+        return sdl.keyPressed(m_scancode);
+    if (m_button != -1) {
+        for (int i = 0; i < sdl.numJoysticks(); i++) {
+            i32 id = sdl.joystickInstanceId(i);
             SDL_GameController* ctrl = _getOpenController(id);
-            if (ctrl && SDL_GameControllerGetButton(ctrl, m_button))
+            if (ctrl && sdl.controllerButtonPressed(ctrl, m_button))
                 return true;
         }
     }

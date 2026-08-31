@@ -8,14 +8,14 @@ namespace rmk {
 template<IsShape S>
 Texture<S>::Texture(std::string_view path, const S& shape)
     : m_shape(shape) {
-    m_surface.data = IMG_Load(path.data());
-    if (!m_surface.data) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::surface_no_load) + " : " + IMG_GetError()));
+    m_surface.data = sdl.load(path);
+    if (!m_surface.data) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::surface_no_load) + " : " + sdl.getImageError()));
     m_shape.m_is_changed = true;
-    m_real_size = { (f32)m_surface.data->w, (f32)m_surface.data->h };
+    m_real_size = { (f32)sdl.surfaceWidth(m_surface.data), (f32)sdl.surfaceHeight(m_surface.data) };
     for(auto& e : xwindow.m_windows) {
         TextureData td;
-        td.texture = SDL_CreateTextureFromSurface(e->m_renderer, m_surface.data);
-        if (!td.texture) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + SDL_GetError()));
+        td.texture = sdl.createTextureFromSurface(e->m_renderer, m_surface.data);
+        if (!td.texture) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + sdl.getError()));
         m_textures[e->m_renderer] = td;
     }
     m_use_clip = false;
@@ -76,7 +76,7 @@ const Geometry& Texture<S>::shape(void) const noexcept {
 }
 
 template<IsShape S>
-std::vector<SDL_Vertex> Texture<S>::vertices(void) const noexcept {
+std::vector<Vertex> Texture<S>::vertices(void) const noexcept {
     return m_vertices;
 }
 
@@ -100,8 +100,8 @@ void Texture<S>::_applyColor(SDL_Renderer* renderer, const Color& color) const n
     auto it = m_textures.find(renderer);
     if (it == m_textures.end()) return;
     if (it->second.current_color == color) return;
-    SDL_SetTextureColorMod(it->second.texture, color.r, color.g, color.b);
-    SDL_SetTextureAlphaMod(it->second.texture, color.a);
+    sdl.setTextureColorMod(it->second.texture, color.r, color.g, color.b);
+    sdl.setTextureAlphaMod(it->second.texture, color.a);
     it->second.current_color = color;
 }
 
@@ -148,7 +148,7 @@ void Texture<S>::_copy(const Texture<S>& other) noexcept {
     this->m_srcrect    = other.m_srcrect;
     for (auto& [renderer, data] : other.m_textures) {
         TextureData td;
-        td.texture = SDL_CreateTextureFromSurface(renderer, this->m_surface.data);
+        td.texture = sdl.createTextureFromSurface(renderer, this->m_surface.data);
         td.current_color = rmk::color::white;
         this->m_textures[renderer] = td;
     }
@@ -162,7 +162,7 @@ void Texture<S>::_calculateVertices(void) noexcept {
     m_verts_dirty = false;
     m_shape._triangulate();
 
-    auto verts = m_shape._toVertices();
+    auto verts = m_shape._verticesImpl();
 
     const auto* pts = m_shape.pointsPos();
     f32 minX = pts[0].x, maxX = pts[0].x;
@@ -194,10 +194,11 @@ void Texture<S>::_calculateVertices(void) noexcept {
     }
 
     for (auto& v : verts) {
-        f32 u = (v.position.x - minX) / w;
-        f32 t = (v.position.y - minY) / h;
-        v.tex_coord.x = (uMin + u * uRange) / m_real_size.w;
-        v.tex_coord.y = (vMin + t * vRange) / m_real_size.h;
+        f32 uu = (v.x - minX) / w;
+        f32 t  = (v.y - minY) / h;
+        v.u = (uMin + uu * uRange) / m_real_size.w;
+        v.v = (vMin + t  * vRange) / m_real_size.h;
+        v.color = rmk::color::white;
     }
 
     m_vertices = std::move(verts);
@@ -210,8 +211,8 @@ SDL_Texture* Texture<S>::_ownerTexture(SDL_Renderer* renderer) const noexcept {
     if (it != m_textures.end()) return it->second.texture;
 
 	TextureData td;
-	td.texture = SDL_CreateTextureFromSurface(renderer, m_surface.data);
-	if (!td.texture) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + SDL_GetError()));
+	td.texture = sdl.createTextureFromSurface(renderer, m_surface.data);
+	if (!td.texture) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + sdl.getError()));
 	m_textures[renderer] = td;
 
 	return td.texture;
@@ -221,13 +222,13 @@ SDL_Texture* Texture<S>::_ownerTexture(SDL_Renderer* renderer) const noexcept {
 template<IsShape S>
 Texture<S>::~Texture(void) {
     for (auto& [renderer, data] : m_textures) {
-        if (data.texture) SDL_DestroyTexture(data.texture);
+        if (data.texture) sdl.destroyTexture(data.texture);
     }
     m_textures.clear();
 }
 
 template<IsShape S>
-const SDL_Rect* Texture<S>::getClipRect(void) const noexcept {
+const Area* Texture<S>::getClipRect(void) const noexcept {
     return m_use_clip ? &m_srcrect : nullptr;
 }
 

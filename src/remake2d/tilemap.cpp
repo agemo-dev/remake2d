@@ -83,98 +83,42 @@ void TileMap::_applyAttributes(void) noexcept {
 
 
 
-void TileMap::_visibleRange(Vec2d world_tl, Dim2d world_view, Grid2d& col, Grid2d& row) const noexcept {
+void TileMap::fill(const Fillable& main) const noexcept {
+    if (m_build_future.valid()) m_build_future.wait();
+
+    std::vector<VertexBatch> batches;
+    batches.reserve(m_template.size());
+
+    usize col = 0, row = 0;
     f32 tw = m_data.clip_size.w + m_data.margin;
     f32 th = m_data.clip_size.h + m_data.margin;
-
-    f32 local_x = world_tl.x - m_data.center.x;
-    f32 local_y = world_tl.y - m_data.center.y;
-
-    col.x = std::max(0, (int)(local_x / tw));
-    row.x = std::max(0, (int)(local_y / th));
-
-    col.y = std::min((int)m_data.cut.x, (int)(col.x + world_view.w / tw) + 2);
-    row.y = std::min((int)m_data.cut.y, (int)(row.x + world_view.h / th) + 2);
-}
-
-
-void TileMap::_draw(Window& win, Color color) const noexcept {
-    if (m_build_future.valid()) m_build_future.wait();
-    usize col = 0, row = 0;
 
     for (usize idx = 0; idx < m_template.size(); idx++) {
         TileID id = m_template[idx];
         Vec2d pos = {
-            m_data.center.x + col * (m_data.clip_size.w + m_data.margin),
-            m_data.center.y + row * (m_data.clip_size.h + m_data.margin)
+            m_data.center.x + col * tw,
+            m_data.center.y + row * th
         };
 
         StaticBody* tile_body = _bodyAt(idx);
 
         if (tile_body != nullptr && !tile_body->m_animations.empty()) {
-            win.draw(*tile_body, color);
+            Animation& anim = tile_body->animation();
+            anim.move(pos);
+            auto batch = anim.__fill__();
+            batches.insert(batches.end(), batch.begin(), batch.end());
         } else if (m_clip_positions.count(id)) {
             m_tileset.clip(m_clip_positions.at(id), m_data.clip_size);
             m_tileset.move(pos);
-            win.draw(m_tileset, color);
+            auto batch = m_tileset.__fill__();
+            batches.insert(batches.end(), batch.begin(), batch.end());
         }
 
         col++;
         if (col >= m_data.cut.x) { col = 0; row++; }
     }
-}
 
-
-void TileMap::_draw(Window& win, Color color, const Camera& cam) const noexcept {
-    if (m_build_future.valid()) m_build_future.wait();
-    Vec2d world_tl   = cam.center();
-    f32   zoom       = cam.zoom();
-    Dim2d screen     = win.size();
-    Dim2d world_view = { screen.w / zoom, screen.h / zoom };
-
-    Grid2d col, row;
-    _visibleRange(world_tl, world_view, col, row);
-
-
-    f32 tw = m_data.clip_size.w + m_data.margin;
-    f32 th = m_data.clip_size.h + m_data.margin;
-
-    for (usize rw = row.x; rw < row.y; rw++) {
-        for (usize cl = col.x; cl < col.y; cl++) {
-            usize idx = rw * m_data.cut.x + cl;
-			TileID id = 0;
-            if (idx < m_template.size()) id  = m_template[idx];
-
-            Vec2d world_pos = {
-                m_data.center.x + cl * tw,
-                m_data.center.y + rw * th
-            };
-
-            Vec2d screen_pos = {
-                (world_pos.x - world_tl.x) * zoom,
-                (world_pos.y - world_tl.y) * zoom
-            };
-
-            Dim2d screen_tile = {
-                m_data.clip_size.w * zoom,
-                m_data.clip_size.h * zoom
-            };
-
-            StaticBody* tile_body = _bodyAt((usize)idx);
-
-            if (tile_body != nullptr && !tile_body->m_animations.empty()) {
-                Animation& anim = tile_body->animation();
-                anim.move(screen_pos);
-                anim.resize(screen_tile);
-                win.draw(anim, color);
-            } else if (m_clip_positions.count(id)) {
-                m_tileset.clip(m_clip_positions.at(id), m_data.clip_size);
-                m_tileset.move(screen_pos);
-                m_tileset.resize(screen_tile);
-                win.draw(m_tileset, color);
-            }
-        }
-    }
+    main.__fill_cache__ = std::move(batches);
 }
 
 StaticBody* TileMap::_bodyAt(usize tile_index) const noexcept {

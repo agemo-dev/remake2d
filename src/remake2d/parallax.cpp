@@ -10,10 +10,8 @@
 
 namespace rmk {
 
-Parallax::Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Sprite>& sprites, const std::vector<u8>& quotients) {
-
-    m_size = size;
-    m_center = center;
+Parallax::Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Sprite>& sprites, const std::vector<u8>& quotients)
+    : m_size(size), m_center(center) {
     
     m_speed_quotients = std::vector<u8>(quotients.begin(), quotients.end());
     u32 sprite_count  = sprites.size();
@@ -34,6 +32,7 @@ Parallax::Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Spr
     m_sprite_list = sprites;
     
     _moveAndResize(center, size);
+    parallax._registerParallax(this);
 }
 
 void Parallax::velocity(const Vec2d& v) noexcept {
@@ -60,6 +59,10 @@ Dim2d Parallax::size(void) const noexcept {
     return m_size;
 }
 
+void Parallax::linkCamera(const Camera& cam) noexcept {
+    m_sync_cam = cam.tracker();
+}
+
 void Parallax::_tile(Layer& layer) const noexcept {
     Dim2d size = layer.sprite_a.size();
 
@@ -80,12 +83,14 @@ void Parallax::_tile(Layer& layer) const noexcept {
     }
 }
 
-void Parallax::_draw(Window& win, Color color) const noexcept {
+void Parallax::update(void) noexcept {
 
     Vec2d vel = m_velocity;
 
+    if(m_sync_cam) vel += m_sync_cam->offset() / (f32) delta.tick();
+
     for (auto& layer : m_layers) {
-        
+
         Vec2d delta_ = {
             vel.x * layer.speed * (f32)delta.tick(),
             vel.y * layer.speed * (f32)delta.tick()
@@ -100,13 +105,25 @@ void Parallax::_draw(Window& win, Color color) const noexcept {
             layer.sprite_b.center().y + delta_.y
         });
 
-        
-        _tile(layer);
 
-        
-        win.draw(layer.sprite_a, color);
-        win.draw(layer.sprite_b, color);
+        _tile(layer);
     }
+
+    m_is_fill_dirty = true;
+}
+
+void Parallax::fill(const Fillable& main) const noexcept {
+    std::vector<VertexBatch> batches;
+    batches.reserve(m_layers.size() * 2);
+
+    for (const auto& layer : m_layers) {
+        auto a = layer.sprite_a.__fill__();
+        auto b = layer.sprite_b.__fill__();
+        batches.insert(batches.end(), a.begin(), a.end());
+        batches.insert(batches.end(), b.begin(), b.end());
+    }
+
+    main.__fill_cache__ = std::move(batches);
 }
 
 void Parallax::_moveAndResize(const Vec2d& center, const Dim2d& size) noexcept {
@@ -133,6 +150,28 @@ void Parallax::_moveAndResize(const Vec2d& center, const Dim2d& size) noexcept {
         m_layers.emplace_back(Layer{std::move(a), std::move(b), speed});
         count++;
     }
+}
+
+Parallax::~Parallax(void) {
+    parallax._unregisterParallax(this);
+}
+
+void ParallaxManager::update(void) {
+    for (const auto& para : m_parallaxs) if (para) para->update();
+}
+
+ParallaxManager& ParallaxManager::getInstance(void) noexcept {
+    static ParallaxManager instance;
+    return instance;
+}
+
+void ParallaxManager::_registerParallax(const Parallax* para) noexcept {
+    m_parallaxs.push_back(para->tracker());
+}
+
+void ParallaxManager::_unregisterParallax(const Parallax* para) noexcept {
+    auto it = std::find(m_parallaxs.begin(), m_parallaxs.end(), para->tracker());
+    if (it != m_parallaxs.end()) m_parallaxs.erase(it);
 }
 
 } //namespace rmk

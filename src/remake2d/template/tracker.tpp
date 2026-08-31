@@ -72,6 +72,7 @@ U* Tracker<T>::locate(void) noexcept {
 	auto tmp = m_tracked.lock();
 	if (!tmp || !tmp->ptr) return nullptr;
 	T* p = const_cast<T*>(tmp->ptr);
+	if constexpr (std::same_as<U, T>)           return p;
 	if constexpr (std::same_as<U, void>)        return static_cast<void*>(p);
 	else if constexpr (std::derived_from<T, U>) return static_cast<U*>(p);
 	else                                        return dynamic_cast<U*>(p);
@@ -83,6 +84,7 @@ const U* Tracker<T>::locate(void) const noexcept {
 	auto tmp = m_tracked.lock();
 	if (!tmp || !tmp->ptr) return nullptr;
 	const T* p = tmp->ptr;
+	if constexpr (std::same_as<U, T>)           return p;
 	if constexpr (std::same_as<U, void>)        return static_cast<const void*>(p);
 	else if constexpr (std::derived_from<T, U>) return static_cast<const U*>(p);
 	else                                        return dynamic_cast<const U*>(p);

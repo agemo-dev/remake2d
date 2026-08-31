@@ -9,6 +9,7 @@
 #include <remake2d/concept.hpp>
 #include <remake2d/utility.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/config/sdl.hpp>
 #include <remake2d/config/resource.hpp>
 
 #include <map>
@@ -19,16 +20,12 @@
 #include <utility>
 #include <filesystem>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
-
 namespace rmk {
 
 class Window;
 
 
-class TextureBase {
+class TextureBase : public Drawable, public Fillable {
 public:
     TextureBase(void)							= default;
     TextureBase(TextureBase&&)					= default;
@@ -58,8 +55,12 @@ public:
     virtual bool hasIntersected(const Geometry&) 	const noexcept = 0;
     virtual bool hasIntersected(const TextureBase&) const noexcept;
 
-    virtual const SDL_Rect* getClipRect(void) 		const noexcept = 0;
-    virtual std::vector<SDL_Vertex> vertices(void)	const noexcept = 0;
+    virtual const Area*  getClipRect(void) 		const noexcept = 0;
+    virtual std::vector<Vertex> vertices(void)	const noexcept = 0;
+
+private:
+    void draw(const Drawable&) const noexcept override;
+    void fill(const Fillable&) const noexcept override;
 
 public:
     virtual ~TextureBase(void) = default;
@@ -79,13 +80,13 @@ protected:
 
 protected:
     S                                       		m_shape;
-    SDL_Rect                                		m_srcrect{0,0,0,0};
+    Area                                    		m_srcrect{0,0,0,0};
     bool                                    		m_use_clip{false};
     bool                                    		m_verts_dirty{true};
     Vec2d                                   		m_clip_pos{0};
     Dim2d                                   		m_clip_size{0};
     Dim2d                                   		m_real_size{0};
-    std::vector<SDL_Vertex>                 		m_vertices;
+    std::vector<Vertex>                     		m_vertices;
     Surface              							m_surface;
     mutable std::map<SDL_Renderer*, TextureData>    m_textures;
 
@@ -123,8 +124,8 @@ public:
     void clip(const Vec2d&, const Dim2d&) noexcept override;
 
     bool hasIntersected(const Geometry&) 	const noexcept override;
-    const SDL_Rect* getClipRect(void) 		const noexcept override;
-    std::vector<SDL_Vertex> vertices(void)  const noexcept override;
+    const Area*  getClipRect(void) 		const noexcept override;
+    std::vector<Vertex> vertices(void)  const noexcept override;
 
 public:
     virtual ~Texture(void);
@@ -151,7 +152,7 @@ public:
 
 public:
     std::map<SDL_Renderer*, AtlasData>	textures;
-    std::map<char, SDL_Rect>  			glyphs;
+    std::map<char, Area>  			glyphs;
     i32                       			glyph_height{0};
     i32                       			baseline{0};
 

@@ -15,17 +15,9 @@ namespace rmk {
 
 class Followable : public Trackable<Followable> {
 public:
-	Followable(void)                         = default;
-	Followable(Followable&&)                 = default;
-    Followable(const Followable&)            = default;
-    Followable& operator=(Followable&&)      = default;
-    Followable& operator=(const Followable&) = default;
-
-public:
 	virtual Vec2d center(void) const noexcept = 0;
 
-public:
-	virtual ~Followable(void) = default;
+rmk_heritableBaseClass(Followable);
 };
 
 class Camera : public Trackable<Camera> {
@@ -64,6 +56,7 @@ public:
     Vec2d center(void)        const noexcept;
     Dim2d limit(void)         const noexcept;
     Vec2d offset(void)        const noexcept;
+    Vec2d viewCenter(void)    const noexcept;
     Vec2d followedPoint(void) const noexcept;
     f32   smoothing(void)     const noexcept;
 

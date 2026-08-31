@@ -8,15 +8,13 @@
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/forward.hpp>
 
-#include <SDL2/SDL.h>
-
 #include <array>
 #include <vector>
 #include <algorithm>
 
 namespace rmk {
 
-class Geometry : public Followable {
+class Geometry : public Followable, public Drawable, public Fillable {
 
 protected:
     Vec2d             m_center{0.0f};
@@ -28,9 +26,9 @@ protected:
     virtual void _triangulate(void) noexcept = 0;
 
 protected:
-    virtual const Triangulation* _triangulations(void) const noexcept = 0;
-    virtual std::vector<SDL_FPoint> _toContour(void)   const noexcept = 0;
-    virtual std::vector<SDL_Vertex> _toVertices(void)  const noexcept = 0;
+    virtual const Triangulation* _triangulations(void)   const noexcept = 0;
+    virtual std::vector<Vec2d>   _contourImpl(void)      const noexcept = 0;
+    virtual std::vector<Vertex>  _verticesImpl(void)     const noexcept = 0;
 
 public:
     Geometry(void)                          = default;
@@ -56,7 +54,11 @@ public:
     virtual u8 points(void)   			 const noexcept = 0;
     virtual Dim2d size(void)   			 const noexcept = 0;
     virtual const Vec2d* pointsPos(void) const noexcept = 0;
-    virtual Vec2d center(void)           const noexcept override = 0;
+    virtual Vec2d center(void) const noexcept override = 0;
+
+private:
+    void draw(const Drawable&) const noexcept override;
+    void fill(const Fillable&) const noexcept override;
 
 
     virtual bool hasIntersected(const Geometry&) const noexcept = 0;
@@ -83,17 +85,17 @@ class Shape : public Geometry {
 protected:
     u8                  m_n{POINT_COUNT};
     Vec2d               m_points[POINT_COUNT + 1];
-    mutable SDL_FPoint  m_contour_cache[POINT_COUNT + 1];
+    mutable Vec2d       m_contour_cache[POINT_COUNT + 1];
     Triangulation       m_tris[POINT_COUNT >= 3 ? POINT_COUNT - 2 : 1];
-    mutable SDL_Vertex  m_vertex_cache[POINT_COUNT >= 3 ? (POINT_COUNT - 2) * 3 : 1];
+    mutable Vertex      m_vertex_cache[POINT_COUNT >= 3 ? (POINT_COUNT - 2) * 3 : 1];
 
 protected:
     void _triangulate(void)   noexcept override;
     virtual void _build(void) noexcept override;
 
 protected:
-    std::vector<SDL_FPoint> _toContour(void)   const noexcept override;
-    std::vector<SDL_Vertex> _toVertices(void)  const noexcept override;
+    std::vector<Vec2d>  _contourImpl(void)     const noexcept override;
+    std::vector<Vertex> _verticesImpl(void)    const noexcept override;
     const Triangulation* _triangulations(void) const noexcept override;
 
 public:

@@ -1,10 +1,12 @@
 #ifndef REMAKE2D_VECTOR_
 #define REMAKE2D_VECTOR_
 
+#include <remake2d/draw.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/config/forward.hpp>
 
-#include <SDL2/SDL.h>
-
+#include <array>
+#include <vector>
 #include <compare>
 
 namespace rmk {
@@ -29,7 +31,7 @@ public:
     constexpr Vec2d(f32 X, f32 Y) : x(X), y(Y)   {}
 
 public:
-    operator SDL_FPoint(void) { return SDL_FPoint{x, y}; }
+    operator SDL_FPoint(void) const;
     constexpr auto operator<=>(const Vec2d&) const noexcept = default;
 };
 
@@ -67,8 +69,8 @@ public:
     constexpr Fact2d(f32 X, f32 Y) : x(X < 0 ? 0 : X), y(Y < 0 ? 0 : Y)     {}
     
 public:
-    operator Vec2d(void) { return Vec2d{ x, y }; }
-    operator SDL_FPoint(void) { return SDL_FPoint{ x, y }; }
+    operator Vec2d(void) const { return Vec2d{ x, y }; }
+    operator SDL_FPoint(void) const;
     constexpr auto operator<=>(const Fact2d&) const noexcept = default;
 };
 
@@ -87,30 +89,10 @@ public:
     constexpr Grid2d(usize X, usize Y) : x(X), y(Y) {}
 
 public:
-	operator Vec2d(void)     { return Vec2d{ (f32)x, (f32)y }; }
-    operator SDL_Point(void) { return SDL_Point{ (int)x, (int)y }; }
+	operator Vec2d(void) const { return Vec2d{ (f32)x, (f32)y }; }
+    operator SDL_Point(void) const;
     constexpr auto operator<=>(const Grid2d&) const noexcept = default;
 };
-
-struct Area {
-    i32 x{0}, y{0}, w{0}, h{0};
-
-public:
-    constexpr Area(void)                    = default;
-    constexpr Area(Area&&)                  = default;
-    constexpr Area(const Area&)             = default;
-    constexpr Area& operator=(Area&&)       = default;
-    constexpr Area& operator=(const Area&)  = default;
-    constexpr Area(i32 X, i32 Y, i32 W, i32 H)     : x(X), y(Y), w(W), h(H)         {}
-	constexpr Area(const Vec2d& p, const Dim2d& s) : x(p.x), y(p.y), w(s.w), h(s.h) {}
-    
-public:
-    operator SDL_Rect() const { return {x, y, w, h}; }
-    constexpr auto operator<=>(const Area&) const noexcept = default;
-    Vec2d center() const noexcept { return { (f32)(x + w / 2), (f32)(y + h / 2) }; }
-    
-};
-
 
 struct Triangulation {
     Vec2d a, b, c;
@@ -125,6 +107,31 @@ public:
     
 public:
     constexpr auto operator<=>(const Triangulation&) const noexcept = default;
+};
+
+struct Area : public Drawable, public Fillable {
+    i32 x{0}, y{0}, w{0}, h{0};
+
+public:
+    constexpr Area(void)                    = default;
+    constexpr Area(Area&&)                  = default;
+    constexpr Area(const Area&)             = default;
+    constexpr Area& operator=(Area&&)       = default;
+    constexpr Area& operator=(const Area&)  = default;
+    constexpr Area(i32 X, i32 Y, i32 W, i32 H)     : x(X), y(Y), w(W), h(H)         {}
+	constexpr Area(const Vec2d& p, const Dim2d& s) : x(p.x), y(p.y), w(s.w), h(s.h) {}
+    
+public:
+    operator SDL_Rect(void) const;
+    constexpr auto operator<=>(const Area&) const noexcept = default;
+    Vec2d center(void) const noexcept { return { (f32)(x + w / 2), (f32)(y + h / 2) }; }
+
+public:
+    std::array<Triangulation, 2> toTriangulation(void) const noexcept;
+
+private:
+    void draw(const Drawable&) const noexcept override;
+    void fill(const Fillable&) const noexcept override;
 };
 
 inline Vec2d::operator Fact2d(void) { return Fact2d{ (x < 0 ? 0 : x), (y < 0 ? 0 : y) }; }

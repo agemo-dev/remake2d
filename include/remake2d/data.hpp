@@ -8,6 +8,7 @@
 #include <remake2d/numeric.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/json/json.hpp>
+#include <remake2d/private/heritable.hpp>
 
 #include <map>
 #include <list>
@@ -22,7 +23,7 @@
 
 namespace rmk {
 
-inline static constexpr const char *DATA_DEFAULT_ROOT = "data/remake2d/json";
+inline static const std::string *DATA_DEFAULT_ROOT = "data/remake2d";
 
 struct Data {
     using Value = std::variant<
@@ -113,8 +114,7 @@ public:
     virtual Data        sdata(void) const  = 0;
     virtual void        ldata(const Data&) = 0;
 
-public:
-    virtual ~Savable(void) = default;
+rmk_heritableBaseClass(Savable);
 };
 
 

@@ -83,7 +83,7 @@ Data Data::_fromJson(const nlohmann::json& j) {
 
 DataFile::DataFile(std::string_view name) : m_name(name) {
     if (!data.isInitialized()) data._init();
-    std::filesystem::path p = data.root();
+    std::filesystem::path p = data.root() + "/json";
     p /= std::string(name) + ".json";
     m_path = p.string();
 }
@@ -119,7 +119,7 @@ std::string SaveManager::root(void) const noexcept {
     return m_root;
 }
 
-bool SaveManager::isInitialized(void) const noexcept { 
+bool SaveManager::isInitialized(void) const noexcept {
     return m_initialized;
 }
 

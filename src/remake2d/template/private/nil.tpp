@@ -1,5 +1,5 @@
-#ifndef REMAKE2D_UTILITY_TPP_
-#define REMAKE2D_UTILITY_TPP_
+#ifndef REMAKE2D_NIL_TPP_
+#define REMAKE2D_NIL_TPP_
 
 namespace rmk {
 

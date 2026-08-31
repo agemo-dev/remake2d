@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://agemo-dev.github.io/remake2d/sitemap.xml

@@ -4,9 +4,13 @@
 #include <filesystem>
 #include <algorithm>
 
+#include <SDL2/SDL.h>
+
 namespace rmk {
 
 EventManager::EventManager(void) {
+
+    m_event = std::make_unique<SDL_Event>();
 
     onPressScanA._setScancode(SDL_SCANCODE_A);
     onPressScanB._setScancode(SDL_SCANCODE_B);
@@ -592,19 +596,19 @@ SDL_GameController* _getOpenController(i32 instanceId) noexcept {
 
 
 void EventManager::poll(void) {
-    while (SDL_PollEvent(&m_event)) {
+    while (SDL_PollEvent(m_event.get())) {
         m_has_event = true;
-        _process(m_event);
+        _process(*m_event);
     }
     if (!m_has_event) onEventNone._evaluate();
 }
 
 void EventManager::wait(void) {
-    if (SDL_WaitEvent(&m_event)) _process(m_event);
+    if (SDL_WaitEvent(m_event.get())) _process(*m_event);
 }
 
 void EventManager::wait(time::Second timeout) {
-    if (SDL_WaitEventTimeout(&m_event, (int)timeout.count())) _process(m_event);
+    if (SDL_WaitEventTimeout(m_event.get(), (int)timeout.count())) _process(*m_event);
     else onEventNone._evaluate();
 }
 

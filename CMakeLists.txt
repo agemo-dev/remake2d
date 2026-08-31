@@ -76,10 +76,10 @@ else()
     set(USER_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
     set(BUILD_SHARED_LIBS OFF)
 
-    set(SDL2_DISABLE_INSTALL   OFF CACHE BOOL "" FORCE)
-    set(SDL2IMAGE_INSTALL      ON  CACHE BOOL "" FORCE)
-    set(SDL2MIXER_INSTALL      ON  CACHE BOOL "" FORCE)
-    set(SDL2TTF_INSTALL        ON  CACHE BOOL "" FORCE)
+    set(SDL2_DISABLE_INSTALL   ON   CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_INSTALL      OFF  CACHE BOOL "" FORCE)
+    set(SDL2MIXER_INSTALL      OFF  CACHE BOOL "" FORCE)
+    set(SDL2TTF_INSTALL        OFF  CACHE BOOL "" FORCE)
 
     set(SDL2IMAGE_VENDORED ON CACHE BOOL "" FORCE)
     set(SDL2MIXER_VENDORED ON CACHE BOOL "" FORCE)
@@ -264,12 +264,11 @@ target_compile_definitions(
 
 target_link_libraries(
     remake2d
-    PUBLIC
+    PRIVATE
         SDL2::SDL2
         SDL2_ttf::SDL2_ttf
         SDL2_image::SDL2_image
         SDL2_mixer::SDL2_mixer
-    PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:atomic>
         ${CMAKE_DL_LIBS}
 )

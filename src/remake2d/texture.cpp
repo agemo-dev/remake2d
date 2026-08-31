@@ -5,6 +5,9 @@
 #include <remake2d/color.hpp>
 #include <remake2d/time.hpp>
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+
 #include <cstdio>
 #include <memory>
 #include <string>
@@ -18,12 +21,39 @@ bool TextureBase::hasIntersected(const TextureBase& other) const noexcept {
     return hasIntersected(other.shape());
 }
 
+void TextureBase::draw(const Drawable& main) const noexcept {
+    if (!__is_dirty__) return;
+    const auto& s = shape();
+    const auto* pts = s.pointsPos();
+    u8 n = s.points();
+    std::vector<SDL_FPoint> contour;
+    contour.reserve(n + 1);
+    for (u8 i = 0; i < n; i++) contour.push_back(SDL_FPoint{ pts[i].x, pts[i].y });
+    if (n > 0) contour.push_back(SDL_FPoint{ pts[0].x, pts[0].y });
+    main.__draw_cache__ = { DrawPack{ m_color, std::move(contour) } };
+    __is_dirty__ = false;
+}
+
+void TextureBase::fill(const Fillable& main) const noexcept {
+    auto win = xwindow.lastDrawnWindow();
+    if (!win || !__is_fill_dirty__) return;
+
+    VertexBatch batch;
+    batch.texture  = _ownerTexture(win->renderer());
+    batch.vertices = vertices();
+
+    for (auto& v : batch.vertices) v.color = m_color;
+
+    main.__fill_cache__ = { batch };
+    __is_fill_dirty__ = false;
+}
+
 Sprite::Sprite(std::string_view path, const Rectangle& shape)
     : Texture<Rectangle>(path, shape) {}
 
 GlyphAtlas::~GlyphAtlas(void) {
 	for (auto& [renderer, data] : textures) {
-		if (data.texture) SDL_DestroyTexture(data.texture);
+		if (data.texture) sdl.destroyTexture(data.texture);
 	}
 }
 
@@ -31,9 +61,9 @@ void FontManager::load(std::string_view tag, std::string_view path, u8 size) {
     std::string key(tag);
     if (m_fonts.count(key)) return;
 
-    TTF_Font* f = TTF_OpenFont(std::string(path).c_str(), size);
+    TTF_Font* f = sdl.openFont(path, size);
     if (!f) {
-        rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::font_no_load) + " : " + TTF_GetError()));
+        rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::font_no_load) + " : " + sdl.getFontError()));
     }
 
     FontEntry entry;
@@ -62,11 +92,11 @@ void FontManager::_buildAtlas(FontEntry& entry, SDL_Renderer* renderer) {
         int tryCount = 0;
 
         do {
-            surf = TTF_RenderGlyph_Blended(font, ch, color::white._data());
+            surf = sdl.renderGlyphBlended(font, ch, color::white);
         } while (!surf && tryCount++ < 3);
 
         if (!surf) {
-            rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::atlas_no_build) + " : " + TTF_GetError()));
+            rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::atlas_no_build) + " : " + sdl.getFontError()));
         }
 
         surfaces.push_back(surf);
@@ -80,41 +110,41 @@ void FontManager::_buildAtlas(FontEntry& entry, SDL_Renderer* renderer) {
 
     int atlasWidth = maxWidth * numChars;
 
-    SDL_Texture* atlasTex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, atlasWidth, atlasHeight);
+    SDL_Texture* atlasTex = sdl.createTexture(renderer, (u32)SDL_PIXELFORMAT_RGBA32, (i32)SDL_TEXTUREACCESS_TARGET, atlasWidth, atlasHeight);
 
     if (!atlasTex) {
-        for (auto* s : surfaces) SDL_FreeSurface(s);
+        for (auto* s : surfaces) sdl.freeSurface(s);
         return;
     }
 
-    SDL_SetTextureBlendMode(atlasTex, SDL_BLENDMODE_BLEND);
-    SDL_Texture* oldTarget = SDL_GetRenderTarget(renderer);
-    SDL_SetRenderTarget(renderer, atlasTex);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
+    sdl.setTextureBlendMode(atlasTex, (i32)SDL_BLENDMODE_BLEND);
+    SDL_Texture* oldTarget = sdl.getRenderTarget(renderer);
+    sdl.setRenderTarget(renderer, atlasTex);
+    sdl.setRenderDrawColor(renderer, 0, 0, 0, 0);
+    sdl.renderClear(renderer);
 
     int xOffset = 0;
     for (size_t i = 0; i < surfaces.size(); ++i) {
         SDL_Surface* surf = surfaces[i];
-        SDL_Texture* tempTex = SDL_CreateTextureFromSurface(renderer, surf);
+        SDL_Texture* tempTex = sdl.createTextureFromSurface(renderer, surf);
         if (tempTex) {
             SDL_Rect dest = {xOffset, 0, surf->w, surf->h};
-            SDL_RenderCopy(renderer, tempTex, nullptr, &dest);
-            SDL_DestroyTexture(tempTex);
+            sdl.renderCopy(renderer, tempTex, nullptr, &dest);
+            sdl.destroyTexture(tempTex);
         }
         char ch = static_cast<char>(firstChar + i);
         entry.atlas.glyphs[ch] = {xOffset, 0, surf->w, surf->h};
         xOffset += surf->w;
-        SDL_FreeSurface(surf);
+        sdl.freeSurface(surf);
     }
 
-    SDL_SetRenderTarget(renderer, oldTarget);
+    sdl.setRenderTarget(renderer, oldTarget);
 
     GlyphAtlas::AtlasData ad;
     ad.texture = atlasTex;
     entry.atlas.textures[renderer] = ad;
     entry.atlas.glyph_height = atlasHeight;
-    entry.atlas.baseline = TTF_FontAscent(font);
+    entry.atlas.baseline = sdl.fontAscent(font);
 }
 
 const GlyphAtlas* FontManager::atlas(std::string_view tag) const noexcept {
@@ -130,7 +160,7 @@ FontManager& FontManager::getInstance(void) {
 
 FontManager::~FontManager(void) {
     for (auto& pair : m_fonts) {
-        TTF_CloseFont(pair.second.font);
+        sdl.closeFont(pair.second.font);
     }
     m_fonts.clear();
 }
@@ -161,9 +191,9 @@ void Text::write(std::string_view text) {
 
     m_current_text  = txt;
 
-    m_surface = Surface(TTF_RenderUTF8_Blended_Wrapped(m_font, txt.c_str(), color::white._data(), (int)m_max_lengh));
+    m_surface = Surface(sdl.renderUTF8BlendedWrapped(m_font, txt, color::white, (u32)m_max_lengh));
 	if (!m_surface.data) {
-        rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + TTF_GetError()));
+        rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + sdl.getFontError()));
     }
 
     m_real_size = { (f32)m_surface.data->w, (f32)m_surface.data->h };
@@ -187,12 +217,12 @@ void Text::write(std::string_view text) {
     m_shape.resize({(f32)m_surface.data->w, (f32)m_surface.data->h});
 
     for (auto& [renderer, data] : m_textures) {
-        if (data.texture) SDL_DestroyTexture(data.texture);
+        if (data.texture) sdl.destroyTexture(data.texture);
     }
     m_textures.clear();
 
     for (auto& win : xwindow.m_windows) {
-        SDL_Texture* tex = SDL_CreateTextureFromSurface(win->m_renderer, m_surface.data);
+        SDL_Texture* tex = sdl.createTextureFromSurface(win->m_renderer, m_surface.data);
         if (tex) {
             TextureData td;
             td.texture = tex;

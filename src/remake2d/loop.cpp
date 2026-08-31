@@ -4,6 +4,7 @@
 #include <remake2d/event.hpp>
 #include <remake2d/window.hpp>
 #include <remake2d/physic.hpp>
+#include <remake2d/parallax.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -19,11 +20,7 @@ void MainRenderLoop::update(void) noexcept {
 	if(!cond) return;
 	
     while (cond()) {
-        event.poll();
-        delta.update();
-        physics.update();
-        animation.update();
-
+        for (auto& update : m_updatables) if (update) update->update();
         for (auto& win : xwindow.m_windows) win->clear();
         exec();
         for (auto& win : xwindow.m_windows) win->present();
@@ -49,6 +46,11 @@ bool MainRenderLoop::isRunning(void) const noexcept {
 
 MainRenderLoop& MainRenderLoop::getInstance(void) {
     static MainRenderLoop instance;
+    instance.add(event.tracker());
+    instance.add(delta.tracker());
+    instance.add(physics.tracker());
+    instance.add(parallax.tracker());
+    instance.add(animation.tracker());
     return instance;
 }
 

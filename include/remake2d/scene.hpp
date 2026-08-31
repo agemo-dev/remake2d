@@ -3,6 +3,7 @@
 
 #include <remake2d/actor.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/private/layer.hpp>
 
 #include <map>
 #include <span>

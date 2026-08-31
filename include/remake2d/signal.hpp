@@ -2,10 +2,9 @@
 #define REMAKE2D_SIGNAL_
 
 #include <remake2d/lock.hpp>
+#include <remake2d/sdl.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/croutine.hpp>
-
-#include <SDL2/SDL.h>
 
 #include <vector>
 #include <mutex>
@@ -205,8 +204,8 @@ private:
 template<typename... Args>
 class _EventSignal : public _EngineSignal<Args...> {
 private:
-    SDL_Scancode             m_scancode{SDL_SCANCODE_UNKNOWN};
-    SDL_GameControllerButton m_button{SDL_CONTROLLER_BUTTON_INVALID};
+    i32 m_scancode{0};
+    i32 m_button{-1};
 
 private:
     _EventSignal(void) = default;
@@ -217,8 +216,8 @@ public:
     bool isActive(void) const noexcept;
 
 private:
-    void _setScancode(SDL_Scancode)           noexcept;
-    void _setButton(SDL_GameControllerButton) noexcept;
+    void _setScancode(i32) noexcept;
+    void _setButton(i32)   noexcept;
 
     friend class EventManager;
     friend class SignalManager;

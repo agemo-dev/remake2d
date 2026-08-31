@@ -1,6 +1,7 @@
 #ifndef REMAKE2D_TILEMAP_
 #define REMAKE2D_TILEMAP_
 
+#include <remake2d/draw.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/texture.hpp>
@@ -37,7 +38,7 @@ public:
 	TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d = 0, u32 = 0);
 };
 
-class TileMap {
+class TileMap : public Fillable {
 
 public:
     static constexpr u32 NO_BODY_SLOT = ~0u;
@@ -100,14 +101,12 @@ public:
     PhysicBody& body(std::string_view);
 
 private:
-    void _draw(Window&, Color) 					const noexcept;
-    void _draw(Window&, Color, const Camera&)	const noexcept;
-
-private:
     void _applyAttributes(void)		noexcept;
     void _buildClipPositions(void)	noexcept;
     StaticBody* _bodyAt(usize tile_index) const noexcept;
-    void _visibleRange(Vec2d, Dim2d, Grid2d&, Grid2d&) const noexcept;
+
+private:
+    void fill(const Fillable&) const noexcept override;
 
 public:
     ~TileMap(void) = default;

@@ -24,28 +24,30 @@ void Shape<POINT_COUNT>::_triangulate(void) noexcept {
     size_t vi = 0;
     size_t n = m_n - 2;
     for (size_t i = 0; i < n; i++) {
-        m_vertex_cache[vi++] = {m_tris[i].a, {255, 255, 255, 255}, {0, 0}};
-        m_vertex_cache[vi++] = {m_tris[i].b, {255, 255, 255, 255}, {0, 0}};
-        m_vertex_cache[vi++] = {m_tris[i].c, {255, 255, 255, 255}, {0, 0}};
+        m_vertex_cache[vi++] = Vertex{ m_tris[i].a.x, m_tris[i].a.y, rmk::color::white };
+        m_vertex_cache[vi++] = Vertex{ m_tris[i].b.x, m_tris[i].b.y, rmk::color::white };
+        m_vertex_cache[vi++] = Vertex{ m_tris[i].c.x, m_tris[i].c.y, rmk::color::white };
     }
     for (size_t i = 0; i < m_n; i++) {
         m_contour_cache[i] = m_points[i];
     }
     m_contour_cache[m_n] = m_contour_cache[0];
 
-    m_is_changed = false;
+    m_is_changed    = false;
+    m_is_dirty      = true;
+    m_is_fill_dirty = true;
 }
 
 
 template<size_t POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COUNT <= (u8)point::max)
-std::vector<SDL_FPoint> Shape<POINT_COUNT>::_toContour(void) const noexcept {
-    return std::vector<SDL_FPoint>(m_contour_cache, m_contour_cache + m_n + 1);
+std::vector<Vec2d> Shape<POINT_COUNT>::_contourImpl(void) const noexcept {
+    return std::vector<Vec2d>(m_contour_cache, m_contour_cache + m_n + 1);
 }
 
 template<size_t POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COUNT <= (u8)point::max)
-std::vector<SDL_Vertex> Shape<POINT_COUNT>::_toVertices(void) const noexcept {
+std::vector<Vertex> Shape<POINT_COUNT>::_verticesImpl(void) const noexcept {
     auto n = (m_n >= 3) ? (m_n - 2) * 3 : 0;
-    return std::vector<SDL_Vertex>(m_vertex_cache, m_vertex_cache + n);
+    return std::vector<Vertex>(m_vertex_cache, m_vertex_cache + n);
 }
 
 template<size_t POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COUNT <= (u8)point::max)

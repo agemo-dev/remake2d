@@ -3,6 +3,8 @@
 
 #include <remake2d/time.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/private/nil.hpp>
+#include <remake2d/private/layer.hpp>
 #include <remake2d/config/forward.hpp>
 #include <remake2d/config/version.hpp>
 
@@ -10,41 +12,12 @@
 
 namespace rmk {
 
-class Nil {
-public:
-    template<typename T> constexpr operator T(void) const noexcept;
-
-public:
-    template<typename T> constexpr bool operator==(const T&) const noexcept;
-    template<typename T> constexpr bool operator!=(const T&) const noexcept;
-    
-private:
-    template<typename T> friend constexpr bool operator==(const T&, const Nil&) noexcept;
-    template<typename T> friend constexpr bool operator!=(const T&, const Nil&) noexcept;
-};
-
-inline constexpr Nil nil;
-
 std::string currentVersion(void) noexcept;
-
-namespace layer {
-inline static constexpr i16 min = -256;
-inline static constexpr i16 max = 1023;
-} // namespace layer
-
 
 namespace color  {
 HSL RGBToHSL(const Color&);
 Color HSLToRGB(const HSL&);
 } // namespace color
-
-namespace layer {
-i16 ground(u8) noexcept;
-i16 world(u8)  noexcept;
-i16 sky(u8)    noexcept;
-i16 ui(u8) 	   noexcept;
-i16 log(u8)    noexcept;
-} // namespace layer
 
 namespace angle {
 fmax degToRad(fmax) noexcept;

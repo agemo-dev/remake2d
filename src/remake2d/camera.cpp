@@ -70,6 +70,10 @@ void Camera::unfollow(void) noexcept {
 	m_tracker = Tracker<Followable>();
 }
 
+Vec2d Camera::viewCenter(void) const noexcept {
+    return m_ghost;
+}
+
 Vec2d Camera::followedPoint(void) const noexcept {
     return m_tracker.locate() ? m_tracker->center() : nil;
 }

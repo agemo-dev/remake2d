@@ -3,7 +3,7 @@
 
 #include <remake2d/concept.hpp>
 #include <remake2d/numeric.hpp>
-#include <SDL2/SDL.h>
+#include <remake2d/config/forward.hpp>
 
 #include <compare>
 
@@ -18,15 +18,15 @@ public:
     byte a{255};
 
 public:
+    constexpr Color(byte, byte, byte, byte = 255);
     constexpr Color(void)                       = default;
     constexpr Color(Color&&)                    = default;
     constexpr Color(const Color&)               = default;
     constexpr Color& operator=(Color&&)         = default;
     constexpr Color& operator=(const Color&)    = default;
-    constexpr Color(byte R, byte G, byte B, byte A = 255) : r(R), g(G), b(B), a(A) {}
 
 private:
-    constexpr SDL_Color _data(void) const noexcept { return SDL_Color{ r, g, b, a }; }
+    constexpr SDL_Color _data(void) const noexcept;
 
 public:
     constexpr auto operator<=>(const Color&) const noexcept = default;
@@ -40,16 +40,19 @@ private:
 
 // HSL : Hue - Saturation - Luminosity
 struct HSL {
-    f32 h, s, l;
-    
 public:
+    f32 h{0.0f};
+    f32 s{0.0f};
+    f32 l{0.0f};
+
+public:
+    constexpr HSL(f32, f32, f32);
     constexpr HSL(void)                   = default;
     constexpr HSL(HSL&&)                  = default;
     constexpr HSL(const HSL&)             = default;
     constexpr HSL& operator=(HSL&&)       = default;
     constexpr HSL& operator=(const HSL&)  = default;
-    constexpr HSL(f32 H, f32 S, f32 L) : h(H), s(S), l(L) {}
-    
+
 public:
     constexpr auto operator<=>(const HSL&) const noexcept = default;
 };

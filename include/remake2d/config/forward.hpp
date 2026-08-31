@@ -3,6 +3,19 @@
 
 #include <remake2d/concept.hpp>
 
+struct SDL_Window;
+struct SDL_Surface;
+struct SDL_Renderer;
+struct SDL_Rect;
+struct SDL_Point;
+struct SDL_FPoint;
+struct SDL_Vertex;
+struct SDL_Texture;
+struct TTF_Font;
+struct SDL_GameController;
+struct Mix_Music;
+struct Mix_Chunk;
+
 namespace rmk {
 
 struct Area;

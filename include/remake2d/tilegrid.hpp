@@ -1,6 +1,7 @@
 #ifndef REMAKE2D_TILEGRID_
 #define REMAKE2D_TILEGRID_
 
+#include <remake2d/draw.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/config/forward.hpp>
 
@@ -8,7 +9,7 @@
 
 namespace rmk {
 
-class TileGrid {
+class TileGrid : public Drawable {
 private:
     Grid2d              m_cut;
     Dim2d               m_size;
@@ -38,8 +39,10 @@ public:
     
 private:
     void _build(void) 		  noexcept;
-    void _draw(Window&) const noexcept;
-    
+
+private:
+    void draw(const Drawable&) const noexcept override;
+
 private:
     friend class Window;
 };

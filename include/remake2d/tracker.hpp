@@ -21,12 +21,7 @@ public:
 
 
 class TrackerBase {
-public:
-    TrackerBase(void)                          = default;
-    TrackerBase(TrackerBase&&)                 = default;
-    TrackerBase(const TrackerBase&)            = default;
-    TrackerBase& operator=(TrackerBase&&)      = default;
-    TrackerBase& operator=(const TrackerBase&) = default;
+rmk_heritableBaseClass(TrackerBase);
 };
 
 template<IsTrackable T> class Tracker : private TrackerBase {
@@ -66,12 +61,7 @@ public:
 };
 
 class TrackableBase {
-public:
-    TrackableBase(void)                            = default;
-    TrackableBase(TrackableBase&&)                 = default;
-    TrackableBase(const TrackableBase&)            = default;
-    TrackableBase& operator=(TrackableBase&&)      = default;
-    TrackableBase& operator=(const TrackableBase&) = default;
+rmk_heritableBaseClass(TrackableBase);
 };
 
 template<typename Derived> class Trackable : private TrackableBase {

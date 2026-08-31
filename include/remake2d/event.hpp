@@ -6,20 +6,20 @@
 #include <remake2d/signal.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/numeric.hpp>
-
-#include <SDL2/SDL.h>
+#include <remake2d/forward.hpp>
 
 #include <string>
+#include <memory>
 #include <unordered_map>
 
 namespace rmk {
 
 class EventManager {
 private:
-    SDL_Event   									m_event;
-    bool        									m_has_event{false};
-    bool        									m_text_input{false};
-    std::unordered_map<i32, SDL_GameController*>	m_controllers;
+    std::unique_ptr<SDL_Event>                      m_event{nullptr};
+    bool                                            m_has_event{false};
+    bool                                            m_text_input{false};
+    std::unordered_map<i32, SDL_GameController*>    m_controllers;
 
 private:
     EventManager(void);
@@ -36,11 +36,11 @@ public:
     void wait(time::Second);
 
 public:
-	void textInput(bool);
-	bool textInput(void);
-	
+    void textInput(bool);
+    bool textInput(void);
+    
 public:
-	friend SDL_GameController* _getOpenController(i32) noexcept;
+    friend SDL_GameController* _getOpenController(i32) noexcept;
 
 public:
 

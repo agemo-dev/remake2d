@@ -2,6 +2,8 @@
 #include <remake2d/utility.hpp>
 #include <remake2d/math.hpp>
 
+#include <SDL2/SDL.h>
+
 #include <algorithm>
 #include <atomic>
 
@@ -279,7 +281,7 @@ void PhysicBody::_calculateVertices(void) noexcept {
     } else {
         auto& pts = m_shape_cache.points;
         u32   n   = pts.size();
-        if (n == 0) { m_vertices_dirty = false; return; }
+        if (n == 0) { m_vertices_dirty = false; m_is_dirty = true; m_is_fill_dirty = true; return; }
         for (u32 i = 0; i < n; i++)
             m_cached_contour.push_back({pts[i].x, pts[i].y});
         m_cached_contour.push_back({pts[0].x, pts[0].y});
@@ -291,6 +293,24 @@ void PhysicBody::_calculateVertices(void) noexcept {
         }
     }
     m_vertices_dirty = false;
+    m_is_dirty       = true;
+    m_is_fill_dirty  = true;
+}
+
+void PhysicBody::draw(const Drawable& main) const noexcept {
+    main.__draw_cache__ = { DrawPack{ m_color, m_cached_contour } };
+}
+
+void PhysicBody::fill(const Fillable& main) const noexcept {
+    VertexBatch batch;
+    batch.texture = nullptr;
+    batch.vertices.reserve(m_cached_vertices.size());
+
+    for (const auto& v : m_cached_vertices) {
+        batch.vertices.push_back(Vertex{ v.position.x, v.position.y, m_color, v.tex_coord.x, v.tex_coord.y });
+    }
+
+    main.__fill_cache__ = { batch };
 }
 
 void PhysicBody::_sync(void) {

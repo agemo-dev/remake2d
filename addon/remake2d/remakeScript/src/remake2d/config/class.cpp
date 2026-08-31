@@ -26,49 +26,39 @@ void initLuaClass(void) noexcept {
         ut["clear"]          = &Window::clear;
         ut["present"]        = &Window::present;
         ut["screenshot"]     = &Window::screenshot;
-        ut["addViewport"]    = &Window::addViewport;
-        ut["useViewport"]    = &Window::useViewport;
-        ut["resetViewport"]  = &Window::resetViewport;
-        ut["removeViewport"] = &Window::removeViewport;
-        ut["linkCamera"]     = &Window::linkCamera;
-        ut["unlinkCamera"]   = &Window::unlinkCamera;
+        ut["connectViewport"]    = &Window::connectViewport;
+        ut["disconnectViewport"] = &Window::disconnectViewport;
+        ut["useViewport"]        = &Window::useViewport;
+        ut["resetViewport"]      = &Window::resetViewport;
         ut["draw"] = sol::overload(
+            [](Window& win, TextureBase& tex, u16 l)  { win.draw(tex, l); },
+            [](Window& win, Area        & a, u16 l)   { win.draw(a, l); },
+            [](Window& win, Geometry    & g, u16 l)   { win.draw(g, l); },
+            [](Window& win, PhysicBody  & b, u16 l)   { win.draw(b, l); },
+            [](Window& win, TileGrid    & g, u16 l)   { win.draw(g, l); },
             [](Window& win, TextureBase& tex)  { win.draw(tex); },
-            [](Window& win, TileMap     & tile) { win.draw(tile); },
-            [](Window& win, Parallax    & para) { win.draw(para); },
             [](Window& win, Area        & a)   { win.draw(a); },
             [](Window& win, Geometry    & g)   { win.draw(g); },
             [](Window& win, PhysicBody  & b)   { win.draw(b); },
-            [](Window& win, TileGrid    & g)   { win.draw(g); },
-            [](Window& win, TextureBase & tex, Color c)  { win.draw(tex, c); },
-            [](Window& win, TileMap     & tile, Color c) { win.draw(tile, c); },
-            [](Window& win, Parallax    & para, Color c) { win.draw(para, c); },
-            [](Window& win, Area        & a, Color c)   { win.draw(a, c); },
-            [](Window& win, Geometry    & g, Color c)   { win.draw(g, c); },
-            [](Window& win, PhysicBody  & b, Color c)   { win.draw(b, c); },
-            [](Window& win, TileGrid    & g, Color c)   { win.draw(g, c); },
-            [](Window& win, TextureBase & tex, Color c, std::string_view v)  { win.draw(tex, c, v); },
-            [](Window& win, TileMap     & tile, Color c, std::string_view v) { win.draw(tile, c, v); },
-            [](Window& win, Parallax    & para, Color c, std::string_view v) { win.draw(para, c, v); },
-            [](Window& win, Area        & a, Color c, std::string_view v)   { win.draw(a, c, v); },
-            [](Window& win, Geometry    & g, Color c, std::string_view v)   { win.draw(g, c, v); },
-            [](Window& win, PhysicBody  & b, Color c, std::string_view v)   { win.draw(b, c, v); },
-            [](Window& win, TileGrid    & g, Color c, std::string_view v)   { win.draw(g, c, v); }
+            [](Window& win, TileGrid    & g)   { win.draw(g); }
         );
         ut["fill"] = sol::overload(
-            [](Window& win, Area        & a)   { win.draw(a); },
-            [](Window& win, Geometry    & g)   { win.draw(g); },
-            [](Window& win, PhysicBody  & b)   { win.draw(b); },
-            [](Window& win, Area        & a, Color c)   { win.fill(a, c); },
-            [](Window& win, Geometry    & g, Color c)   { win.fill(g, c); },
-            [](Window& win, PhysicBody  & b, Color c)   { win.fill(b, c); },
-            [](Window& win, Area        & a, Color c, std::string_view v)   { win.fill(a, c, v); },
-            [](Window& win, Geometry    & g, Color c, std::string_view v)   { win.fill(g, c, v); },
-            [](Window& win, PhysicBody  & b, Color c, std::string_view v)   { win.fill(b, c, v); }
+            [](Window& win, TextureBase& tex, u16 l)  { win.fill(tex, l); },
+            [](Window& win, TileMap     & tile, u16 l) { win.fill(tile, l); },
+            [](Window& win, Parallax    & para, u16 l) { win.fill(para, l); },
+            [](Window& win, Area        & a, u16 l)   { win.fill(a, l); },
+            [](Window& win, Geometry    & g, u16 l)   { win.fill(g, l); },
+            [](Window& win, PhysicBody  & b, u16 l)   { win.fill(b, l); },
+            [](Window& win, TextureBase& tex)  { win.fill(tex); },
+            [](Window& win, TileMap     & tile) { win.fill(tile); },
+            [](Window& win, Parallax    & para) { win.fill(para); },
+            [](Window& win, Area        & a)   { win.fill(a); },
+            [](Window& win, Geometry    & g)   { win.fill(g); },
+            [](Window& win, PhysicBody  & b)   { win.fill(b); }
         );
     });
 
-	rmk::script._registerEngineType<Window::Viewport, Window::Viewport(), Window::Viewport(const Area&), Window::Viewport(const Area&, Camera&)>("Window::Viewport", nullptr, rmk::type::base<>,
+	rmk::script._registerEngineType<Window::Viewport, Window::Viewport(), Window::Viewport(const Area&), Window::Viewport(const Area&, const Camera&)>("Window::Viewport", nullptr, rmk::type::base<>,
 	    "zone"   , &Window::Viewport::zone,
 	    "camera" , &Window::Viewport::camera
 	);
@@ -98,6 +88,8 @@ void initLuaClass(void) noexcept {
         ut["offset"]    = &Camera::offset;
         ut["follow"]    = &Camera::follow;
         ut["unfollow"]  = &Camera::unfollow;
+        ut["viewCenter"]    = &Camera::viewCenter;
+        ut["followedPoint"] = &Camera::followedPoint;
     }, type::base<>,
 	    "onMove" , &Camera::onMove
 	);
@@ -237,6 +229,7 @@ void initLuaClass(void) noexcept {
         );
         ut["center"]   = &Parallax::center;
         ut["size"]     = &Parallax::size;
+        ut["update"]   = &Parallax::update;
     });
 
 	script._registerEngineType<Data,
