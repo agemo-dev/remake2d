@@ -12,7 +12,8 @@ Geometry::Geometry(const Vec2d& center, const Dim2d& size)
 	}
 
 void Geometry::fill(const Fillable& main) const noexcept {
-    if (!__is_fill_dirty__) return;
+    if (!m_is_fill_dirty) return;
+
     VertexBatch batch;
     batch.texture = nullptr;
 
@@ -24,17 +25,18 @@ void Geometry::fill(const Fillable& main) const noexcept {
     }
 
     main.__fill_cache__ = { batch };
-    __is_fill_dirty__ = false;
+    m_is_fill_dirty = false;
 }
 
 void Geometry::draw(const Drawable& main) const noexcept {
-    if (!__is_dirty__) return;
+    if (!m_is_dirty) return;
+
     auto raw = _contourImpl();
     std::vector<SDL_FPoint> contour;
     contour.reserve(raw.size());
     for (const auto& p : raw) contour.push_back((SDL_FPoint)p);
     main.__draw_cache__ = { DrawPack{ m_color, std::move(contour) } };
-    __is_dirty__ = false;
+    m_is_dirty = false;
 }
 
 template<> Circle Geometry::as(void) const noexcept {

@@ -84,6 +84,8 @@ void TileMap::_applyAttributes(void) noexcept {
 
 
 void TileMap::fill(const Fillable& main) const noexcept {
+    if (!m_is_fill_dirty) return;
+
     if (m_build_future.valid()) m_build_future.wait();
 
     std::vector<VertexBatch> batches;
@@ -119,6 +121,7 @@ void TileMap::fill(const Fillable& main) const noexcept {
     }
 
     main.__fill_cache__ = std::move(batches);
+    m_is_fill_dirty = false;
 }
 
 StaticBody* TileMap::_bodyAt(usize tile_index) const noexcept {

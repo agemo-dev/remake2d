@@ -35,7 +35,8 @@ PhysicBody::PhysicBody(const Geometry& shape)
 }
 
 PhysicBody::PhysicBody(const PhysicBody& other)
-    : m_shape_cache(other.m_shape_cache)
+    : m_type_id(other.m_type_id)
+    , m_shape_cache(other.m_shape_cache)
     , m_animations(other.m_animations)
     , m_focused_anim(other.m_focused_anim)
     , m_tag(other.m_tag)
@@ -50,6 +51,7 @@ PhysicBody::PhysicBody(const PhysicBody& other)
 PhysicBody& PhysicBody::operator=(const PhysicBody& other) {
     if (this != &other) {
         _detachFromWorld();
+        m_type_id      = other.m_type_id;
         m_shape_cache  = other.m_shape_cache;
         m_animations   = other.m_animations;
         m_focused_anim = other.m_focused_anim;
@@ -65,6 +67,7 @@ PhysicBody& PhysicBody::operator=(const PhysicBody& other) {
 
 PhysicBody::PhysicBody(PhysicBody&& other) noexcept
     : Trackable<PhysicBody>(std::move(other))
+    , m_type_id(other.m_type_id)
     , m_body(other.m_body)
     , m_shape_id(other.m_shape_id)
     , m_shape_cache(std::move(other.m_shape_cache))
@@ -98,6 +101,7 @@ PhysicBody& PhysicBody::operator=(PhysicBody&& other) noexcept {
 
         Trackable<PhysicBody>::operator=(std::move(other));
 
+        m_type_id         = other.m_type_id;
         m_body            = other.m_body;
         m_shape_id        = other.m_shape_id;
         m_shape_cache     = std::move(other.m_shape_cache);
@@ -298,10 +302,15 @@ void PhysicBody::_calculateVertices(void) noexcept {
 }
 
 void PhysicBody::draw(const Drawable& main) const noexcept {
+    if (!m_is_dirty) return;
+
     main.__draw_cache__ = { DrawPack{ m_color, m_cached_contour } };
+    m_is_dirty = false;
 }
 
 void PhysicBody::fill(const Fillable& main) const noexcept {
+    if (!m_is_fill_dirty) return;
+
     VertexBatch batch;
     batch.texture = nullptr;
     batch.vertices.reserve(m_cached_vertices.size());
@@ -311,6 +320,7 @@ void PhysicBody::fill(const Fillable& main) const noexcept {
     }
 
     main.__fill_cache__ = { batch };
+    m_is_fill_dirty = false;
 }
 
 void PhysicBody::_sync(void) {
@@ -467,6 +477,7 @@ PhysicBody::~PhysicBody(void) {
 }
 
 StaticBody::StaticBody(const Geometry& shape) : PhysicBody(shape) {
+    m_type_id = physic::id::statics;
 	physics._registerBody(this);
 }
 
@@ -495,7 +506,8 @@ StaticBody& StaticBody::operator=(StaticBody&& other) noexcept {
 }
 
 DynamicBody::DynamicBody(const Geometry& shape) : PhysicBody(shape) {
-	physics._registerBody(this);
+	m_type_id = physic::id::dynamics;
+    physics._registerBody(this);
 }
 
 DynamicBody::DynamicBody(const DynamicBody& other) : PhysicBody(other) {

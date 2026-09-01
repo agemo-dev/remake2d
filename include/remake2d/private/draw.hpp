@@ -69,7 +69,7 @@ public:
 
 public:
     virtual void draw(const Drawable&) const noexcept = 0;
-	const DrawPack& __draw__(void) const;
+	const std::vector<DrawPack>& __draw__(void) const;
 
 rmk_heritableBaseClass(Drawable);
 };

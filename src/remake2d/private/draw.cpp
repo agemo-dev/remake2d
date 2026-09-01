@@ -26,7 +26,9 @@ Vertex::operator SDL_Vertex(void) const {
 	return sdlv;
 }
 
-Color Printable::color(void) const noexcept { return m_color; }
+void  Printable::layer(u16 l)       noexcept { m_layer = l; }
+Color Printable::color(void)  const noexcept { return m_color; }
+u16   Printable::layer(void)  const noexcept { return m_layer; }
 
 namespace contour {
 
@@ -42,12 +44,12 @@ bool isBreak(SDL_FPoint p) noexcept {
 } // namespace contour
 
 const std::vector<DrawPack>& Drawable::__draw__(void) const {
-        draw(*this);
-		return __draw_cache__;
+	if (m_is_dirty) draw(*this);
+	return __draw_cache__;
 }
 
 const std::vector<VertexBatch>& Fillable::__fill__(void) const {
-		fill(*this);
+		if (m_is_fill_dirty) fill(*this);
 		return __fill_cache__;
 }
 

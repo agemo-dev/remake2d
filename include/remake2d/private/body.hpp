@@ -21,6 +21,15 @@
 
 namespace rmk {
 
+namespace physic {
+
+enum class id : u8 {
+    physics,
+    statics,
+    dynamics
+};
+} // namespace physic
+
 class PhysicBody : public Trackable<PhysicBody>, public Drawable, public Fillable {
 public:
     using AnimMap   = std::map<std::string,  Animation>;
@@ -36,6 +45,7 @@ protected:
 protected:
     b2BodyId                m_body{b2_nullBodyId};
     b2ShapeId               m_shape_id{b2_nullShapeId};
+    physic::id              m_type_id{physic::id::physics};
     ShapeCache              m_shape_cache;
     std::vector<SDL_Vertex> m_cached_vertices;
     std::vector<SDL_FPoint> m_cached_contour;

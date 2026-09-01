@@ -4,10 +4,10 @@
 
 namespace rmk {
 
-Vec2d::operator SDL_FPoint(void) const { return SDL_FPoint{ x, y }; }
+Vec2d::operator  SDL_FPoint(void) const { return SDL_FPoint{ x, y }; }
 Fact2d::operator SDL_FPoint(void) const { return SDL_FPoint{ x, y }; }
-Grid2d::operator SDL_Point(void) const { return SDL_Point{ (int)x, (int)y }; }
-Area::operator SDL_Rect(void) const { return SDL_Rect{ x, y, w, h }; }
+Grid2d::operator SDL_Point(void)  const { return SDL_Point{ (int)x, (int)y }; }
+Area::operator   SDL_Rect(void)   const { return SDL_Rect{ x, y, w, h }; }
 
 std::array<Triangulation, 2> Area::toTriangulation(void) const noexcept {
 	Vec2d topLeft     { (f32)x,     (f32)y };
@@ -22,7 +22,8 @@ std::array<Triangulation, 2> Area::toTriangulation(void) const noexcept {
 }
 
 void Area::draw(const Drawable& main) const noexcept {
-    if (!__is_dirty__) return;
+	if (!m_is_dirty) return;
+
 	main.__draw_cache__ = { DrawPack{ m_color, {
 		SDL_FPoint{ (f32)x,     (f32)y },
 		SDL_FPoint{ (f32)(x+w), (f32)y },
@@ -30,11 +31,12 @@ void Area::draw(const Drawable& main) const noexcept {
 		SDL_FPoint{ (f32)x,     (f32)(y+h) },
 		SDL_FPoint{ (f32)x,     (f32)y }
 	} } };
-    __is_dirty__ = false;
+	m_is_dirty = false;
 }
 
 void Area::fill(const Fillable& main) const noexcept {
-    if (!__is_fill_dirty__) return;
+	if (!m_is_fill_dirty) return;
+
 	auto triangles = toTriangulation();
 
 	VertexBatch batch;
@@ -48,7 +50,7 @@ void Area::fill(const Fillable& main) const noexcept {
 	}
 
 	main.__fill_cache__ = { batch };
-    __is_fill_dirty__ = false;
+	m_is_fill_dirty = false;
 }
 
 } // namespace rmk

@@ -10,6 +10,7 @@
 #include <remake2d/concept.hpp>
 #include <remake2d/all/types.hpp>
 #include <remake2d/private/nil.hpp>
+#include <remake2d/private/ivector.hpp>
 #include <remake2d/config/forward.hpp>
 
 #include <algorithm>
@@ -84,8 +85,14 @@ private:
     Camera                           m_camera;
 
 private:
-    std::map<u16, std::vector<DrawPack>>     m_draw_layers;
-    std::map<u16, std::vector<VertexBatch>>  m_fill_layers;
+    std::bitset<(usize)layer::count>   m_used_layers;
+    IVector<i16, (usize)layer::count>  m_active_layers;
+
+private:
+    std::array<std::vector<DrawPack>,    (usize)layer::count>  m_draw_layers;
+    std::array<std::vector<VertexBatch>, (usize)layer::count>  m_fill_layers;
+
+private:
     std::vector<Tracker<Viewport>>           m_viewports;
     Tracker<Viewport>                        m_active_viewport{};
     std::stack<Area>                         m_viewport_stack{};
@@ -136,7 +143,7 @@ public:
     bool isResizable(void)      const noexcept;
     void blendMode(window::blendmode) noexcept;
 
-    void clear(Color = rmk::color::black)    noexcept;
+    void clear(Color = rmk::color::black)  noexcept;
     void draw(const Drawable&, u16 = 0)      noexcept;
     void fill(const Fillable&, u16 = 0)      noexcept;
 
@@ -145,7 +152,7 @@ private:
     void _restoreViewport(void)          noexcept;
     void _applyViewport(const Viewport*) noexcept;
     void _flushLayer(u16)                noexcept;
-    void _pushDraw(const std::vector<DrawPack>&, u16, const Viewport* = nullptr)  noexcept;
+    void _pushDraw(const std::vector<DrawPack>&, u16, const Viewport* = nullptr)    noexcept;
     void _pushFill(const std::vector<VertexBatch>&, u16, const Viewport* = nullptr) noexcept;
 
 public:
@@ -162,7 +169,7 @@ private:
 
 class XWindow {
 private:
-    std::vector<Tracker<Window>> m_windows;
+    std::vector<Tracker<Window>>  m_windows;
     Tracker<Window>               m_last_drawn_window{};
 
 private:
@@ -181,7 +188,7 @@ public:
     static XWindow& getInstance(void) noexcept;
 
 public:
-    Window* lastDrawnWindow(void) const noexcept;
+    const Tracker<Window>& lastDrawnWindow(void) const noexcept;
 
 private:
     friend class Text;

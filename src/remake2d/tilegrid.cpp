@@ -66,11 +66,12 @@ void TileGrid::_build(void) noexcept {
         m_cells.push_back(cell);
     }
 
-    __dirty__ = true;
+    m_is_dirty = true;
 }
 
 void TileGrid::draw(const Drawable& main) const noexcept {
-    if (!__is_dirty__) return;
+    if (!m_is_dirty) return;
+
     std::vector<SDL_FPoint> contour;
     contour.reserve(m_cells.size() * 6);
 
@@ -89,7 +90,7 @@ void TileGrid::draw(const Drawable& main) const noexcept {
     }
 
     main.__draw_cache__ = { DrawPack{ m_color, std::move(contour) } };
-    __is_fill_dirty__ = false;
+    m_is_dirty = false;
 }
 
 } //namespace rmk

@@ -113,6 +113,8 @@ void Parallax::update(void) noexcept {
 }
 
 void Parallax::fill(const Fillable& main) const noexcept {
+    if (!m_is_fill_dirty) return;
+
     std::vector<VertexBatch> batches;
     batches.reserve(m_layers.size() * 2);
 
@@ -124,6 +126,7 @@ void Parallax::fill(const Fillable& main) const noexcept {
     }
 
     main.__fill_cache__ = std::move(batches);
+    m_is_fill_dirty = false;
 }
 
 void Parallax::_moveAndResize(const Vec2d& center, const Dim2d& size) noexcept {

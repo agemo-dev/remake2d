@@ -6,14 +6,18 @@
 namespace rmk {
 
 enum class layer : i16 {
-    min = -256,
-    max = 1023,
+    min   = -50,
+    max   = 249,
+
+    size  = 50, // distance between two layers
 
     ground = min,
-    world  = 0,
-    sky    = 256,
-    ui     = 511,
-    log    = 767
+    world  = ground + size,
+    sky    = world  + size,
+    ui     = sky    + size,
+    log    = ui     + size,
+
+    count = log + size * 2 - 1 // total layers count
 };
 
 
@@ -26,5 +30,5 @@ i16 log(u8)    noexcept;
 } // namespace layer
 
 } // namespace rmk
+q
 
-#endif

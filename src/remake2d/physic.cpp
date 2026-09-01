@@ -8,7 +8,7 @@
 
 namespace rmk {
 
-constexpr usize  RESERVED_STATICS  = 75;
+constexpr usize  RESERVED_STATICS  = 100;
 constexpr usize  RESERVED_DYNAMICS = 100;
 constexpr usize  RESERVED_BODIES   = RESERVED_DYNAMICS + RESERVED_STATICS;
 
@@ -55,8 +55,8 @@ void PhysicManager::remove(PhysicBody& body) {
         if (found != vec.end()) vec.erase(found);
     };
 
-    if (dynamic_cast<DynamicBody*>(&body)) eraseFrom(m_dynamics);
-    else if (dynamic_cast<StaticBody*>(&body)) eraseFrom(m_statics);
+    eraseFrom(m_statics);
+    eraseFrom(m_dynamics);
 }
 
 Area PhysicManager::world(void) const noexcept { return m_world_size; }
@@ -151,9 +151,8 @@ void PhysicManager::_unregisterBody(PhysicBody *body) noexcept {
     };
 
     eraseFrom(m_bodies);
-
-    if (dynamic_cast<StaticBody*>(body))       eraseFrom(m_statics);
-    else if (dynamic_cast<DynamicBody*>(body)) eraseFrom(m_dynamics);
+         if (body->m_type_id == physic::id::statics)  eraseFrom(m_statics);
+    else if (body->m_type_id == physic::id::dynamics) eraseFrom(m_dynamics);
 }
 
 bool PhysicManager::_isValidBody(PhysicBody *body) const {
@@ -216,16 +215,13 @@ void PhysicManager::update(void) {
         _stepAndDispatch(step, sub_steps);
     }
 
-    for (auto& t : m_bodies) {
-        PhysicBody* body = t.locate();
+    for (auto& body : m_bodies) {
         if (!body) continue;
 
-        if (auto* dyn = dynamic_cast<DynamicBody*>(body))
-            dyn->_syncAndUpdate();
-        else
-            body->_sync();
+             if (body->m_type_id == physic::id::statics)  body->_sync();
+        else if (body->m_type_id == physic::id::dynamics) body->_syncAndUpdate();
 
-        if (body->m_vertices_dirty) body->_calculateVertices();
+        if (body->m_vertices_dirty && body->__filled__) body->_calculateVertices();
     }
 }
 

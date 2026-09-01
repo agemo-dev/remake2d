@@ -195,13 +195,10 @@ void Window::border(bool stat) noexcept {
 }
 
 void Window::present(void) noexcept {
-    std::vector<u16> layers;
-    for (auto& [layer, v] : m_draw_layers) { (void)v; layers.push_back(layer); }
-    for (auto& [layer, v] : m_fill_layers) { (void)v; layers.push_back(layer); }
-    std::sort(layers.begin(), layers.end());
-    layers.erase(std::unique(layers.begin(), layers.end()), layers.end());
+    for (auto layer : m_active_layers) _flushLayer(layer);
 
-    for (u16 layer : layers) _flushLayer(layer);
+    m_used_layers.clear();
+    m_active_layers.clear();
 
     m_draw_layers.clear();
     m_fill_layers.clear();
@@ -217,11 +214,13 @@ const Camera& Window::camera(void) const noexcept {
 }
 
 void Window::draw(const Drawable& obj, u16 layer) noexcept {
+    _testLayer(layer);
 	xwindow._setLastDrawnWindow(this);
 	_pushDraw(obj.__draw__(), layer);
 }
 
 void Window::fill(const Fillable& obj, u16 layer) noexcept {
+    _testLayer(layer);
 	xwindow._setLastDrawnWindow(this);
 	_pushFill(obj.__fill__(), layer);
 }
@@ -229,6 +228,7 @@ void Window::fill(const Fillable& obj, u16 layer) noexcept {
 void Window::Viewport::draw(const Drawable& obj, u16 layer) noexcept {
 	Window* win = m_window.locate();
 	if (!win) return;
+    win->_testLayer(layer);
 	xwindow._setLastDrawnWindow(win);
 	win->_pushDraw(obj.__draw__(), layer, this);
 }
@@ -236,8 +236,20 @@ void Window::Viewport::draw(const Drawable& obj, u16 layer) noexcept {
 void Window::Viewport::fill(const Fillable& obj, u16 layer) noexcept {
 	Window* win = m_window.locate();
 	if (!win) return;
+    win->_testLayer(layer);
 	xwindow._setLastDrawnWindow(win);
 	win->_pushFill(obj.__fill__(), layer, this);
+}
+
+void Window::_testLayer(i16 layer) const {
+    if (m_used_layers.test(layer)) return;
+
+    if (layer < (i16)layer::min || layer > (i16)layer::max) {
+        rmk_dynamicAssert(rmk::SceneError, error::scene::layer_is_overlimits);
+    }
+
+    m_active_layers.pushAndSort(layer);
+    m_used_layers.set(layer - (i16)layer::min);
 }
 
 void Window::_pushDraw(const std::vector<DrawPack>& pack, u16 layer, const Viewport* vp) noexcept {
@@ -245,10 +257,6 @@ void Window::_pushDraw(const std::vector<DrawPack>& pack, u16 layer, const Viewp
     Vec2d origin = cam.viewCenter();
     f32   zoom   = cam.zoom();
     Dim2d bounds = vp ? Dim2d{ (f32)vp->zone.w, (f32)vp->zone.h } : m_size;
-
-    if (layer < (i16)layer::min || layer > (i16)layer::max) {
-        rmk_dynamicAssert(rmk::SceneError, error::scene::layer_is_overlimits);
-    }
 
     auto& dst = m_draw_layers[layer];
 
@@ -287,10 +295,6 @@ void Window::_pushFill(const std::vector<VertexBatch>& batches, u16 layer, const
     f32   zoom   = cam.zoom();
     Dim2d bounds = vp ? Dim2d{ (f32)vp->zone.w, (f32)vp->zone.h } : m_size;
 
-    if (layer < (i16)layer::min || layer > (i16)layer::max) {
-        rmk_dynamicAssert(rmk::SceneError, error::scene::layer_is_overlimits);
-    }
-
     auto& dst = m_fill_layers[layer];
     for (const auto& batch : batches) {
         if (batch.vertices.empty()) continue;
@@ -316,11 +320,13 @@ void Window::_pushFill(const std::vector<VertexBatch>& batches, u16 layer, const
     }
 }
 
-void Window::_flushLayer(u16 layer) noexcept {
-    auto dit = m_draw_layers.find(layer);
-    if (dit != m_draw_layers.end()) {
+void Window::_flushLayer(u16 layer) const noexcept {
+    auto& dr = m_draw_layers[layer];
+    auto& fl = m_fill_layers[layer];
+
+    if (!dr.empty()) {
         std::vector<SDL_FPoint> segment;
-        for (const auto& dp : dit->second) {
+        for (const auto& dp : vec) {
             SDL_SetRenderDrawColor(m_renderer, dp.color.r, dp.color.g, dp.color.b, dp.color.a);
             segment.clear();
             for (const auto& p : dp.points) {
@@ -335,10 +341,9 @@ void Window::_flushLayer(u16 layer) noexcept {
         }
     }
 
-    auto fit = m_fill_layers.find(layer);
-    if (fit != m_fill_layers.end()) {
+    if (!fl.empty()) {
         std::vector<SDL_Vertex> sdlVerts;
-        for (auto& batch : fit->second) {
+        for (auto& batch : fl) {
             sdlVerts.clear();
             sdlVerts.reserve(batch.vertices.size());
             for (const auto& v : batch.vertices) sdlVerts.push_back((SDL_Vertex)v);
@@ -509,8 +514,8 @@ void XWindow::_setLastDrawnWindow(Window* win) noexcept {
     m_last_drawn_window = win->tracker();
 }
 
-Window* XWindow::lastDrawnWindow(void) const noexcept {
-    return m_last_drawn_window.locate();
+const Tracker<Window>& XWindow::lastDrawnWindow(void) const noexcept {
+    return m_last_drawn_window;
 }
 
 } // namespace rmk
