@@ -30,12 +30,14 @@ template<IsTrackable T>
 T& Tracker<T>::operator*(void) {
 	if (T* p = locate<T>()) return *p;
 	rmk_dynamicAssert(rmk::TrackerError, error::tracker::null_ptr_deref);
+    return nil;
 }
 
 template<IsTrackable T>
 const T& Tracker<T>::operator*(void) const {
 	if (const T* p = locate<T>()) return *p;
 	rmk_dynamicAssert(rmk::TrackerError, error::tracker::null_ptr_deref);
+    return nil;
 }
 
 template<IsTrackable T>
@@ -67,7 +69,7 @@ bool Tracker<T>::operator!=(const Tracker<T>& other) const noexcept {
 }
 
 template<IsTrackable T>
-template<IsTrackable U> requires IsRelatedTo<U, T>
+template<typename U> requires IsRelatedTo<U, T>
 U* Tracker<T>::locate(void) noexcept {
 	auto tmp = m_tracked.lock();
 	if (!tmp || !tmp->ptr) return nullptr;

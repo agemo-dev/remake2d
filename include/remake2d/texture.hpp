@@ -10,6 +10,7 @@
 #include <remake2d/utility.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/sdl.hpp>
+#include <remake2d/private/update.hpp>
 #include <remake2d/config/resource.hpp>
 
 #include <map>
@@ -27,40 +28,40 @@ class Window;
 
 class TextureBase : public Drawable, public Fillable {
 public:
-    TextureBase(void)							= default;
-    TextureBase(TextureBase&&)					= default;
-    TextureBase(const TextureBase&)				= default;
-    TextureBase& operator=(TextureBase&&)		= default;
-    TextureBase& operator=(const TextureBase&)	= default;
+    TextureBase(void)                            = default;
+    TextureBase(TextureBase&&)                   = default;
+    TextureBase(const TextureBase&)              = default;
+    TextureBase& operator=(TextureBase&&)        = default;
+    TextureBase& operator=(const TextureBase&)   = default;
 
 protected:
-    virtual void _calculateVertices(void)						  noexcept = 0;
-    virtual SDL_Texture* _ownerTexture(SDL_Renderer*)		const noexcept = 0;
-    virtual void _applyColor(SDL_Renderer*, const Color&)	const noexcept = 0;
+    virtual void _calculateVertices(void)                          noexcept = 0;
+    virtual SDL_Texture* _ownerTexture(SDL_Renderer*)        const noexcept = 0;
+    virtual void _applyColor(SDL_Renderer*, const Color&)    const noexcept = 0;
 
 public:
-    virtual void rotate(f32)									noexcept = 0;
-    virtual void move(const Vec2d&)								noexcept = 0;
-    virtual void scale(const Fact2d&)							noexcept = 0;
-    virtual void resize(const Dim2d&)							noexcept = 0;
-    virtual void transform(const Vec2d&, f32, const Fact2d&)	noexcept = 0;
+    virtual void rotate(f32)                                    noexcept = 0;
+    virtual void move(const Vec2d&)                             noexcept = 0;
+    virtual void scale(const Fact2d&)                           noexcept = 0;
+    virtual void resize(const Dim2d&)                           noexcept = 0;
+    virtual void transform(const Vec2d&, f32, const Fact2d&)    noexcept = 0;
 
-    virtual Vec2d center(void) 			const noexcept = 0;
-    virtual Dim2d size(void)   			const noexcept = 0;
-    virtual Dim2d realSize(void)		const noexcept = 0;
+    virtual Vec2d center(void)          const noexcept = 0;
+    virtual Dim2d size(void)            const noexcept = 0;
+    virtual Dim2d realSize(void)        const noexcept = 0;
     virtual const Geometry& shape(void) const noexcept = 0;
 
-    virtual void unclip(void) 						noexcept = 0;
-    virtual void clip(const Vec2d&, const Dim2d&)	noexcept = 0;
-    virtual bool hasIntersected(const Geometry&) 	const noexcept = 0;
+    virtual void unclip(void)                             noexcept = 0;
+    virtual void clip(const Vec2d&, const Dim2d&)         noexcept = 0;
+    virtual bool hasIntersected(const Geometry&)    const noexcept = 0;
     virtual bool hasIntersected(const TextureBase&) const noexcept;
 
-    virtual const Area*  getClipRect(void) 		const noexcept = 0;
-    virtual std::vector<Vertex> vertices(void)	const noexcept = 0;
+    virtual const Area*  getClipRect(void)        const noexcept = 0;
+    virtual std::vector<Vertex> vertices(void)    const noexcept = 0;
 
-private:
-    void draw(const Drawable&) const noexcept override;
-    void fill(const Fillable&) const noexcept override;
+public:
+    void draw(const Drawable&) noexcept override;
+    void fill(const Fillable&) noexcept override;
 
 public:
     virtual ~TextureBase(void) = default;
@@ -79,15 +80,15 @@ protected:
     };
 
 protected:
-    S                                       		m_shape;
-    Area                                    		m_srcrect{0,0,0,0};
-    bool                                    		m_use_clip{false};
-    bool                                    		m_verts_dirty{true};
-    Vec2d                                   		m_clip_pos{0};
-    Dim2d                                   		m_clip_size{0};
-    Dim2d                                   		m_real_size{0};
-    std::vector<Vertex>                     		m_vertices;
-    Surface              							m_surface;
+    S                                               m_shape;
+    Area                                            m_srcrect{0,0,0,0};
+    bool                                            m_use_clip{false};
+    bool                                            m_verts_dirty{true};
+    Vec2d                                           m_clip_pos{0};
+    Dim2d                                           m_clip_size{0};
+    Dim2d                                           m_real_size{0};
+    std::vector<Vertex>                             m_vertices;
+    Surface                                          m_surface;
     mutable std::map<SDL_Renderer*, TextureData>    m_textures;
 
 protected:
@@ -99,33 +100,33 @@ public:
     Texture(std::string_view, const S&);
 
 public:
-    Texture(Texture&&)				= default;
-    Texture& operator=(Texture&&)	= default;
+    Texture(Texture&&)               = default;
+    Texture& operator=(Texture&&)    = default;
 
 protected:
-    void _copy(const Texture<S>&) 						  noexcept;
-    void _calculateVertices(void) 						  noexcept override;
-    SDL_Texture* _ownerTexture(SDL_Renderer*)		const noexcept override;
-    void _applyColor(SDL_Renderer*, const Color&)	const noexcept override;
+    void _copy(const Texture<S>&)                          noexcept;
+    void _calculateVertices(void)                          noexcept override;
+    SDL_Texture* _ownerTexture(SDL_Renderer*)        const noexcept override;
+    void _applyColor(SDL_Renderer*, const Color&)    const noexcept override;
 
 public:
-    void rotate(f32) 								 noexcept override;
-    void move(const Vec2d&) 						 noexcept override;
-    void scale(const Fact2d&)  						 noexcept override;
-    void resize(const Dim2d&) 						 noexcept override;
+    void rotate(f32)                                 noexcept override;
+    void move(const Vec2d&)                          noexcept override;
+    void scale(const Fact2d&)                        noexcept override;
+    void resize(const Dim2d&)                        noexcept override;
     void transform(const Vec2d&, f32, const Fact2d&) noexcept override;
 
-    Dim2d size(void) 			const noexcept override;
-    Vec2d center(void) 			const noexcept override;
-    Dim2d realSize(void) 		const noexcept override;
-    const Geometry& shape(void) const noexcept override;
+    Dim2d size(void)             const noexcept override;
+    Vec2d center(void)           const noexcept override;
+    Dim2d realSize(void)         const noexcept override;
+    const Geometry& shape(void)  const noexcept override;
 
-    void unclip(void) 					  noexcept override;
+    void unclip(void)                     noexcept override;
     void clip(const Vec2d&, const Dim2d&) noexcept override;
 
-    bool hasIntersected(const Geometry&) 	const noexcept override;
-    const Area*  getClipRect(void) 		const noexcept override;
-    std::vector<Vertex> vertices(void)  const noexcept override;
+    bool hasIntersected(const Geometry&) const noexcept override;
+    const Area*  getClipRect(void)       const noexcept override;
+    std::vector<Vertex> vertices(void)   const noexcept override;
 
 public:
     virtual ~Texture(void);
@@ -151,17 +152,17 @@ public:
     };
 
 public:
-    std::map<SDL_Renderer*, AtlasData>	textures;
-    std::map<char, Area>  			glyphs;
-    i32                       			glyph_height{0};
-    i32                       			baseline{0};
+    std::map<SDL_Renderer*, AtlasData>    textures;
+    std::map<char, Area>              glyphs;
+    i32                                   glyph_height{0};
+    i32                                   baseline{0};
 
 public:
-    GlyphAtlas(void) 							= default;
-    GlyphAtlas(const GlyphAtlas&) 				= delete;
-    GlyphAtlas& operator=(const GlyphAtlas&)	= delete;
-    GlyphAtlas(GlyphAtlas&&) 					= default;
-    GlyphAtlas& operator=(GlyphAtlas&&) 		= default;
+    GlyphAtlas(void)                            = default;
+    GlyphAtlas(const GlyphAtlas&)               = delete;
+    GlyphAtlas& operator=(const GlyphAtlas&)    = delete;
+    GlyphAtlas(GlyphAtlas&&)                    = default;
+    GlyphAtlas& operator=(GlyphAtlas&&)         = default;
 
 public:
     ~GlyphAtlas(void);
@@ -178,9 +179,9 @@ private:
     std::map<std::string, FontEntry>    m_fonts;
 
 private:
-    FontManager(void) 							= default;
-    FontManager(const FontManager&) 			= delete;
-    FontManager& operator=(const FontManager&)	= delete;
+    FontManager(void)                             = default;
+    FontManager(const FontManager&)               = delete;
+    FontManager& operator=(const FontManager&)    = delete;
 
 public:
     void load(std::string_view, std::string_view, u8);
@@ -209,10 +210,10 @@ enum class y : u8 { top, middle, bottom };
 } // namespace anchor
 
 enum fmt : u8 {
-	nl,
-	tab,
-	endl,
-	flush
+    nl,
+    tab,
+    endl,
+    flush
 };
 
 class Text : public Texture<Rectangle> {
@@ -225,7 +226,7 @@ private:
     anchor::x               m_anchor_x{anchor::x::left};
     anchor::y               m_anchor_y{anchor::y::top};
     u16                     m_max_lengh{0};
-	bool					m_erase{false};
+    bool                    m_erase{false};
 
 public:
     Text(const Text&);
@@ -234,8 +235,8 @@ public:
 
 
 public:
-    Text(Text&&)			= default;
-    Text& operator=(Text&&)	= default;
+    Text(Text&&)               = default;
+    Text& operator=(Text&&)    = default;
 
 public:
     void anchorX(anchor::x) noexcept;
@@ -250,8 +251,8 @@ public:
     void append(std::string_view);
 
 public:
-	void maxLengh(u16) 		  noexcept;
-	u16  maxLengh(void) const noexcept;
+    void maxLengh(u16)        noexcept;
+    u16  maxLengh(void) const noexcept;
 
 private:
     void _textCopy(const Text&);
@@ -265,20 +266,20 @@ public:
 
 class Animation : public Sprite, public Trackable<Animation> {
 private:
-    i8    	m_current_clip{0};
-    u8    	m_loops_remaining{0};
-    u8    	m_spacing{0};
-    u8    	m_total_clips{0};
-    bool  	m_is_playing{false};
-    bool  	m_is_paused{false};
-    fmax  	m_timer{0.0};
-    fmax  	m_clip_duration{0.0};
-    Vec2d 	m_start_pos{0};
-    Dim2d	m_clip_size{0};
+    i8        m_current_clip{0};
+    u8        m_loops_remaining{0};
+    u8        m_spacing{0};
+    u8        m_total_clips{0};
+    bool      m_is_playing{false};
+    bool      m_is_paused{false};
+    fmax      m_timer{0.0};
+    fmax      m_clip_duration{0.0};
+    Vec2d     m_start_pos{0};
+    Dim2d    m_clip_size{0};
 
 public:
-	Signal<> onFinish;
-	Signal<> onRepeat;
+    Signal<> onFinish;
+    Signal<> onRepeat;
 
 public:
     Animation(const Animation&);
@@ -286,18 +287,18 @@ public:
     Animation(std::string_view, const Rectangle&, u8, Dim2d, Vec2d = 0, u8 = 0);
 
 public:
-    Animation(Animation&&) 				= default;
-    Animation& operator=(Animation&&) 	= default;
+    Animation(Animation&&)                = default;
+    Animation& operator=(Animation&&)     = default;
 
 private:
     void _advance(void);
     void _animationCopy(const Animation&) noexcept;
 
 public:
-    void play(i8 = 0, u8 = 12)	noexcept;
-    void pause(void)  			noexcept;
-    void resume(void) 			noexcept;
-    void stop(void)   			noexcept;
+    void play(i8 = 0, u8 = 12)    noexcept;
+    void pause(void)              noexcept;
+    void resume(void)             noexcept;
+    void stop(void)               noexcept;
 
 public:
     ~Animation(void) override;
@@ -308,17 +309,17 @@ private:
 };
 
 
-class AnimationManager {
+class AnimationManager : public Updatable {
 private:
     std::vector<Tracker<Animation>> m_animations;
 
 private:
-    AnimationManager(void) = default;
-    AnimationManager(const AnimationManager&) = delete;
+    AnimationManager(void)                               = default;
+    AnimationManager(const AnimationManager&)            = delete;
     AnimationManager& operator=(const AnimationManager&) = delete;
 
 public:
-    void update(void);
+    void update(void) override;
     static AnimationManager& getInstance(void) noexcept;
 
 private:

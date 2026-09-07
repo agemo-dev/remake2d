@@ -1,8 +1,6 @@
 #ifndef REMAKE2D_WINDOW_
 #define REMAKE2D_WINDOW_
 
-#include <remake2d/draw.hpp>
-#include <remake2d/layer.hpp>
 #include <remake2d/system.hpp>
 #include <remake2d/camera.hpp>
 #include <remake2d/tracker.hpp>
@@ -10,6 +8,8 @@
 #include <remake2d/concept.hpp>
 #include <remake2d/all/types.hpp>
 #include <remake2d/private/nil.hpp>
+#include <remake2d/private/draw.hpp>
+#include <remake2d/private/layer.hpp>
 #include <remake2d/private/ivector.hpp>
 #include <remake2d/config/forward.hpp>
 
@@ -48,25 +48,48 @@ enum class blendmode : u8 {
 } //namespace window
 
 class Window : public Trackable<Window> {
+private:
+    using UsedLayers   = std::bitset<(usize)layer::count>;
+    using ActiveLayers = IVector<i16, (usize)layer::count>;
+    using DrawLayers   = std::array<std::vector<DrawPack>,    (usize)layer::count>;
+    using FillLayers   = std::array<std::vector<VertexBatch>, (usize)layer::count>;
+
 public:
     class Viewport : public Trackable<Viewport> {
-    public:
-        Area    zone;
-        Camera  camera;
-
-    public:
-        Viewport(void) = default;
-
-    public:
-        Viewport(const Area&);
-        Viewport(const Area&, const Camera&);
-
-    public:
-        void draw(const Drawable&, u16 = 0) noexcept;
-        void fill(const Fillable&, u16 = 0) noexcept;
+    private:
+        UsedLayers   m_used_layers;
+        ActiveLayers m_active_layers;
 
     private:
+        DrawLayers m_draw_layers;
+        FillLayers m_fill_layers;
+
+    private:
+        Area            m_zone{0, 0, 0, 0};
+        Camera          m_camera{};
         Tracker<Window> m_window{nil};
+
+    public:
+        explicit Viewport(const Area&);
+        Viewport(void)                       = default;
+        Viewport(Viewport&&)                 = default;
+        Viewport(const Viewport&)            = default;
+        Viewport& operator=(Viewport&&)      = default;
+        Viewport& operator=(const Viewport&) = default;
+
+    public:
+        Camera& camera(void)             noexcept;
+        void area(const Area&)           noexcept;
+        Area area(void)            const noexcept;
+        const Camera& camera(void) const noexcept;
+
+    public:
+        void clear(Color = color::black)    noexcept;
+        void draw(const Drawable&, i16 = 0) noexcept;
+        void fill(const Fillable&, i16 = 0) noexcept;
+
+    private:
+        void _present(SDL_Renderer*) noexcept;
 
     private:
         friend class Window;
@@ -78,24 +101,22 @@ private:
     SDL_Renderer*                    m_renderer{nullptr};
     bool                             m_is_resizable{true};
     bool                             m_is_open{true};
-    Vec2d                            m_pos;
-    Dim2d                            m_size;
-    Vec2d                            m_center;
+    Vec2d                            m_pos{0.0f};
+    Dim2d                            m_size{0.0f};
+    Vec2d                            m_center{0.0f};
     std::string                      m_title{};
     Camera                           m_camera;
 
 private:
-    std::bitset<(usize)layer::count>   m_used_layers;
-    IVector<i16, (usize)layer::count>  m_active_layers;
+    UsedLayers   m_used_layers;
+    ActiveLayers m_active_layers;
 
 private:
-    std::array<std::vector<DrawPack>,    (usize)layer::count>  m_draw_layers;
-    std::array<std::vector<VertexBatch>, (usize)layer::count>  m_fill_layers;
+    DrawLayers m_draw_layers;
+    FillLayers m_fill_layers;
 
 private:
     std::vector<Tracker<Viewport>>           m_viewports;
-    Tracker<Viewport>                        m_active_viewport{};
-    std::stack<Area>                         m_viewport_stack{};
 
 public:
     Window(void);
@@ -122,8 +143,6 @@ public:
     void rename(std::string_view) noexcept;
 
 public:
-    void resetViewport(void)               noexcept;
-    void useViewport(Viewport&)            noexcept;
     void connectViewport(Viewport&)        noexcept;
     void disconnectViewport(Viewport&)     noexcept;
 
@@ -143,17 +162,25 @@ public:
     bool isResizable(void)      const noexcept;
     void blendMode(window::blendmode) noexcept;
 
-    void clear(Color = rmk::color::black)  noexcept;
-    void draw(const Drawable&, u16 = 0)      noexcept;
-    void fill(const Fillable&, u16 = 0)      noexcept;
+    void clear(Color = rmk::color::black)    noexcept;
+    void draw(const Drawable&, i16 = 0)      noexcept;
+    void fill(const Fillable&, i16 = 0)      noexcept;
 
 private:
-    void _newCenter(void)                noexcept;
-    void _restoreViewport(void)          noexcept;
-    void _applyViewport(const Viewport*) noexcept;
-    void _flushLayer(u16)                noexcept;
-    void _pushDraw(const std::vector<DrawPack>&, u16, const Viewport* = nullptr)    noexcept;
-    void _pushFill(const std::vector<VertexBatch>&, u16, const Viewport* = nullptr) noexcept;
+    void _newCenter(void) noexcept;
+
+private:
+    static void _applyViewport(SDL_Renderer*, std::stack<Area>&, const Area*) noexcept;
+    static void _restoreViewport(SDL_Renderer*, std::stack<Area>&)            noexcept;
+
+private:
+    static void _flushLayer(SDL_Renderer*, i16, DrawLayers&, FillLayers&) noexcept; // draw a layer
+    static usize _normalise(i16)                                    noexcept; // transform layer (i16) to -> usize
+    static void _testLayer(i16, UsedLayers&, ActiveLayers&);
+
+private: // place VertexBatch / DrawPack in buffer
+    static void _pushFill(const std::vector<VertexBatch>&, i16, const Camera&, Dim2d, FillLayers&) noexcept;
+    static void _pushDraw(const std::vector<DrawPack>&,    i16, const Camera&, Dim2d, DrawLayers&)  noexcept;
 
 public:
     ~Window(void);

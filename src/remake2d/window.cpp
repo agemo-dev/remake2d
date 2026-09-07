@@ -15,8 +15,69 @@
 
 namespace rmk {
 
-Window::Viewport::Viewport(const Area& z) : zone(z), camera({0, 0}, {(f32)z.w, (f32)z.h}) {}
-Window::Viewport::Viewport(const Area& z, const Camera& cam) : zone(z), camera(cam) {}
+Window::Viewport::Viewport(const Area& z) : m_zone(z), m_camera(Vec2d(z.x, z.y), Dim2d(z.w, z.h)) {}
+
+Camera& Window::Viewport::camera(void) noexcept {
+    return m_camera;
+}
+
+void Window::Viewport::area(const Area& area) noexcept {
+    m_zone = area;
+    m_camera.move({ area.x, area.y });
+    m_camera.resize({ area.w, area.h });
+}
+
+Area Window::Viewport::area(void) const noexcept {
+    return m_zone;
+}
+
+const Camera& Window::Viewport::camera(void) const noexcept {
+    return m_camera;
+}
+
+void Window::Viewport::clear(Color color) noexcept {
+    Window* win = m_window.locate();
+    if (!win) return;
+
+    Area a = zone;
+    std::stack<Area> stack;
+    Window::_applyViewport(win->m_renderer, stack, &a);
+    SDL_SetRenderDrawColor(win->m_renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderClear(win->m_renderer);
+    Window::_restoreViewport(win->m_renderer, stack);
+}
+
+void Window::Viewport::draw(const Drawable& obj, i16 layer) noexcept {
+    Window* win = m_window.locate();
+    if (!win) return;
+    Window::_testLayer(layer, m_used_layers, m_active_layers);
+    xwindow._setLastDrawnWindow(win);
+    Window::_pushDraw(obj._draw_(), layer, camera, Dim2d{ (f32)zone.w, (f32)zone.h }, m_draw_layers);
+}
+
+void Window::Viewport::fill(const Fillable& obj, i16 layer) noexcept {
+    Window* win = m_window.locate();
+    if (!win) return;
+    Window::_testLayer(layer, m_used_layers, m_active_layers);
+    xwindow._setLastDrawnWindow(win);
+    Window::_pushFill(obj._fill_(), layer, camera, Dim2d{ (f32)zone.w, (f32)zone.h }, m_fill_layers);
+}
+
+void Window::Viewport::_present(SDL_Renderer* renderer) noexcept {
+    Area a = zone;
+    std::stack<Area> stack;
+    Window::_applyViewport(renderer, stack, &a);
+
+    for (auto layer : m_active_layers) Window::_flushLayer(renderer, layer, m_draw_layers, m_fill_layers);
+
+    m_used_layers.clear();
+    m_active_layers.clear();
+
+    m_draw_layers.clear();
+    m_fill_layers.clear();
+
+    Window::_restoreViewport(renderer, stack);
+}
 
 Window::Window(void) : Window("RE:MAKE 2D") {}
 Window::Window(std::string_view name, Vec2d pos, Dim2d size)
@@ -25,12 +86,11 @@ Window::Window(std::string_view name, Vec2d pos, Dim2d size)
 
     rmk::system._init();
 
-	switch(pos.x) {
-	case -1:
-		pos = { SDL_WINDOWPOS_CENTERED };
-	case -2:
-		pos = { SDL_WINDOWPOS_UNDEFINED };
-	}
+    switch(pos.x) {
+        case -1: pos = { SDL_WINDOWPOS_CENTERED };  break;
+        case -2: pos = { SDL_WINDOWPOS_UNDEFINED }; break;
+        default: break;
+    }
 
     m_window = SDL_CreateWindow(std::string(name).c_str(), pos.x, pos.y, size.w, size.h, SDL_WINDOW_SHOWN);
     if (!m_window) rmk_dynamicAssert(rmk::WindowError, (std::string(error::window::window_no_create) + " : " + SDL_GetError()));
@@ -63,7 +123,6 @@ Window::Window(Window&& other) noexcept
     , m_draw_layers(std::move(other.m_draw_layers))
     , m_fill_layers(std::move(other.m_fill_layers))
     , m_viewports(std::move(other.m_viewports))
-    , m_active_viewport(std::move(other.m_active_viewport))
 {
     other.m_window   = nullptr;
     other.m_renderer = nullptr;
@@ -92,7 +151,6 @@ Window& Window::operator=(Window&& other) noexcept {
         m_draw_layers        = std::move(other.m_draw_layers);
         m_fill_layers        = std::move(other.m_fill_layers);
         m_viewports          = std::move(other.m_viewports);
-        m_active_viewport    = std::move(other.m_active_viewport);
 
         other.m_window   = nullptr;
         other.m_renderer = nullptr;
@@ -125,7 +183,7 @@ SDL_Renderer* Window::renderer(void) const noexcept {
 }
 
 Area Window::area(void) const noexcept {
-	return Area(Vec2d(0), m_size);
+    return Area(Vec2d(0), m_size);
 }
 
 void Window::move(Vec2d pos) noexcept {
@@ -159,25 +217,25 @@ void Window::icon(std::string_view path) {
 }
 
 void Window::blendMode(window::blendmode mode) noexcept {
-	SDL_BlendMode bm;
-	switch (mode) {
-	    case window::blendmode::normal:
-	        bm = SDL_BLENDMODE_BLEND;
-	        break;
-	    case window::blendmode::add:
-	        bm = SDL_BLENDMODE_ADD;
-	        break;
-	    case window::blendmode::mod:
-	        bm = SDL_BLENDMODE_MOD;
-	        break;
-	    case window::blendmode::mul:
-	        bm = SDL_BLENDMODE_MUL;
-	        break;
-	    case window::blendmode::none:
-	    default:
-	        bm = SDL_BLENDMODE_NONE;
-	        break;
-	}
+    SDL_BlendMode bm;
+    switch (mode) {
+        case window::blendmode::normal:
+            bm = SDL_BLENDMODE_BLEND;
+            break;
+        case window::blendmode::add:
+            bm = SDL_BLENDMODE_ADD;
+            break;
+        case window::blendmode::mod:
+            bm = SDL_BLENDMODE_MOD;
+            break;
+        case window::blendmode::mul:
+            bm = SDL_BLENDMODE_MUL;
+            break;
+        case window::blendmode::none:
+        default:
+            bm = SDL_BLENDMODE_NONE;
+            break;
+    }
     SDL_SetRenderDrawBlendMode(m_renderer, bm);
 }
 
@@ -195,13 +253,19 @@ void Window::border(bool stat) noexcept {
 }
 
 void Window::present(void) noexcept {
-    for (auto layer : m_active_layers) _flushLayer(layer);
+    for (auto layer : m_active_layers) _flushLayer(m_renderer, layer, m_draw_layers, m_fill_layers);
 
     m_used_layers.clear();
     m_active_layers.clear();
 
     m_draw_layers.clear();
     m_fill_layers.clear();
+
+    for (auto& t : m_viewports) {
+        Viewport* vp = t.locate();
+        if (vp) vp->_present(m_renderer);
+    }
+
     SDL_RenderPresent(m_renderer);
 }
 
@@ -213,52 +277,38 @@ const Camera& Window::camera(void) const noexcept {
     return m_camera;
 }
 
-void Window::draw(const Drawable& obj, u16 layer) noexcept {
-    _testLayer(layer);
-	xwindow._setLastDrawnWindow(this);
-	_pushDraw(obj.__draw__(), layer);
+void Window::draw(const Drawable& obj, i16 layer) noexcept {
+    _testLayer(layer, m_used_layers, m_active_layers);
+    xwindow._setLastDrawnWindow(this);
+    _pushDraw(obj._draw_(), layer, m_camera, m_size, m_draw_layers);
 }
 
-void Window::fill(const Fillable& obj, u16 layer) noexcept {
-    _testLayer(layer);
-	xwindow._setLastDrawnWindow(this);
-	_pushFill(obj.__fill__(), layer);
+void Window::fill(const Fillable& obj, i16 layer) noexcept {
+    _testLayer(layer, m_used_layers, m_active_layers);
+    xwindow._setLastDrawnWindow(this);
+    _pushFill(obj._fill_(), layer, m_camera, m_size, m_fill_layers);
 }
 
-void Window::Viewport::draw(const Drawable& obj, u16 layer) noexcept {
-	Window* win = m_window.locate();
-	if (!win) return;
-    win->_testLayer(layer);
-	xwindow._setLastDrawnWindow(win);
-	win->_pushDraw(obj.__draw__(), layer, this);
+usize Window::_normalise(i16 layer) noexcept {
+    return layer - (i16)layer::min;
 }
 
-void Window::Viewport::fill(const Fillable& obj, u16 layer) noexcept {
-	Window* win = m_window.locate();
-	if (!win) return;
-    win->_testLayer(layer);
-	xwindow._setLastDrawnWindow(win);
-	win->_pushFill(obj.__fill__(), layer, this);
-}
-
-void Window::_testLayer(i16 layer) const {
-    if (m_used_layers.test(layer)) return;
+void Window::_testLayer(i16 layer, UsedLayers& used, ActiveLayers& active) {
+    if (used.test(_normalise(layer))) return;
 
     if (layer < (i16)layer::min || layer > (i16)layer::max) {
         rmk_dynamicAssert(rmk::SceneError, error::scene::layer_is_overlimits);
     }
 
-    m_active_layers.pushAndSort(layer);
-    m_used_layers.set(layer - (i16)layer::min);
+    active.pushAndSort(layer);
+    used.set(_normalise(layer));
 }
 
-void Window::_pushDraw(const std::vector<DrawPack>& pack, u16 layer, const Viewport* vp) noexcept {
-    const Camera& cam = vp ? vp->camera : m_camera;
+void Window::_pushDraw(const std::vector<DrawPack>& pack, i16 layer, const Camera& cam, Dim2d bounds, DrawLayers& layers) noexcept {
     Vec2d origin = cam.viewCenter();
     f32   zoom   = cam.zoom();
-    Dim2d bounds = vp ? Dim2d{ (f32)vp->zone.w, (f32)vp->zone.h } : m_size;
 
-    auto& dst = m_draw_layers[layer];
+    auto& dst = layers[_normalise(layer)];
 
     for (const auto& dp : pack) {
         DrawPack segment;
@@ -289,13 +339,11 @@ void Window::_pushDraw(const std::vector<DrawPack>& pack, u16 layer, const Viewp
     }
 }
 
-void Window::_pushFill(const std::vector<VertexBatch>& batches, u16 layer, const Viewport* vp) noexcept {
-    const Camera& cam = vp ? vp->camera : m_camera;
+void Window::_pushFill(const std::vector<VertexBatch>& batches, i16 layer, const Camera& cam, Dim2d bounds, FillLayers& layers) noexcept {
     Vec2d origin = cam.viewCenter();
     f32   zoom   = cam.zoom();
-    Dim2d bounds = vp ? Dim2d{ (f32)vp->zone.w, (f32)vp->zone.h } : m_size;
 
-    auto& dst = m_fill_layers[layer];
+    auto& dst = layers[_normalise(layer)];
     for (const auto& batch : batches) {
         if (batch.vertices.empty()) continue;
 
@@ -320,24 +368,24 @@ void Window::_pushFill(const std::vector<VertexBatch>& batches, u16 layer, const
     }
 }
 
-void Window::_flushLayer(u16 layer) const noexcept {
-    auto& dr = m_draw_layers[layer];
-    auto& fl = m_fill_layers[layer];
+void Window::_flushLayer(SDL_Renderer* renderer, i16 layer, DrawLayers& drawLayers, FillLayers& fillLayers) noexcept {
+    auto& dr = drawLayers[_normalise(layer)];
+    auto& fl = fillLayers[_normalise(layer)];
 
     if (!dr.empty()) {
         std::vector<SDL_FPoint> segment;
-        for (const auto& dp : vec) {
-            SDL_SetRenderDrawColor(m_renderer, dp.color.r, dp.color.g, dp.color.b, dp.color.a);
+        for (const auto& dp : dr) {
+            SDL_SetRenderDrawColor(renderer, dp.color.r, dp.color.g, dp.color.b, dp.color.a);
             segment.clear();
             for (const auto& p : dp.points) {
                 if (contour::isBreak(p)) {
-                    if (segment.size() >= 2) SDL_RenderDrawLinesF(m_renderer, segment.data(), (int)segment.size());
+                    if (segment.size() >= 2) SDL_RenderDrawLinesF(renderer, segment.data(), (int)segment.size());
                     segment.clear();
                     continue;
                 }
                 segment.push_back(p);
             }
-            if (segment.size() >= 2) SDL_RenderDrawLinesF(m_renderer, segment.data(), (int)segment.size());
+            if (segment.size() >= 2) SDL_RenderDrawLinesF(renderer, segment.data(), (int)segment.size());
         }
     }
 
@@ -347,7 +395,7 @@ void Window::_flushLayer(u16 layer) const noexcept {
             sdlVerts.clear();
             sdlVerts.reserve(batch.vertices.size());
             for (const auto& v : batch.vertices) sdlVerts.push_back((SDL_Vertex)v);
-            SDL_RenderGeometry(m_renderer, batch.texture, sdlVerts.data(), (int)sdlVerts.size(), nullptr, 0);
+            SDL_RenderGeometry(renderer, batch.texture, sdlVerts.data(), (int)sdlVerts.size(), nullptr, 0);
         }
     }
 }
@@ -398,12 +446,12 @@ void Window::close(void) noexcept {
     m_window   = nullptr;
     m_renderer = nullptr;
     m_is_open  = false;
-	xwindow._unregisterWindow(this);
+    xwindow._unregisterWindow(this);
 }
 
 Window::~Window(void) {
     close();
-	rmk::system._quit();
+    rmk::system._quit();
 }
 
 void Window::connectViewport(Viewport& v) noexcept {
@@ -417,43 +465,33 @@ void Window::disconnectViewport(Viewport& v) noexcept {
     auto tracker = v.tracker();
     auto it = std::find(m_viewports.begin(), m_viewports.end(), tracker);
     if (it != m_viewports.end()) m_viewports.erase(it);
-    if (m_active_viewport == tracker) m_active_viewport = {};
     v.m_window = nil;
-}
-
-void Window::useViewport(Viewport& v) noexcept {
-    m_active_viewport = v.tracker();
-}
-
-void Window::resetViewport(void) noexcept {
-    m_active_viewport = {};
-    SDL_RenderSetViewport(m_renderer, nullptr);
 }
 
 void Window::_newCenter(void) noexcept {
     m_center = { m_pos.x + (m_size.w / 2), m_pos.y + (m_size.h / 2) };
 }
 
-void Window::_applyViewport(const Viewport* vp) noexcept {
+void Window::_applyViewport(SDL_Renderer* renderer, std::stack<Area>& stack, const Area* vp) noexcept {
     SDL_Rect c{};
-    SDL_RenderGetViewport(m_renderer, &c);
-    m_viewport_stack.push({c.x, c.y, c.w, c.h});
+    SDL_RenderGetViewport(renderer, &c);
+    stack.push({(f32)c.x, (f32)c.y, (f32)c.w, (f32)c.h});
     if (vp) {
-        SDL_Rect v = vp->zone;
-        SDL_RenderSetViewport(m_renderer, &v);
+        SDL_Rect v = *vp;
+        SDL_RenderSetViewport(renderer, &v);
     }
 }
 
-void Window::_restoreViewport(void) noexcept {
-    if (m_viewport_stack.empty()) return;
-    Area previous = m_viewport_stack.top();
-    m_viewport_stack.pop();
+void Window::_restoreViewport(SDL_Renderer* renderer, std::stack<Area>& stack) noexcept {
+    if (stack.empty()) return;
+    Area previous = stack.top();
+    stack.pop();
 
     if (previous.x == 0 && previous.y == 0 && previous.w == 0 && previous.h == 0) {
-        SDL_RenderSetViewport(m_renderer, nullptr);
+        SDL_RenderSetViewport(renderer, nullptr);
     } else {
         SDL_Rect p{ (int)previous.x, (int)previous.y, (int)previous.w, (int)previous.h };
-        SDL_RenderSetViewport(m_renderer, &p);
+        SDL_RenderSetViewport(renderer, &p);
     }
 }
 
@@ -499,7 +537,7 @@ XWindow& XWindow::getInstance(void) noexcept {
 
 void XWindow::_registerWindow(Window* win) noexcept {
     for (auto& t : m_windows) if (t.locate() == win) return;
-	auto tracker = win->tracker();
+    auto tracker = win->tracker();
     m_windows.push_back(tracker);
 }
 

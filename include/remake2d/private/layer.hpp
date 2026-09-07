@@ -21,14 +21,14 @@ enum class layer : i16 {
 };
 
 
-namespace layer {
+namespace level {
 i16 ground(u8) noexcept;
 i16 world(u8)  noexcept;
 i16 sky(u8)    noexcept;
 i16 ui(u8)     noexcept;
 i16 log(u8)    noexcept;
-} // namespace layer
+} // namespace level
 
 } // namespace rmk
-q
 
+#endif

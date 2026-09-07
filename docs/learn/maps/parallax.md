@@ -95,5 +95,13 @@ without ever having to reposition anything manually.
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Trait |
+|---|---|---|---|
+| Parallax | Yes | Yes | Fillable and Trackable |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](tilemap.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](../time/delta.md){ .md-button .md-button--primary }

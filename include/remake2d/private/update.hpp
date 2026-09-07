@@ -2,7 +2,7 @@
 #define REMAKE2D_UPDATE_
 
 #include <remake2d/tracker.hpp>
-#include <remake2d/private/heritable.hpp>
+#include <remake2d/private/struct.hpp>
 
 namespace rmk {
 

@@ -28,7 +28,7 @@ template<typename P>
 concept IsPhysic = std::derived_from<P, class PhysicBody>;
 
 template<typename A>
-concept IsActor  = std::derived_from<A, class ActorBase>;
+concept IsActor  = std::derived_from<A, class Actor>;
 
 template<typename S>
 concept IsSignal = std::derived_from<S, class SignalBase>;
@@ -40,7 +40,7 @@ concept IsSavable = std::derived_from<S, class ISavable>;
 - `IsShape`   : constrains a type to inherit from `Geometry`.
 - `IsTexture` : constrains a type to inherit from `TextureBase`.
 - `IsPhysic`  : constrains a type to inherit from `PhysicBody`.
-- `IsActor`   : constrains a type to inherit from `ActorBase`.
+- `IsActor`   : constrains a type to inherit from `Actor`.
 - `IsSignal`  : constrains a type to inherit from `SignalBase`.
 - `IsSavable` : constrains a type to implement `ISavable`.
 

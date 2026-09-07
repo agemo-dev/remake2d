@@ -81,20 +81,35 @@ Ordering a scene's background, characters, and HUD correctly gets tedious with a
 offsets computed from a base "wall" value:
 
 ```cpp
-i16 ground(u8 wall) noexcept; // wall - 256  (background)
-i16 world(u8 wall)  noexcept; // wall        (game world)
-i16 sky(u8 wall)    noexcept; // wall + 256  (foreground)
-i16 ui(u8 wall)     noexcept; // wall + 511  (interface)
-i16 log(u8 wall)    noexcept; // wall + 767  (debug)
+enum class layer : i16 {
+    min   = -50, // minumum layer
+    max   = 249, // maximun layer
 
-inline constexpr i16 min = -256;
-inline constexpr i16 max = 1023;
+    size  = 50, // distance between two layers
+
+    ground = min,           // ground layer start
+    world  = ground + size, // world layer start
+    sky    = world  + size, // sky layer start
+    ui     = sky    + size, // ui layer start
+    log    = ui     + size, // log layer start
+
+    count = log + size * 2 - 1 // total layers count
+};
+
+// Layer helpers (returns i16 layer value)
+namespace level {
+    i16 ground(u8 wall) noexcept; // wall + layer::ground  (background elements)
+    i16 world(u8 wall)  noexcept; // wall + layer::world   (game world objects)
+    i16 sky(u8 wall)    noexcept; // wall + layer::sky     (foreground effects)
+    i16 ui(u8 wall)     noexcept; // wall + layer::ui      (user interface)
+    i16 log(u8 wall)    noexcept; // wall + layer::log     (debug overlay)
+}
 ```
 
 ```cpp
-scene.add(background, rmk::layer::ground(0));
-scene.add(player,     rmk::layer::world(0));
-scene.add(hud,         rmk::layer::ui(0));
+scene.add(background,  rmk::layer::ground(10)); // -10
+scene.add(player,      rmk::layer::world(0));   // 0
+scene.add(hud,         rmk::layer::ui(200));    // 199 : value is automatically clamped to 49 if is overlimit
 ```
 
 !!! info

@@ -3,6 +3,7 @@
 
 #include <remake2d/concept.hpp>
 
+struct SDL_Bool;
 struct SDL_Window;
 struct SDL_Surface;
 struct SDL_Renderer;
@@ -31,9 +32,11 @@ class PhysicBody;
 class StaticBody;
 class DynamicBody;
 
+class Actor;
+class StaticActor;
+class DynamicActor;
+
 class Geometry;
-class ActorBase;
-class TextureBase;
 class TrackerBase;
 class TrackableBase;
 
@@ -53,12 +56,13 @@ class Window;
 class TileMap;
 class TileGrid;
 class Parallax;
+class TileMapData;
 
 class Savable;
 class Followable;
 template<typename T> class Trackable;
 
-template<IsTrackable T>    struct Slot
+template<IsTrackable T>    struct Slot;
 template<IsTrackable T>    class Tracker;
 template<typename... Args> class Signal;
 template<typename... Args> class Croutine;

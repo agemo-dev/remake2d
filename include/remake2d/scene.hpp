@@ -19,33 +19,33 @@ public:
     using Frame = std::function<void(void)>;
 
 private:
-    std::multimap<i16, Tracker<ActorBase>>  m_actors_map;
+    std::multimap<i16, Tracker<Actor>>      m_actors_map;
     std::multimap<i16, Frame>               m_layers_map;
-    mutable std::vector<Tracker<ActorBase>> m_actors_cache;
+    mutable std::vector<Tracker<Actor>>     m_actors_cache;
     mutable std::vector<Frame>              m_layers_cache;
     Frame                                   m_main;
     bool                                    m_cache_dirty{true};
     bool                                    m_is_active{true};
 
 public:
-    Scene(void)						= default;
-    Scene(Scene&&)					= default;
-    Scene(const Scene&)				= delete;
-    Scene& operator=(Scene&&)		= default;
-    Scene& operator=(const Scene&)	= delete;
+    Scene(void)                      = default;
+    Scene(Scene&&)                   = default;
+    Scene(const Scene&)              = delete;
+    Scene& operator=(Scene&&)        = default;
+    Scene& operator=(const Scene&)   = delete;
 
 public:
     void update(void);
-    void remove(ActorBase&);
+    void remove(Actor&);
+    void add(Actor&, i16 = 0);
     void execute(const Frame&);
-    void add(ActorBase&, i16 = 0);
     void add(const Frame&, i16 = 0);
 
 public:
     void setLayerActive(i16, bool);
-    void active(bool) 		  noexcept;
+    void active(bool)         noexcept;
     bool active(void)   const noexcept;
-    void setActorActive(ActorBase&, bool);
+    void setActorActive(Actor&, bool);
 
 private:
     void _rebuildCache(void);
@@ -61,11 +61,11 @@ private:
     bool                                            m_focus_dirty{true};
 
 public:
-    Act(void)					= default;
-    Act(Act&&)					= default;
-    Act(const Act&)				= delete;
-    Act& operator=(Act&&)		= default;
-    Act& operator=(const Act&)	= delete;
+    Act(void)                    = default;
+    Act(Act&&)                   = default;
+    Act(const Act&)              = delete;
+    Act& operator=(Act&&)        = default;
+    Act& operator=(const Act&)   = delete;
 
 public:
     void focus(std::string_view);
@@ -73,9 +73,9 @@ public:
     void link(std::string_view, std::span<std::string_view>);
 
 public:
-    void update(void)				const;
-    void updates(void)				const;
-    void update(std::string_view)	const;
+    void update(void)                const;
+    void updates(void)               const;
+    void update(std::string_view)    const;
 
 public:
     Scene& scene(std::string_view);

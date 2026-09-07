@@ -109,24 +109,25 @@ void Parallax::update(void) noexcept {
         _tile(layer);
     }
 
-    m_is_fill_dirty = true;
+    is_fill_dirty = true;
 }
 
-void Parallax::fill(const Fillable& main) const noexcept {
-    if (!m_is_fill_dirty) return;
+void Parallax::fill(const Fillable& main) noexcept {
+    if (!is_fill_dirty) return;
 
-    std::vector<VertexBatch> batches;
-    batches.reserve(m_layers.size() * 2);
-
-    for (const auto& layer : m_layers) {
-        auto a = layer.sprite_a.__fill__();
-        auto b = layer.sprite_b.__fill__();
-        batches.insert(batches.end(), a.begin(), a.end());
-        batches.insert(batches.end(), b.begin(), b.end());
+    if (&main != this) {
+        main.is_fill_dirty = false;
+        main.filled        = true;
+        color(main.color());
     }
 
-    main.__fill_cache__ = std::move(batches);
-    m_is_fill_dirty = false;
+    for (const auto& layer : m_layers) {
+        auto a = layer.sprite_a.fill(main);
+        auto b = layer.sprite_b.fill(main);
+    }
+
+    is_fill_dirty = false;
+    filled        = true;
 }
 
 void Parallax::_moveAndResize(const Vec2d& center, const Dim2d& size) noexcept {

@@ -13,7 +13,7 @@
 
 namespace rmk {
 
-TileMapData::TileMapData(Vec2d c, Dim2d s, Grid2d ct, Dim2d csize, Vec2d cstart, u32 marg)
+TileMapData::TileMapData(Vec2d c, Dim2d s, Grid2d ct, Dim2d csize, Vec2d cstart, Vec2d marg)
 	: center(c), size(s), cut(ct), clip_size(csize), clip_start(cstart), margin(marg)   {}
 
 TileMap::TileMap(std::string_view path, TileMapData data) : m_data(data)
@@ -25,8 +25,8 @@ void TileMap::_buildClipPositions(void) noexcept {
     for (usize row = 0; row < m_data.cut.y; row++) {
         for (usize col = 0; col < m_data.cut.x; col++) {
             m_clip_positions[current_id] = {
-                m_data.clip_start.x + col * (m_data.clip_size.w + m_data.margin),
-                m_data.clip_start.y + row * (m_data.clip_size.h + m_data.margin)
+                m_data.clip_start.x + col * (m_data.clip_size.w + m_data.margin.x),
+                m_data.clip_start.y + row * (m_data.clip_size.h + m_data.margin.y)
             };
             current_id++;
         }
@@ -64,8 +64,8 @@ void TileMap::_applyAttributes(void) noexcept {
     for (usize idx = 0; idx < m_template.size(); idx++) {
         TileID id = m_template[idx];
         Vec2d pos = {
-            m_data.center.x + col * (m_data.clip_size.w + m_data.margin),
-            m_data.center.y + row * (m_data.clip_size.h + m_data.margin)
+            m_data.center.x + col * (m_data.clip_size.w + m_data.margin.x),
+            m_data.center.y + row * (m_data.clip_size.h + m_data.margin.y)
         };
 
         if (m_template_physic.count(id)) {
@@ -83,17 +83,20 @@ void TileMap::_applyAttributes(void) noexcept {
 
 
 
-void TileMap::fill(const Fillable& main) const noexcept {
-    if (!m_is_fill_dirty) return;
+void TileMap::fill(const Fillable& main) noexcept {
+    if (!is_fill_dirty) return;
+
+    if (&main != this) {
+        main.is_fill_dirty = false;
+        main.filled        = true;
+        color(main.color());
+    }
 
     if (m_build_future.valid()) m_build_future.wait();
 
-    std::vector<VertexBatch> batches;
-    batches.reserve(m_template.size());
-
     usize col = 0, row = 0;
-    f32 tw = m_data.clip_size.w + m_data.margin;
-    f32 th = m_data.clip_size.h + m_data.margin;
+    f32 tw = m_data.clip_size.w + m_data.margin.x;
+    f32 th = m_data.clip_size.h + m_data.margin.y;
 
     for (usize idx = 0; idx < m_template.size(); idx++) {
         TileID id = m_template[idx];
@@ -106,22 +109,17 @@ void TileMap::fill(const Fillable& main) const noexcept {
 
         if (tile_body != nullptr && !tile_body->m_animations.empty()) {
             Animation& anim = tile_body->animation();
-            anim.move(pos);
-            auto batch = anim.__fill__();
-            batches.insert(batches.end(), batch.begin(), batch.end());
+            anim.fill(main);
         } else if (m_clip_positions.count(id)) {
             m_tileset.clip(m_clip_positions.at(id), m_data.clip_size);
             m_tileset.move(pos);
-            auto batch = m_tileset.__fill__();
-            batches.insert(batches.end(), batch.begin(), batch.end());
+            m_tileset.fill(main);
         }
 
-        col++;
-        if (col >= m_data.cut.x) { col = 0; row++; }
+        if (++col >= m_data.cut.x) { col = 0; row++; }
     }
 
-    main.__fill_cache__ = std::move(batches);
-    m_is_fill_dirty = false;
+    is_fill_dirty = false;
 }
 
 StaticBody* TileMap::_bodyAt(usize tile_index) const noexcept {
@@ -184,10 +182,11 @@ u32 TileMap::tileCount(TileID id) const noexcept {
     return it->second;
 }
 
-Vec2d TileMap::center(void)  const noexcept { return m_data.center; }
-Dim2d TileMap::size(void)    const noexcept { return m_data.size;   }
-Dim2d TileMap::clip(void)    const noexcept { return m_data.clip_size; }
-Grid2d TileMap::cut(void)    const noexcept { return m_data.cut; }
+Vec2d       TileMap::center(void)  const noexcept { return m_data.center; }
+Dim2d       TileMap::size(void)    const noexcept { return m_data.size;   }
+Dim2d       TileMap::clip(void)    const noexcept { return m_data.clip_size; }
+Grid2d      TileMap::cut(void)     const noexcept { return m_data.cut; }
+TileMapData TileMap::data(void)    const noexcept { return m_data; }
 
 void TileMap::move(Vec2d center) noexcept {
     m_data.center = center;

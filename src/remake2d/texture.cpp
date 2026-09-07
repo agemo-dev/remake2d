@@ -21,8 +21,14 @@ bool TextureBase::hasIntersected(const TextureBase& other) const noexcept {
     return hasIntersected(other.shape());
 }
 
-void TextureBase::draw(const Drawable& main) const noexcept {
-    if (!m_is_dirty) return;
+void TextureBase::draw(const Drawable& main) noexcept {
+    if (!is_draw_dirty) return;
+
+    if (&main != this) {
+        main.is_draw_dirty = false;
+        main.drawn        = true;
+        color(main.color());
+    }
 
     const auto& s = shape();
     const auto* pts = s.pointsPos();
@@ -31,12 +37,18 @@ void TextureBase::draw(const Drawable& main) const noexcept {
     contour.reserve(n + 1);
     for (u8 i = 0; i < n; i++) contour.push_back(SDL_FPoint{ pts[i].x, pts[i].y });
     if (n > 0) contour.push_back(SDL_FPoint{ pts[0].x, pts[0].y });
-    main.__draw_cache__ = { DrawPack{ m_color, std::move(contour) } };
-    m_is_dirty = false;
+    main._draw_cache_.push_back({ color(), std::move(contour) });
+    is_draw_dirty = false;
 }
 
-void TextureBase::fill(const Fillable& main) const noexcept {
-    if (!m_is_fill_dirty) return;
+void TextureBase::fill(const Fillable& main) noexcept {
+    if (!is_fill_dirty) return;
+
+    if (&main != this) {
+        main.is_fill_dirty = false;
+        main.filled        = true;
+        color(main.color());
+    }
 
     const auto& win = xwindow.lastDrawnWindow();
     if (!win) return;
@@ -45,10 +57,10 @@ void TextureBase::fill(const Fillable& main) const noexcept {
     batch.texture  = _ownerTexture(win->renderer());
     batch.vertices = vertices();
 
-    for (auto& v : batch.vertices) v.color = m_color;
+    for (auto& v : batch.vertices) v.color = color();
 
-    main.__fill_cache__ = { batch };
-    m_is_fill_dirty = false;
+    main._fill_cache_.push_back(batch);
+    is_fill_dirty = false;
 }
 
 Sprite::Sprite(std::string_view path, const Rectangle& shape)

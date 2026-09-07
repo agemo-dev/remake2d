@@ -594,6 +594,7 @@ SDL_GameController* _getOpenController(i32 instanceId) noexcept {
     return (it != event.m_controllers.end()) ? it->second : nullptr;
 }
 
+void EventManager::update(void) { poll(); }
 
 void EventManager::poll(void) {
     while (SDL_PollEvent(m_event.get())) {

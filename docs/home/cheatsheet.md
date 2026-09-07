@@ -12,6 +12,21 @@ This page lists every **public class** and their methods in **RE:MAKE 2D**.
 ## Window
 
 ```cpp
+
+// class Window::Viewport
+Window::Viewport(void);
+explicit Window::Viewport(const Area& zone); // create a viewport
+
+Camera& camera(void)             noexcept; // get viewport camera
+void area(const Area&)           noexcept; // set viewport area
+Area area(void)            const noexcept; // get viewport area
+const Camera& camera(void) const noexcept; // get const viewport camera
+
+void clear(Color = rmk::color::black) noexcept;   // clear viewport with solid color
+void draw(const Drawable&, i16 layer = 0) noexcept; // draw a drawable object on viewport
+void fill(const Fillable&, i16 layer = 0) noexcept; // draw filled a fillable object on viewport
+
+// class Window
 Window(std::string_view title, Vec2d pos, Dim2d size); // create a new window
 u32      ID(void) const noexcept;           // get the unique window identifier
 Vec2d    pos(void) const noexcept;          // get window position (upper-left corner)
@@ -30,30 +45,17 @@ void     close(void) noexcept;              // close and destroy the window
 bool     isOpen(void) const noexcept;       // check if window is still open
 bool     isFocus(void) const noexcept;      // check if window has input focus
 std::string title(void) noexcept;           // get current window title
-void     blendMode(window::blendmode) noexcept; // set SDL blend mode
+void     blendMode(window::blendmode) noexcept; // set window blend mode
 
-void     present(void);                     // present current frame
-void     screenshot(std::string_view path)  // take a screenshot of current frame
-void     clear(Color = rmk::color::black, std::string_view viewport = "") noexcept; // clear window with a solid color
+void     present(void);                      // present current frame
+void     screenshot(std::string_view path);  // take a screenshot of current frame
+void     clear(Color = rmk::color::black) noexcept; // clear window with a solid color
 
-void     draw(const TextureBase&, Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw a texture
-void     draw(const TileMap&,     Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw a tile map
-void     draw(const Parallax&,    Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw a parallax background
-void     draw(const Area&,        Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw rectangle outline
-void     draw(const TileGrid&,    Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw tile grid outline
-void     draw(const Geometry&,    Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw shape outline
-void     draw(const PhysicBody&,  Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw physics body outline
+void     draw(const Drawable&, i16 layer = 0) noexcept; // draw a drawable object
+void     fill(const Fillable&, i16 layer = 0) noexcept; // draw filled a fillable object
 
-void     fill(const Area&,        Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw filled rectangle
-void     fill(const Geometry&,    Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw filled shape
-void     fill(const PhysicBody&,  Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw filled physics body
-
-void     addViewport(std::string_view, Viewport) noexcept;  // register a named viewport
-void     linkCamera(std::string_view, Camera&) noexcept;    // attach a camera to a viewport
-void     unlinkCamera(std::string_view) noexcept;           // detach camera from a viewport
-void     removeViewport(std::string_view) noexcept;         // delete a named viewport
-void     useViewport(std::string_view) noexcept;            // activate a viewport for subsequent drawing
-void     resetViewport(void) noexcept;                      // restore the default full-window viewport
+void     connectViewport(Viewport&)    noexcept;  // register viewport
+void     disconnectViewport(Viewport&) noexcept;  // unregister viewport
 ```
 
 ---
@@ -750,8 +752,21 @@ virtual Vec2d center(void) const noexcept = 0;
 ## TileMap
 
 ```cpp
+
+struct TileMapData {
+    Vec2d  center;
+    Dim2d  size;
+    Grid2d cut;
+    Dim2d  clip_size;
+    Vec2d  clip_start;
+    Vec2d  margin;
+};
+
+// TileMapData constructor
+TileMapData (Vec2d center, Dim2d size, Grid2d cut, Dim2d clip_size, Vec2d clip_start = 0, Vec2d margin = 0);
+
 TileMap(std::string_view tileset_path, TileMapData data); // create tile map
-// TileMapData { Vec2d center; Dim2d size; Vec2d clip_start; Dim2d clip_size; Grid2d cut; u8 margin; }
+
 using TileID       = i16;                          // tile identifier type
 using TileTemplate = std::vector<TileID>;          // tile layout type
 
@@ -759,6 +774,7 @@ Vec2d  center(void) const noexcept;                // get map position
 Dim2d  size(void) const noexcept;                  // get map size
 Dim2d  clip(void) const noexcept;                  // get tile clip size
 Grid2d cut(void) const noexcept;                   // get grid dimensions
+TileMapData data(void) const noexcept;             // get all grid data
 
 void   move(Vec2d) noexcept;                       // move map
 void   resize(Dim2d) noexcept;                     // resize map
@@ -878,12 +894,12 @@ Signal<> onFileChanged;                       // emitted when script file change
 ## Scene & Actor
 
 ```cpp
-// ActorBase
+// Actor
 virtual void update(void) = 0;                                // update logic (override in derived)
-void             addChild(ActorBase*) noexcept;               // add child actor
-void             removeChild(ActorBase*) noexcept;            // remove child actor
-ActorBase*       parent(void) const noexcept;                 // get parent actor
-const std::vector<ActorBase*>& children(void) const noexcept; // get child actors
+void             addChild(Actor*) noexcept;               // add child actor
+void             removeChild(Actor*) noexcept;            // remove child actor
+Actor*       parent(void) const noexcept;                 // get parent actor
+const std::vector<Actor*>& children(void) const noexcept; // get child actors
 void             active(bool) noexcept;                       // enable or disable actor
 bool             active(void) const noexcept;                 // check if active
 
@@ -897,15 +913,15 @@ using DynamicActor = PhysicActor<DynamicBody>;
 
 // Scene
 void execute(const Frame&);               // set main update function
-void add(ActorBase&, i16 layer = 0);      // add actor to a layer
+void add(Actor&, i16 layer = 0);          // add actor to a layer
 void add(const Frame&, i16 layer = 0);    // add function to a layer
-void remove(ActorBase&);                  // remove actor from scene
+void remove(Actor&);                      // remove actor from scene
 void update(void);                        // run one frame
 void enable(void) noexcept;               // enable scene updates
 void disable(void) noexcept;              // disable scene updates
 bool isEnabled(void) const noexcept;      // check if scene is enabled
 void setLayerActive(i16 layer, bool);     // enable/disable all actors on a layer
-void setActorActive(ActorBase&, bool);    // enable/disable a specific actor
+void setActorActive(Actor&, bool);        // enable/disable a specific actor
 
 // Act
 void add(std::string_view name, Scene&);                               // register a scene
@@ -1005,15 +1021,29 @@ constexpr Nil nil; // universal null/zero placeholder
 // Operators: all types comparable to nil via == and !=
 // (nil == T{} evaluates to true)
 
+
+enum class layer : i16 {
+    min   = -50, // minumum layer
+    max   = 249, // maximun layer
+
+    size  = 50, // distance between two layers
+
+    ground = min,           // ground layer start
+    world  = ground + size, // world layer start
+    sky    = world  + size, // sky layer start
+    ui     = sky    + size, // ui layer start
+    log    = ui     + size, // log layer start
+
+    count = log + size * 2 - 1 // total layers count
+};
+
 // Layer helpers (returns i16 layer value)
-namespace layer {
-    i16 ground(u8 wall); // wall - 256  (background elements)
-    i16 world(u8 wall);  // wall        (game world objects)
-    i16 sky(u8 wall);    // wall + 256  (foreground effects)
-    i16 ui(u8 wall);     // wall + 511  (user interface)
-    i16 log(u8 wall);    // wall + 767  (debug overlay)
-    inline constexpr i16 min = -256;
-    inline constexpr i16 max = 1023;
+namespace level {
+    i16 ground(u8 wall) noexcept; // wall + layer::ground  (background elements)
+    i16 world(u8 wall)  noexcept; // wall + layer::world   (game world objects)
+    i16 sky(u8 wall)    noexcept; // wall + layer::sky     (foreground effects)
+    i16 ui(u8 wall)     noexcept; // wall + layer::ui      (user interface)
+    i16 log(u8 wall)    noexcept; // wall + layer::log     (debug overlay)
 }
 
 // Angle utilities

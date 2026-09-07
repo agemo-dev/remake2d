@@ -91,7 +91,7 @@ cam.follow(playerShape);
 
 Nothing else in the engine implements `Followable` by default, including `PhysicBody`. That's intentional: rather than picking one built-in
 type to special-case, `Camera` leaves it to the person to define what "the thing being followed" means for their own game, the same way
-`ActorBase` is meant to be inherited from rather than used directly. A player character, for instance, can implement `Followable` itself and
+`Actor` is meant to be inherited from rather than used directly. A player character, for instance, can implement `Followable` itself and
 decide exactly what its center should be:
 
 ```cpp

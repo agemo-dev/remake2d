@@ -6,7 +6,8 @@
 #include <remake2d/signal.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/numeric.hpp>
-#include <remake2d/forward.hpp>
+#include <remake2d/config/forward.hpp>
+#include <remake2d/private/update.hpp>
 
 #include <string>
 #include <memory>
@@ -14,7 +15,7 @@
 
 namespace rmk {
 
-class EventManager {
+class EventManager : public Updatable {
 private:
     std::unique_ptr<SDL_Event>                      m_event{nullptr};
     bool                                            m_has_event{false};
@@ -34,6 +35,7 @@ public:
     void poll(void);
     void wait(void);
     void wait(time::Second);
+    void update(void) override;
 
 public:
     void textInput(bool);

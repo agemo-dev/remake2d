@@ -173,6 +173,7 @@ void PhysicBody::move(const Vec2d& pos) noexcept {
         b2Body_SetTransform(m_body, {pm.x, pm.y}, b2Body_GetRotation(m_body));
     }
 
+    for (auto& anim : m_animations) anim.move(pos);
     m_vertices_dirty = true;
     _calculateVertices();
 }
@@ -191,6 +192,8 @@ void PhysicBody::rotate(f32 angle) noexcept {
         b2Rot rot = b2MakeRot(angle);
         b2Body_SetTransform(m_body, b2Body_GetPosition(m_body), rot);
     }
+
+    for (auto& anim : m_animations) anim.rotate(angle);
     m_vertices_dirty = true;
     _calculateVertices();
 }
@@ -204,6 +207,7 @@ void PhysicBody::scale(const Fact2d& s) noexcept {
     if (m_shape_cache.is_circle)
         m_shape_cache.radius *= std::max(s.x, s.y);
 
+    for (auto& anim : m_animations) anim.scale(s);
     m_vertices_dirty = true;
     _calculateVertices();
     _rebuildShape();
@@ -219,6 +223,9 @@ void PhysicBody::linkAnimation(std::string_view tag, const Animation& anim) {
 	std::string t(tag);
 	if (m_animations.empty()) m_focused_anim = t;
     m_animations.emplace(t, anim);
+    auto& a = m_animations.at(tag);
+    a.move(center());
+    a.resize(size());
 }
 
 Animation& PhysicBody::animation(std::string_view name) {
@@ -285,7 +292,7 @@ void PhysicBody::_calculateVertices(void) noexcept {
     } else {
         auto& pts = m_shape_cache.points;
         u32   n   = pts.size();
-        if (n == 0) { m_vertices_dirty = false; m_is_dirty = true; m_is_fill_dirty = true; return; }
+        if (n == 0) { m_vertices_dirty = false; is_draw_dirty = true; is_fill_dirty = true; return; }
         for (u32 i = 0; i < n; i++)
             m_cached_contour.push_back({pts[i].x, pts[i].y});
         m_cached_contour.push_back({pts[0].x, pts[0].y});
@@ -297,30 +304,44 @@ void PhysicBody::_calculateVertices(void) noexcept {
         }
     }
     m_vertices_dirty = false;
-    m_is_dirty       = true;
-    m_is_fill_dirty  = true;
+    is_draw_dirty    = true;
+    is_fill_dirty    = true;
 }
 
-void PhysicBody::draw(const Drawable& main) const noexcept {
-    if (!m_is_dirty) return;
+void PhysicBody::draw(const Drawable& main) noexcept {
+    if (!is_draw_dirty) return;
 
-    main.__draw_cache__ = { DrawPack{ m_color, m_cached_contour } };
-    m_is_dirty = false;
+    if (&main != this) {
+        main.is_draw_dirty = false;
+        main.drawn        = true;
+        color(main.color());
+    }
+
+    main._draw_cache_.push_back({ color(), m_cached_contour });
+    is_draw_dirty = false;
+    drawn = true;
 }
 
-void PhysicBody::fill(const Fillable& main) const noexcept {
-    if (!m_is_fill_dirty) return;
+void PhysicBody::fill(const Fillable& main) noexcept {
+    if (!is_fill_dirty) return;
+
+    if (&main != this) {
+        main.is_fill_dirty = false;
+        main.filled        = true;
+        color(main.color());
+    }
 
     VertexBatch batch;
     batch.texture = nullptr;
     batch.vertices.reserve(m_cached_vertices.size());
 
     for (const auto& v : m_cached_vertices) {
-        batch.vertices.push_back(Vertex{ v.position.x, v.position.y, m_color, v.tex_coord.x, v.tex_coord.y });
+        batch.vertices.push_back(Vertex{ v.position.x, v.position.y, color(), v.tex_coord.x, v.tex_coord.y });
     }
 
-    main.__fill_cache__ = { batch };
-    m_is_fill_dirty = false;
+    main._fill_cache_.push_back(batch);
+    is_fill_dirty = false;
+    filled        = true;
 }
 
 void PhysicBody::_sync(void) {
@@ -399,8 +420,6 @@ void PhysicBody::_rebuildShape(void) {
 
     f32 friction    = b2Shape_IsValid(m_shape_id) ? b2Shape_GetFriction(m_shape_id)    : 0.0f;
     f32 restitution = b2Shape_IsValid(m_shape_id) ? b2Shape_GetRestitution(m_shape_id) : 0.0f;
-    bool sensorEv   = b2Shape_IsValid(m_shape_id) ? true : true;
-    (void)sensorEv;
 
     if (b2Shape_IsValid(m_shape_id)) {
         b2DestroyShape(m_shape_id);
@@ -783,7 +802,10 @@ void DynamicBody::_syncAndUpdate(void) {
     _applyWarp();
     _applyLimit();
 
-    if (m_cached_velocity.x != 0.0f || m_cached_velocity.y != 0.0f) onMove._evaluate(this);
+    if (m_cached_velocity.y < -0.01f || m_cached_velocity.y >  0.01f
+        m_cached_velocity.x < -0.01f || m_cached_velocity.x >  0.01f
+    ) onMove._evaluate(this);
+
     if (m_cached_velocity.y < -0.01f) onMoveUp._evaluate(this);
     if (m_cached_velocity.y >  0.01f) onMoveDown._evaluate(this);
     if (m_cached_velocity.x < -0.01f) onMoveLeft._evaluate(this);

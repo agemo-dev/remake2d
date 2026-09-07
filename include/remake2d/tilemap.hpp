@@ -1,11 +1,11 @@
 #ifndef REMAKE2D_TILEMAP_
 #define REMAKE2D_TILEMAP_
 
-#include <remake2d/draw.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/texture.hpp>
 #include <remake2d/concept.hpp>
+#include <remake2d/private/draw.hpp>
 #include <remake2d/config/forward.hpp>
 
 #include <map>
@@ -22,20 +22,20 @@ namespace rmk {
 
 struct TileMapData {
 public:
-    Vec2d  center;
-    Dim2d  size;
-    Grid2d cut;
-    Dim2d  clip_size;
+    Vec2d  center{0};
+    Dim2d  size{0};
+    Grid2d cut{0};
+    Dim2d  clip_size{0};
     Vec2d  clip_start{0};
-    u8     margin{0};
+    Vec2d  margin{0};
 
 public:
-	TileMapData(void)                           = default;
-	TileMapData(TileMapData&&)                  = default;
-	TileMapData(const TileMapData&)             = default;
-	TileMapData& operator=(TileMapData&&)       = default;
-	TileMapData& operator=(const TileMapData&)  = default;
-	TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d = 0, u32 = 0);
+    TileMapData(void)                           = default;
+    TileMapData(TileMapData&&)                  = default;
+    TileMapData(const TileMapData&)             = default;
+    TileMapData& operator=(TileMapData&&)       = default;
+    TileMapData& operator=(const TileMapData&)  = default;
+    TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d = 0, Vec2d = 0);
 };
 
 class TileMap : public Fillable {
@@ -44,7 +44,7 @@ public:
     static constexpr u32 NO_BODY_SLOT = ~0u;
 
 public:
-	using TileID       = u32;
+    using TileID       = u32;
     using TileTemplate = std::vector<TileID>;
     using ClipMap      = std::map<TileID, Vec2d>;
     using CountMap     = std::map<TileID, u32>;
@@ -53,7 +53,6 @@ public:
     using TagMap       = std::map<std::string, TileID>;
 
 private:
-    SDL_Renderer*      m_renderer;
     TileTemplate       m_template;
     TileMapData        m_data;
     ClipMap            m_clip_positions;
@@ -76,10 +75,11 @@ public:
     TileMap& operator=(const TileMap&)   = delete;
 
 public:
-    Dim2d  clip(void) 	   const noexcept;
+    Dim2d  clip(void)      const noexcept;
     Dim2d  size(void)      const noexcept;
     Vec2d  center(void)    const noexcept;
-    Grid2d cut(void)   	   const noexcept;
+    Grid2d cut(void)       const noexcept;
+    TileMapData data(void) const noexcept;
     u32  tileCount(void)   const noexcept;
     u32  tileCount(TileID) const noexcept;
 
@@ -101,12 +101,12 @@ public:
     PhysicBody& body(std::string_view);
 
 private:
-    void _applyAttributes(void)		noexcept;
-    void _buildClipPositions(void)	noexcept;
-    StaticBody* _bodyAt(usize tile_index) const noexcept;
+    void _applyAttributes(void)      noexcept;
+    void _buildClipPositions(void)   noexcept;
+    StaticBody* _bodyAt(usize) const noexcept;
 
-private:
-    void fill(const Fillable&) const noexcept override;
+public:
+    void fill(const Fillable&) noexcept override;
 
 public:
     ~TileMap(void) = default;

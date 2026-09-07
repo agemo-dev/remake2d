@@ -38,19 +38,21 @@ nav:
     - About RE:MAKE 2D : home/about.md
     - Cheatsheet:        home/cheatsheet.md
   - Learn:
-    - Install:
-        - Installation & compilation : learn/install/install.md
+    - Introduction:
+        - Installation & compilation: learn/introduction/install.md
     - Basics types:
         - Numeric:            learn/types/numeric.md
         - Vector & dimension: learn/types/vector.md
         - Area:               learn/types/area.md
         - Color:              learn/types/color.md
+        - Traits:             learn/types/trait.md
     - Graphics:
         - Window:   learn/graphics/window.md
         - Loop:     learn/graphics/loop.md
         - Shape:    learn/graphics/shape.md
         - Viewport: learn/graphics/viewport.md
         - Camera:   learn/graphics/camera.md
+        - Drawable and Fillable traits: learn/graphics/draw.md
     - Texture:
         - Texture:   learn/texture/texture.md
         - Text:      learn/texture/text.md

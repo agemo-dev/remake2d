@@ -40,15 +40,26 @@ Their constructor is as follows:
 
 ```cpp
 Viewport(void);
-Viewport(const Area& zone);
-Viewport(const Area& zone, Camera& camera);
+explicit Viewport(const Area& zone);
 ```
 
-- `zone` — rendering area of the viewport
-- `camera` — camera attached to the viewport
+---
 
-In this section, only the constructor taking an `Area` parameter will be covered.
-Camera usage will be addressed in the [tilemap](../maps/tilemap.md) section.
+## Method
+
+```cpp
+Camera& camera(void)             noexcept; // get viewport camera
+void area(const Area&)           noexcept; // set viewport area
+Area area(void)            const noexcept; // get viewport area
+const Camera& camera(void) const noexcept; // get const viewport camera
+
+void clear(Color = rmk::color::black) noexcept;   // clear viewport with solid color
+void draw(const Drawable&, i16 layer = 0) noexcept; // draw a drawable object on viewport
+void fill(const Fillable&, i16 layer = 0) noexcept; // draw filled a fillable object on viewport
+```
+
+The `area` method automatically updates the dimensions and position of the viewport's internal camera, but the `camera` method doesn't.
+So be careful when using these methods.
 
 ---
 
@@ -57,32 +68,41 @@ Camera usage will be addressed in the [tilemap](../maps/tilemap.md) section.
 Viewports are created and managed through the following `Window` methods:
 
 ```cpp
-void addViewport(std::string_view tag, Viewport vp) noexcept; // register a named viewport
-void removeViewport(std::string_view tag)           noexcept; // delete a named viewport
-void useViewport(std::string_view tag)              noexcept; // activate a viewport for subsequent draws
-void resetViewport(void)                            noexcept; // restore the default full-window viewport
+void connectViewport(Viewport&)    noexcept;  // register viewport
+void disconnectViewport(Viewport&) noexcept;  // unregister viewport
 ```
-
-- `tag` — unique identifier of the viewport
 
 For example:
 
 ```cpp
-rmk::Window win;
-rmk::Rectangle rect(0, 200); // position (0, 0) — size 200x200
-rmk::Window::Viewport vp(rmk::Area(500, 100, 100, 100));
+#include <remake2d/window.hpp>
+#include <remake2d/shape.hpp>
+#include <remake2d/loop.hpp>
 
-win.addViewport("view", vp);
+int main (void) {
+    rmk::Window win;
+    rmk::Rectangle rect(0, 200); // position (0, 0), size 200x200
+    rmk::Window::Viewport vp(rmk::Area(500, 100, 100, 100));
 
-win.fill(rect, rmk::color::red);
-win.fill(rect, rmk::color::cyan, "view");
+    win.connectViewport(vp); // connect viewport to 'win'
+
+    rmk::loop.execute(win, [&]() {
+        rect.color(rmk::color::red);
+        win.fill(rect);
+
+        rect.color(rmk::color::cyan);
+        vp.fill(rect);
+    });
+
+    rmk::loop.update();
+}
 ```
 
 ![Rectangle drew on viewport](assets/graphics6.png)
 
-The `useViewport` method sets a default active viewport, used when no identifier
-is passed to the window's rendering methods. `resetViewport` deactivates it
-and restores the global viewport.
+It is mandatory to bind a viewport to a window so that the window knows where to display its rendering;
+if this is forgotten, the viewport will simply display nothing.
+The viewport's rendering is automatically called by the `present` method of the window to which it is bound.
 
 ---
 

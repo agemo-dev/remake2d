@@ -1,15 +1,15 @@
 # Interface headers
 
-Les multiple en-tetes peuvent devenir lourde a inclurz separement, c'est pourquoi
-il est important de pouvoir s'on abstenir .
+Including multiple headers separately can quickly become cumbersome, which is
+why it is important to be able to avoid it.
 
 ---
 
-## Overviews
+## Overview
 
-Pour eviter les inclusiants à repetition, **RE:MAKE 2D** offre les **interface headers**
-pour pouvoir inclure une categorie d'en-tetes en une fois .
-Ces categories ettant les suivantes :
+To avoid repetitive includes, **RE:MAKE 2D** offers **interface headers**
+so you can include a whole category of headers at once.
+These categories are the following:
 
 - everything
 - assets
@@ -20,28 +20,29 @@ Ces categories ettant les suivantes :
 - maps
 - times
 - tools
+- traits
 - types
 
 ---
 
 ## Usage
 
-Pour inclure l'une de ces categories, il suffie de faire : `#include <remake2d/all/<NomDeLaCategorie>.hpp>`
-exemple:
+To include one of these categories, simply do: `#include <remake2d/all/<CategoryName>.hpp>`
+example:
 
 ```cpp
 #include <remake2d/all/everything.hpp>
 ```
 
-Ainsi, toutes les en-têtes contenue par celui- ci seront incluses avec .
+This way, every header contained within it will be included as well.
 
 ---
 
-## contenue
+## Content
 
 ### Everything
 
-l'interface `everything` inclura tous simplement toutes les en-têtes publique du moteur .
+The `everything` interface simply includes every public header of the engine.
 
 ```cpp
 #include <remake2d/numeric.hpp>
@@ -80,11 +81,13 @@ l'interface `everything` inclura tous simplement toutes les en-têtes publique d
 #endif
 ```
 
-Noté qu'il inclue egalement les en-tetes des add-ons si sont lié au projet ;) .
+Note that it also includes the add-on headers if they are linked to the
+project ;) .
 
 ### Assets
 
-l'interface `assets` inclura tout module chargé de gérer des fichiers externes :
+The `assets` interface includes every module responsible for managing
+external files:
 
 ```cpp
 #include <remake2d/data.hpp>
@@ -98,9 +101,9 @@ l'interface `assets` inclura tout module chargé de gérer des fichiers externes
 
 ### Bases
 
-l'interface `bases` inclura toutes les en-têtes supposé etre inclus par n'importe quel
-projet utilisant ce moteur ; nous pouvons voir cela comme un kit de base à chaque fichiers
-contenant la fonction `main` :
+The `bases` interface includes every header expected to be included by any
+project using this engine; think of it as a base kit for every file
+containing the `main` function:
 
 ```cpp
 #include <remake2d/loop.hpp>
@@ -114,8 +117,9 @@ contenant la fonction `main` :
 
 ### Cores
 
-l'interface `core` permet d'inclure tous les modules principalement utilisé en masse ou indispensable
-au fonctionnenment interne du moteur ; c'est en quelque sorte le coeur du moteur :
+The `core` interface lets you include every module that is either heavily
+used or essential to the engine's internal operation; it is, in a sense,
+the heart of the engine:
 
 ```cpp
 #include <remake2d/math.hpp>
@@ -128,10 +132,78 @@ au fonctionnenment interne du moteur ; c'est en quelque sorte le coeur du moteur
 
 ### Entities
 
-l'interface `entities` inclus tous les modules chargés de la gestion d'entité:
+The `entities` interface includes every module responsible for entity
+management:
 
 ```cpp
 #include <remake2d/actor.hpp>
 #include <remake2d/shape.hpp>
 #include <remake2d/physic.hpp>
 ```
+
+### Graphics
+
+This one includes every module related to graphics and basic rendering:
+
+```cpp
+#include <remake2d/color.hpp>
+#include <remake2d/shape.hpp>
+#include <remake2d/window.hpp>
+#include <remake2d/texture.hpp>
+```
+
+### Maps
+
+The `maps` interface includes every module that can be used to display a
+background or generate a map:
+
+```cpp
+#include <remake2d/tilemap.hpp>
+#include <remake2d/tilegrid.hpp>
+#include <remake2d/parallax.hpp>
+```
+
+### Times
+
+Includes every time-management module:
+
+```cpp
+#include <remake2d/time.hpp>
+#include <remake2d/clock.hpp>
+```
+
+### Tools
+
+Includes every header of the general-purpose modules that act as a sort of
+**toolbox**:
+
+```cpp
+#include <remake2d/stream.hpp>
+#include <remake2d/random.hpp>
+#include <remake2d/concept.hpp>
+#include <remake2d/utility.hpp>
+```
+
+### Traits
+
+Includes every trait module of the engine, such as: Drawable, Followable, or
+Updatable. For this interface, the headers involved won't be listed here,
+since this interface **cheats** by including the engine's private headers
+directly to avoid pulling in unnecessary content; though the more curious
+among you, who have read the source, will already know what's inside...
+
+### Types
+
+And finally, the baby of the family, which simply includes the **base
+type** modules:
+
+```cpp
+#include <remake2d/color.hpp>
+#include <remake2d/vector.hpp>
+#include <remake2d/numeric.hpp>
+```
+
+---
+
+[:octicons-arrow-left-24: Previous chapter](scene.md){ .md-button }
+[Next chapter :octicons-arrow-right-24:](../data/data.md){ .md-button .md-button--primary }

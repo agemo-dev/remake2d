@@ -96,13 +96,15 @@ All other dependencies are fetched automatically via CMake FetchContent if not a
 ```cpp
 #include <remake2d/all/bases.hpp>
 
-int main(void) {
+int main (void) {
 
     rmk::Window win;
     rmk::Circle circle(win.center(), 400);
 
+    circle.color(rmk::color::cyan);
+
     rmk::loop.execute(win, [&] (void) {
-        win.fill(circle, rmk::color::cyan);
+        win.fill(circle);
     });
 
     rmk::loop.update();

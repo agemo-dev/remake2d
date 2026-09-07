@@ -4,6 +4,9 @@
 #include <remake2d/utility.hpp>
 #include <remake2d/numeric.hpp>
 
+#include <vector>
+#include <initializer_list>
+
 // IVector = Inline Vector
 
 namespace rmk {
@@ -48,10 +51,10 @@ public:
         iterator& operator+=(difference_type);
         iterator& operator-=(difference_type);
 
-        friend iterator operator+(iterator, difference_type);
-        friend iterator operator+(difference_type, iterator);
-        friend iterator operator-(iterator, difference_type);
-        friend difference_type operator-(const iterator&, const iterator&);
+        template <typename T, usize C> friend iterator operator+(iterator, difference_type);
+        template <typename T, usize C> friend iterator operator+(difference_type, iterator);
+        template <typename T, usize C> friend iterator operator-(iterator, difference_type);
+        template <typename T, usize C> friend difference_type operator-(const iterator&, const iterator&);
 
         auto operator<=>(const iterator&) const noexcept = default;
     };
@@ -64,11 +67,27 @@ public:
     IVector& operator=(const IVector&)  = default;
 
 public:
+    IVector(std::initializer_list<T>);
+    IVector(const std::vector<T>&);
+    IVector(std::vector<T>&&);
+
+public:
+    IVector& operator=(std::initializer_list<T>);
+    IVector& operator=(const std::vector<T>&);
+    IVector& operator=(std::vector<T>&&);
+
+public:
+    template <typename InputIt> void assign(InputIt first, InputIt last);
+    void reserve(size_type)        noexcept; // no-op: capacity is fixed at C, kept for API compatibility
+    bool push_back(const T&)       noexcept; // alias of push(), standard-library-style name
+    bool push_back(T&&)            noexcept;
+
+public:
     void pop(void)                 noexcept;
     void clear(void)               noexcept;
     bool push(const T&)            noexcept;
     bool pushAndSort(const T&)     noexcept;
-    IVector::iterator erase(void)  noexcept;
+    iterator erase(iterator)       noexcept;
 
 public:
     pointer data(void)             noexcept;
@@ -79,6 +98,7 @@ public:
     const_reference operator[](size_type) const;
 
 public:
+    bool      empty(void)    const noexcept;
     size_type size(void)     const noexcept;
     size_type capacity(void) const noexcept;
 
@@ -92,4 +112,5 @@ public:
 
 } // namespace rmk
 
+#include <remake2d/template/ivector.tpp>
 #endif

@@ -20,11 +20,7 @@ public:
 };
 
 
-class TrackerBase {
-rmk_heritableBaseClass(TrackerBase);
-};
-
-template<IsTrackable T> class Tracker : private TrackerBase {
+template<IsTrackable T> class Tracker {
 private:
     std::weak_ptr<Slot<T>> m_tracked;
 
@@ -46,7 +42,7 @@ public:
 	T*       operator->(void);
 	const T& operator*(void)  const;
 	const T* operator->(void) const;
-	explicit operator bool() const;
+	explicit operator bool()  const;
 	bool     operator==(const Tracker<T>&) const noexcept;
 	bool     operator!=(const Tracker<T>&) const noexcept;
 
@@ -58,15 +54,14 @@ public:
 
     template<typename U = T> requires IsRelatedTo<U, T>
     const U* locate(void) const noexcept;
+
+rmk_defineID(Tracker);
 };
 
-class TrackableBase {
-rmk_heritableBaseClass(TrackableBase);
-};
+template<typename Derived> class Trackable {
 
-template<typename Derived> class Trackable : private TrackableBase {
 protected:
-    mutable Tracker<Derived>::Balise m_slot;
+    mutable typename Tracker<Derived>::Balise m_slot;
 
 public:
     Trackable(void)                        = default;
@@ -84,6 +79,8 @@ public:
 
 public:
     virtual ~Trackable(void);
+
+rmk_defineID(Trackable);
 };
 
 } // namespace rmk

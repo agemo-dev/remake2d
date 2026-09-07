@@ -1,10 +1,10 @@
 #ifndef REMAKE2D_PARALLAX_
 #define REMAKE2D_PARALLAX_
 
-#include <remake2d/draw.hpp>
 #include <remake2d/tracker.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/private/nil.hpp>
+#include <remake2d/private/draw.hpp>
 #include <remake2d/private/update.hpp>
 #include <remake2d/config/forward.hpp>
 #include <vector>
@@ -55,8 +55,8 @@ private:
     void _tile(Layer&)                        const noexcept;
     void _moveAndResize(const Vec2d&, const Dim2d&) noexcept;
 
-private:
-    void fill(const Fillable&) const noexcept override;
+public:
+    void fill(const Fillable&) noexcept override;
 
 public:
     ~Parallax(void);

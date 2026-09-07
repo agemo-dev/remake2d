@@ -4,6 +4,7 @@
 #include <remake2d/signal.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/forward.hpp>
+#include <remake2d/private/update.hpp>
 
 #include <map>
 #include <atomic>
@@ -110,7 +111,7 @@ private:
 inline auto& dlink = DeltaThreadConnector::getInstance();
 
 
-class DeltaTime : public BaseClock {
+class DeltaTime : public BaseClock, public Updatable {
 private:
     fmax              m_max_fps{120};
     std::atomic<fmax> m_frame_time{0.0};
@@ -126,7 +127,7 @@ public:
 	fmax maxFPS(void) const noexcept;
 
 public:
-    void update(void);
+    void update(void) override;
     void maxFPS(fmax) noexcept;
 	static DeltaTime& getInstance(void);
 };

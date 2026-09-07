@@ -1,8 +1,8 @@
 #ifndef REMAKE2D_TILEGRID_
 #define REMAKE2D_TILEGRID_
 
-#include <remake2d/draw.hpp>
 #include <remake2d/vector.hpp>
+#include <remake2d/private/draw.hpp>
 #include <remake2d/config/forward.hpp>
 
 #include <vector>
@@ -11,14 +11,14 @@ namespace rmk {
 
 class TileGrid : public Drawable {
 private:
-    Grid2d              m_cut;
-    Dim2d               m_size;
-    Vec2d               m_center;
-    std::vector<Area>   m_cells;
+    Grid2d              m_cut{0};
+    Dim2d               m_size{0};
+    Vec2d               m_center{0};
+    std::vector<Area>   m_cells{};
 
 public:
     TileGrid(const Vec2d&, const Dim2d&, const Grid2d&);
-    TileGrid(void)                          = default;
+    TileGrid(void)                          = delete;
     TileGrid(TileGrid&&)                    = default;
     TileGrid(const TileGrid&)               = default;
     TileGrid& operator=(TileGrid&&)         = default;
@@ -30,18 +30,18 @@ public:
     void resize(const Dim2d&) noexcept;
 
 public:
-    usize  count(void) 				const noexcept;
-    Dim2d  size(void) 				const noexcept;
-    Grid2d cut(void) 				const noexcept;
-    Vec2d  center(void)				const noexcept;
-    Area   cell(const Grid2d&)		const noexcept; 
-    std::vector<Area> cells(void)	const noexcept;
-    
-private:
-    void _build(void) 		  noexcept;
+    usize  count(void)               const noexcept;
+    Dim2d  size(void)                const noexcept;
+    Grid2d cut(void)                 const noexcept;
+    Vec2d  center(void)              const noexcept;
+    Area   cell(const Grid2d&)       const noexcept;
+    std::vector<Area> cells(void)    const noexcept;
 
 private:
-    void draw(const Drawable&) const noexcept override;
+    void _build(void)  noexcept;
+
+public:
+    void draw(const Drawable&) noexcept override;
 
 private:
     friend class Window;

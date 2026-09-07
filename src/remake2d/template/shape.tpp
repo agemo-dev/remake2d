@@ -34,8 +34,8 @@ void Shape<POINT_COUNT>::_triangulate(void) noexcept {
     m_contour_cache[m_n] = m_contour_cache[0];
 
     m_is_changed    = false;
-    m_is_dirty      = true;
-    m_is_fill_dirty = true;
+    is_draw_dirty      = true;
+    is_fill_dirty = true;
 }
 
 

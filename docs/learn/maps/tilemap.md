@@ -13,18 +13,22 @@ and tileset clipping are described by a `TileMapData` structure:
 struct TileMapData {
     Vec2d  center;
     Dim2d  size;
-    Vec2d  clip_start;
-    Dim2d  clip_size;
     Grid2d cut;
-    u8     margin{0};
+    Dim2d  clip_size;
+    Vec2d  clip_start;
+    Vec2d  margin;
 };
+
+// TileMapData constructor
+TileMapData (void);
+TileMapData (Vec2d center, Dim2d size, Grid2d cut, Dim2d clip_size, Vec2d clip_start = 0, Vec2d margin = 0);
 ```
 
 - `center`     : the map's center position.
 - `size`       : the map's total rendered size.
-- `clip_start` : top-left position of the first tile in the tileset image.
-- `clip_size`  : size of a single tile in the tileset image.
 - `cut`        : number of columns and rows of the map.
+- `clip_size`  : size of a single tile in the tileset image.
+- `clip_start` : top-left position of the first tile in the tileset image.
 - `margin`     : spacing between tiles in the tileset image.
 
 ---
@@ -32,11 +36,16 @@ struct TileMapData {
 ## Methods
 
 ```cpp
-Dim2d  clip(void)      const noexcept;   // get tile clip size
-Dim2d  size(void)      const noexcept;   // get map size
-Vec2d  center(void)    const noexcept;   // get map position
-Grid2d cut(void)       const noexcept;   // get grid dimensions
-u32    tileCount(void) const noexcept;   // total number of tiles
+using TileID       = u32;
+using TileTemplate = std::vector<u32>;
+
+Dim2d  clip(void)        const noexcept; // get tile clip size
+Dim2d  size(void)        const noexcept; // get map size
+Vec2d  center(void)      const noexcept; // get map position
+Grid2d cut(void)         const noexcept; // get grid dimensions
+TileMapData data(void)   const noexcept; // get all grid data
+
+u32    tileCount(void)   const noexcept; // total number of tiles
 u32    tileCount(TileID) const noexcept; // count of a specific tile type
 
 void move(Vec2d)        noexcept;   // move map
@@ -119,7 +128,7 @@ int main(void) {
     map.load(rmk::TileMap::TileTemplate(80, 0));
 
     rmk::loop.execute(win, [&](void) {
-        win.draw(map, rmk::color::white);
+        win.fill(map);
     });
 
     rmk::loop.update();
@@ -131,7 +140,7 @@ int main(void) {
 Hardcoding numeric IDs everywhere in the code gets unreadable fast; a tag gives a type of tile a proper name:
 
 ```cpp
-map.tag("rock", 1);
+map.tag("rock",  1);
 map.tag("water", 2);
 ```
 
@@ -151,12 +160,12 @@ map.applyPhysic("rock"); // also works with map.applyPhysic(1)
 map.build(); // builds physics for every tile of that type, asynchronously
 ```
 
-Build must be called after applyPhysic, and before relying on the resulting bodies; it runs the underlying work asynchronously so it doesn't block 
+Build must be called after applyPhysic, and before relying on the resulting bodies; it runs the underlying work asynchronously so it doesn't block
 the frame it's called on.
 
 ### Using the resulting body
 
-Once built, every tile matching that ID becomes a solid `StaticBody` automatically placed and moved with the map; body gives a reference to it, 
+Once built, every tile matching that ID becomes a solid `StaticBody` automatically placed and moved with the map; body gives a reference to it,
 configurable exactly like a body created by hand, tags and contact callbacks included:
 
 ```cpp
@@ -181,31 +190,20 @@ map.counterStart(1);
 
 ---
 
-## Following
+## Following and Culling
 
-A map larger than the window can't be displayed entirely at scale without becoming unreadable. That's where a `Camera` comes in, attached
-to the viewport the map is drawn through, exactly like any other draw call.
+Since version `v0.3` of the engine, each `Window` automatically performs culling on each object drawn on it, which removes the direct
+dependency of `TileMap` on the `Camera` for optimization; Therefore, **it is recommended not to perform culling manually**,
+to avoid duplicating logic ;)
 
-What changes with a linked camera is that `TileMap` automatically culls and rescales only the tiles currently visible, instead of drawing the
-whole grid every frame:
+---
 
-```cpp
-rmk::Window win;
-rmk::Camera cam({0, 0}, win.size(), {2000, 1200}); // world is 2000x1200
+## Property
 
-win.addViewport("world", { rmk::Area(0, win.size()), cam });
-
-rmk::loop.execute(win, [&](void) {
-    cam.follow(player_shape);
-    win.draw(map, rmk::color::white, "world");
-});
-```
-
-Draw looks up the `"world"` viewport, finds its linked camera, and passes it down to the map's internal draw call, which computes which
-rows and columns fall inside the camera's current view, and only clips, moves and draws those.
-
-!!! info
-    If the same viewport is used without a linked camera, `TileMap` falls back to drawing every tile in world space.
+| Type | Copiable | Movable | Trait |
+|---|---|---|---|
+| TileMap | No | Yes | Fillable |
+| TileMapData | Yes | Yes | None |
 
 ---
 

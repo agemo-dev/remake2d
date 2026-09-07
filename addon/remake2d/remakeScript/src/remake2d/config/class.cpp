@@ -23,47 +23,27 @@ void initLuaClass(void) noexcept {
         ut["close"]          = &Window::close;
         ut["isOpen"]         = &Window::isOpen;
         ut["isFocus"]        = &Window::isFocus;
+        ut["title"]          = &Window::title;
         ut["clear"]          = &Window::clear;
         ut["present"]        = &Window::present;
+        ut["resizable"]      = &Window::resizable;
         ut["screenshot"]     = &Window::screenshot;
         ut["connectViewport"]    = &Window::connectViewport;
         ut["disconnectViewport"] = &Window::disconnectViewport;
-        ut["useViewport"]        = &Window::useViewport;
-        ut["resetViewport"]      = &Window::resetViewport;
         ut["draw"] = sol::overload(
-            [](Window& win, TextureBase& tex, u16 l)  { win.draw(tex, l); },
-            [](Window& win, Area        & a, u16 l)   { win.draw(a, l); },
-            [](Window& win, Geometry    & g, u16 l)   { win.draw(g, l); },
-            [](Window& win, PhysicBody  & b, u16 l)   { win.draw(b, l); },
-            [](Window& win, TileGrid    & g, u16 l)   { win.draw(g, l); },
-            [](Window& win, TextureBase& tex)  { win.draw(tex); },
-            [](Window& win, Area        & a)   { win.draw(a); },
-            [](Window& win, Geometry    & g)   { win.draw(g); },
-            [](Window& win, PhysicBody  & b)   { win.draw(b); },
-            [](Window& win, TileGrid    & g)   { win.draw(g); }
+            [](Window& win, const Drawable& obj)         { win.draw(obj, 0); },
+            [](Window& win, const Drawable& obj, i16 l)  { win.draw(obj, l); },
         );
         ut["fill"] = sol::overload(
-            [](Window& win, TextureBase& tex, u16 l)  { win.fill(tex, l); },
-            [](Window& win, TileMap     & tile, u16 l) { win.fill(tile, l); },
-            [](Window& win, Parallax    & para, u16 l) { win.fill(para, l); },
-            [](Window& win, Area        & a, u16 l)   { win.fill(a, l); },
-            [](Window& win, Geometry    & g, u16 l)   { win.fill(g, l); },
-            [](Window& win, PhysicBody  & b, u16 l)   { win.fill(b, l); },
-            [](Window& win, TextureBase& tex)  { win.fill(tex); },
-            [](Window& win, TileMap     & tile) { win.fill(tile); },
-            [](Window& win, Parallax    & para) { win.fill(para); },
-            [](Window& win, Area        & a)   { win.fill(a); },
-            [](Window& win, Geometry    & g)   { win.fill(g); },
-            [](Window& win, PhysicBody  & b)   { win.fill(b); }
+            [](Window& win, const Fillable& obj)         { win.fill(obj, 0); },
+            [](Window& win, const Fillable& obj, i16 l)  { win.fill(obj, l); },
         );
-    });
+    }, type::base<Trackable<Window>>);
 
-	rmk::script._registerEngineType<Window::Viewport, Window::Viewport(), Window::Viewport(const Area&), Window::Viewport(const Area&, const Camera&)>("Window::Viewport", nullptr, rmk::type::base<>,
-	    "zone"   , &Window::Viewport::zone,
-	    "camera" , &Window::Viewport::camera
-	);
-
-    script._registerEngineType<Followable>("Followable");
+	rmk::script._registerEngineType<Window::Viewport, Window::Viewport(), Window::Viewport(const Area&), Window::Viewport(const Area&, const Camera&)>("Window::Viewport", [](SolState::Type& ut) {
+        ut["area"]   = Window::Viewport::area;
+        ut["camera"] = [](Camera& self) { return self.camera(); };
+    }, rmk::type::base<Trackable<Window::Viewport>);
 
     script._registerEngineType<Camera,
         Camera(),
@@ -83,14 +63,14 @@ void initLuaClass(void) noexcept {
             [](Camera& self) { return self.smoothing(); },
             [](Camera& self, f32 s) { self.smoothing(s); }
         );
-        ut["center"]    = &Camera::center;
-        ut["size"]      = &Camera::size;
-        ut["offset"]    = &Camera::offset;
-        ut["follow"]    = &Camera::follow;
-        ut["unfollow"]  = &Camera::unfollow;
+        ut["center"]        = &Camera::center;
+        ut["size"]          = &Camera::size;
+        ut["offset"]        = &Camera::offset;
+        ut["follow"]        = &Camera::follow;
+        ut["unfollow"]      = &Camera::unfollow;
         ut["viewCenter"]    = &Camera::viewCenter;
         ut["followedPoint"] = &Camera::followedPoint;
-    }, type::base<>,
+    }, type::base<Trackable<Camera>>,
 	    "onMove" , &Camera::onMove
 	);
 
@@ -104,7 +84,7 @@ void initLuaClass(void) noexcept {
         ut["size"]           = &Geometry::size;
         ut["points"]         = &Geometry::points;
 		ut["hasIntersected"] = &Geometry::hasIntersected;
-    }, type::base<Followable>);
+    }, type::base<Followable, Drawable, Fillable>);
 
     script._registerEngineType<Point, Point(), Point(const Vec2d&)>("Point", nullptr, type::base<Geometry>);
 
@@ -135,10 +115,10 @@ void initLuaClass(void) noexcept {
         ut["size"]     = &TextureBase::size;
         ut["realSize"] = &TextureBase::realSize;
 		ut["hasIntersected"] = sol::overload(
-			[](const TextureBase& self, const Geometry& g)    { self.hasIntersected(g); },
-			[](const TextureBase& self, const TextureBase& o) { self.hasIntersected(o); }
+			[](const TextureBase& self, const Geometry& g)    -> bool { return self.hasIntersected(g); },
+			[](const TextureBase& self, const TextureBase& o) -> bool { return self.hasIntersected(o); }
 		);
-    });
+    }, type::base<Drawable, Fillable>);
 
     script._registerEngineType<Sprite, Sprite(std::string_view, Rectangle)>("Sprite", nullptr, type::base<TextureBase>);
 
@@ -151,7 +131,7 @@ void initLuaClass(void) noexcept {
         ut["pause"]     = &Animation::pause;
         ut["resume"]    = &Animation::resume;
         ut["stop"]      = &Animation::stop;
-    }, type::base<Sprite>,
+    }, type::base<Sprite, Trackable<Animation>>,
 		"onFinish" , &Animation::onFinish,
         "onRepeat" , &Animation::onRepeat
 	);
@@ -172,14 +152,14 @@ void initLuaClass(void) noexcept {
 		);
     }, type::base<TextureBase>);
 
-    script._registerEngineType<TileMapData, TileMapData(), TileMapData(Vec2d, Dim2d, Grid2d, Dim2d), TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d), TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d, u32)>("TileMapData", [](SolState::Type& ut) {
-        ut["center"]     = &TileMapData::center;
-        ut["size"]       = &TileMapData::size;
-        ut["cut"]        = &TileMapData::cut;
-        ut["clip_size"]  = &TileMapData::clip_size;
-        ut["clip_start"] = &TileMapData::clip_start;
-        ut["margin"]     = &TileMapData::margin;
-    });
+    script._registerEngineType<TileMapData, TileMapData(), TileMapData(Vec2d, Dim2d, Grid2d, Dim2d), TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d), TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d, Vec2d)>("TileMapData", nullptr, type::base<>,
+        "center",     &TileMapData::center,
+        "size",       &TileMapData::size,
+        "cut",        &TileMapData::cut,
+        "clip_size",  &TileMapData::clip_size,
+        "clip_start", &TileMapData::clip_start,
+        "margin",     &TileMapData::margin
+    );
 
     script._registerEngineType<TileMap, TileMap(std::string_view, TileMapData)>("TileMap", [](SolState::Type& ut) {
         ut["load"]          = &TileMap::load;
@@ -204,7 +184,7 @@ void initLuaClass(void) noexcept {
         ut["center"]        = &TileMap::center;
         ut["size"]          = &TileMap::size;
         ut["cut"]           = &TileMap::cut;
-    });
+    }, type::base<Drawable, Fillable>);
 
     script._registerEngineType<TileGrid, TileGrid(const Vec2d&, const Dim2d&, const Grid2d&)>("TileGrid", [](SolState::Type& ut) {
         ut["move"]   = &TileGrid::move;
@@ -218,7 +198,7 @@ void initLuaClass(void) noexcept {
         ut["center"] = &TileGrid::center;
         ut["cell"]   = &TileGrid::cell;
         ut["cells"]  = &TileGrid::cells;
-    });
+    }, type::base<Drawable, Fillable>);
 
     script._registerEngineType<Parallax, Parallax(const Vec2d&, const Dim2d&, const std::vector<Sprite>&, const std::vector<u8>&)>("Parallax", [](SolState::Type& ut) {
         ut["move"]     = &Parallax::move;
@@ -230,7 +210,7 @@ void initLuaClass(void) noexcept {
         ut["center"]   = &Parallax::center;
         ut["size"]     = &Parallax::size;
         ut["update"]   = &Parallax::update;
-    });
+    }, type::base<Drawable, Fillable>);
 
 	script._registerEngineType<Data,
 		Data(),       Data(byte),
@@ -282,7 +262,7 @@ void initLuaClass(void) noexcept {
         ut["update"]          = &Scene::update;
         ut["execute"]         = &Scene::execute;
         ut["add"]             = sol::overload(
-            [](Scene& s, ActorBase& a, int l) { s.add(a, (i16)l); },
+            [](Scene& s, Actor& a, int l) { s.add(a, (i16)l); },
             [](Scene& s, const Scene::Frame& f, int l) { s.add(f, (i16)l); }
         );
         ut["remove"]          = &Scene::remove;

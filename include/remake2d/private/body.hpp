@@ -101,9 +101,9 @@ protected:
     void         _initBody(b2WorldId, b2BodyType, f32, f32, f32);
     void         _detachFromWorld(void) noexcept;
 
-private:
-    void draw(const Drawable&) const noexcept override;
-    void fill(const Fillable&) const noexcept override;
+public:
+    void draw(const Drawable&) noexcept override;
+    void fill(const Fillable&) noexcept override;
 
 protected:
 	b2Circle  _makeB2Circle(const PhysicBody::ShapeCache&);

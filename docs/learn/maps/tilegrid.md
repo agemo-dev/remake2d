@@ -48,8 +48,10 @@ rmk::TileGrid grid({400, 300}, {800, 600}, {8, 6});
 Like any `Geometry`, `TileGrid` draws directly through `Window::draw`, handy for visualizing an alignment during development:
 
 ```cpp
+grid.color(rmk::color::gray);
+
 // In render loop
-win.draw(grid, rmk::color::gray);
+win.draw(grid);
 ```
 
 ```cpp
@@ -60,9 +62,10 @@ win.draw(grid, rmk::color::gray);
 int main(void) {
     rmk::Window win;
     rmk::TileGrid grid({400, 300}, {800, 600}, {8, 6});
+    grid.color(rmk::color::gray);
 
     rmk::loop.execute(win, [&](void) {
-        win.draw(grid, rmk::color::gray);
+        win.draw(grid);
     });
 
     rmk::loop.update();
@@ -90,6 +93,13 @@ grid.move({500, 300});
 grid.cut({10, 8});
 grid.resize({1000, 700});
 ```
+---
+
+## Property
+
+| Type | Copiable | Movable | Trait |
+|---|---|---|---|
+| TileGrid | Yes | Yes | Drawable |
 
 ---
 

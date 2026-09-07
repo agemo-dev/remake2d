@@ -8,22 +8,22 @@
 #include <remake2d/numeric.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/json/json.hpp>
-#include <remake2d/private/heritable.hpp>
+#include <remake2d/private/struct.hpp>
 
 #include <map>
 #include <list>
+#include <span>
 #include <vector>
 #include <string>
 #include <variant>
 #include <utility>
 #include <algorithm>
 #include <filesystem>
-#include <string_view>
 
 
 namespace rmk {
 
-inline static const std::string *DATA_DEFAULT_ROOT = "data/remake2d";
+inline static constexpr const char *DATA_DEFAULT_ROOT = "data/remake2d";
 
 struct Data {
     using Value = std::variant<
@@ -59,8 +59,10 @@ struct Data {
     Data(Dim2d v)               : value(v) {}
     Data(Color v)               : value(v) {}
     Data(Area v)                : value(v) {}
-    Data(std::vector<Data> v)   : value(std::move(v)) {}
-    Data(std::string_view v)    : value(std::string(v)) {}
+    Data(int v)                 : value((imax)v) {}
+    Data(unsigned int v)        : value((imax)v) {}
+    Data(std::vector<Data> v)   : value(std::move(v))         {}
+    Data(std::string_view v)    : value(std::string(v))       {}
     Data(std::map<std::string, Data> v) : value(std::move(v)) {}
 
     Data(std::span<std::pair<const std::string, Data>> list)

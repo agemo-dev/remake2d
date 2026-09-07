@@ -66,31 +66,22 @@ void TileGrid::_build(void) noexcept {
         m_cells.push_back(cell);
     }
 
-    m_is_dirty = true;
+    is_draw_dirty = true;
 }
 
-void TileGrid::draw(const Drawable& main) const noexcept {
-    if (!m_is_dirty) return;
+void TileGrid::draw(const Drawable& main) noexcept {
+    if (!is_draw_dirty) return;
 
-    std::vector<SDL_FPoint> contour;
-    contour.reserve(m_cells.size() * 6);
-
-    for (const auto& cell : m_cells) {
-        SDL_FPoint tl{ (f32)cell.x,             (f32)cell.y };
-        SDL_FPoint tr{ (f32)(cell.x + cell.w),  (f32)cell.y };
-        SDL_FPoint br{ (f32)(cell.x + cell.w),  (f32)(cell.y + cell.h) };
-        SDL_FPoint bl{ (f32)cell.x,             (f32)(cell.y + cell.h) };
-
-        contour.push_back(tl);
-        contour.push_back(tr);
-        contour.push_back(br);
-        contour.push_back(bl);
-        contour.push_back(tl);
-        contour.push_back(contour::breaker());
+    if (&main != this) {
+        main.is_draw_dirty = false;
+        main.drawn        = true;
+        color(main.color());
     }
 
-    main.__draw_cache__ = { DrawPack{ m_color, std::move(contour) } };
-    m_is_dirty = false;
+    for (const auto& cell : m_cells) cell.draw(main);
+
+    is_draw_dirty = false;
+    drawn = true;
 }
 
 } //namespace rmk

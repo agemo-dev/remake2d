@@ -19,14 +19,14 @@ assigned to a layer that determines their update order. An `Act` manages several
 ```cpp
 void update(void);                        // run one frame
 void execute(const Frame&);               // set main update function
-void add(ActorBase&, i16 layer = 0);      // add actor to a layer
+void add(Actor&, i16 layer = 0);          // add actor to a layer
 void add(const Frame&, i16 layer = 0);    // add function to a layer
-void remove(ActorBase&);                  // remove actor from scene
+void remove(Actor&);                      // remove actor from scene
 void enable(void) noexcept;               // enable scene updates
 void disable(void) noexcept;              // disable scene updates
 bool isEnabled(void) const noexcept;      // check if scene is enabled
 void setLayerActive(i16 layer, bool);     // enable/disable all actors on a layer
-void setActorActive(ActorBase&, bool);    // enable/disable a specific actor
+void setActorActive(Actor&, bool);        // enable/disable a specific actor
 ```
 
 `Frame` is a simple alias for a free function:
@@ -166,4 +166,4 @@ if (menu) menu->disable();
 ---
 
 [:octicons-arrow-left-24: Previous chapter](random.md){ .md-button }
-[Next chapter :octicons-arrow-right-24:](../data/data.md){ .md-button .md-button--primary }
+[Next chapter :octicons-arrow-right-24:](headers.md){ .md-button .md-button--primary }

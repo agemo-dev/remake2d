@@ -2,10 +2,11 @@
 #define REMAKE2D_PHYSIC_
 
 #include <remake2d/private/body.hpp>
+#include <remake2d/private/update.hpp>
 
 namespace rmk {
 
-class PhysicManager {
+class PhysicManager : public Updatable {
 private:
     b2WorldId                                    m_world{b2_nullWorldId};
     std::vector<Tracker<PhysicBody>>             m_bodies;
@@ -43,7 +44,7 @@ public:
     std::vector<Tracker<PhysicBody>>  statics(void)   noexcept;
     std::vector<Tracker<PhysicBody>>  dynamics(void)  noexcept;
 
-    void update(void);
+    void update(void) override;
 
 private:
     PhysicManager(void);

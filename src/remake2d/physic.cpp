@@ -55,8 +55,8 @@ void PhysicManager::remove(PhysicBody& body) {
         if (found != vec.end()) vec.erase(found);
     };
 
-    eraseFrom(m_statics);
-    eraseFrom(m_dynamics);
+         if (body.m_type_id == physic::id::statics)  eraseFrom(m_statics);
+    else if (body.m_type_id == physic::id::dynamics) eraseFrom(m_dynamics);
 }
 
 Area PhysicManager::world(void) const noexcept { return m_world_size; }
@@ -221,7 +221,7 @@ void PhysicManager::update(void) {
              if (body->m_type_id == physic::id::statics)  body->_sync();
         else if (body->m_type_id == physic::id::dynamics) body->_syncAndUpdate();
 
-        if (body->m_vertices_dirty && body->__filled__) body->_calculateVertices();
+        if (body->m_vertices_dirty && body->filled) body->_calculateVertices();
     }
 }
 

@@ -2,16 +2,16 @@
 #define REMAKE2D_SIGNAL_
 
 #include <remake2d/lock.hpp>
-#include <remake2d/sdl.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/croutine.hpp>
+#include <remake2d/config/sdl.hpp>
 
-#include <vector>
-#include <mutex>
-#include <atomic>
 #include <tuple>
-#include <optional>
+#include <mutex>
+#include <vector>
+#include <atomic>
 #include <utility>
+#include <optional>
 #include <algorithm>
 #include <functional>
 

@@ -9,6 +9,64 @@ IVector<T, C>::~IVector(void) {
 }
 
 template <typename T, usize C>
+IVector<T, C>::IVector(std::initializer_list<T> list) {
+    assign(list.begin(), list.end());
+}
+
+template <typename T, usize C>
+IVector<T, C>::IVector(const std::vector<T>& other) {
+    assign(other.begin(), other.end());
+}
+
+template <typename T, usize C>
+IVector<T, C>::IVector(std::vector<T>&& other) {
+    assign(std::make_move_iterator(other.begin()), std::make_move_iterator(other.end()));
+}
+
+template <typename T, usize C>
+IVector<T, C>& IVector<T, C>::operator=(std::initializer_list<T> list) {
+    assign(list.begin(), list.end());
+    return *this;
+}
+
+template <typename T, usize C>
+IVector<T, C>& IVector<T, C>::operator=(const std::vector<T>& other) {
+    assign(other.begin(), other.end());
+    return *this;
+}
+
+template <typename T, usize C>
+IVector<T, C>& IVector<T, C>::operator=(std::vector<T>&& other) {
+    assign(std::make_move_iterator(other.begin()), std::make_move_iterator(other.end()));
+    return *this;
+}
+
+template <typename T, usize C>
+template <typename InputIt>
+void IVector<T, C>::assign(InputIt first, InputIt last) {
+    clear();
+    for (; first != last && m_size < C; ++first) push_back(*first);
+}
+
+template <typename T, usize C>
+void IVector<T, C>::reserve(size_type n) noexcept {
+    (void)n; // capacity is fixed at C, kept for API compatibility with std::vector call sites
+}
+
+template <typename T, usize C>
+bool IVector<T, C>::push_back(const T& value) noexcept {
+    return push(value);
+}
+
+template <typename T, usize C>
+bool IVector<T, C>::push_back(T&& value) noexcept {
+    if (m_size >= C) return fail;
+    ::new (static_cast<void*>(data() + m_size)) T(std::move(value));
+    m_size++;
+    return success;
+}
+
+template <typename T, usize C>
 bool IVector<T, C>::push(const T& value) noexcept {
     if (m_size >= C) return fail;
     ::new (static_cast<void*>(data() + m_size)) T(value);
@@ -70,9 +128,7 @@ typename IVector<T, C>::iterator IVector<T, C>::erase(typename IVector<T, C>::it
 
 template <typename T, usize C>
 void IVector<T, C>::clear(void) noexcept {
-    while (m_size > 0) {
-        popBack();
-    }
+    while (m_size > 0) pop();
 }
 
 template <typename T, usize C>
@@ -93,6 +149,11 @@ typename IVector<T, C>::reference IVector<T, C>::operator[](size_type index) {
 template <typename T, usize C>
 typename IVector<T, C>::const_reference IVector<T, C>::operator[](size_type index) const {
     return data()[index];
+}
+
+template <typename T, usize C>
+bool IVector<T, C>::empty(void) const noexcept {
+    return m_size == 0;
 }
 
 template <typename T, usize C>
@@ -181,29 +242,25 @@ IVector<T, C>::iterator::operator-=(difference_type n) noexcept {
 }
 
 template <typename T, usize C>
-typename IVector<T, C>::iterator
-operator+(typename IVector<T, C>::iterator it, typename IVector<T, C>::iterator::difference_type n) noexcept {
+typename IVector<T, C>::iterator operator+(typename IVector<T, C>::iterator it, typename IVector<T, C>::iterator::difference_type n) noexcept {
     it += n;
     return it;
 }
 
 template <typename T, usize C>
-typename IVector<T, C>::iterator
-operator+(typename IVector<T, C>::iterator::difference_type n, typename IVector<T, C>::iterator it) noexcept {
+typename IVector<T, C>::iterator operator+(typename IVector<T, C>::iterator::difference_type n, typename IVector<T, C>::iterator it) noexcept {
     it += n;
     return it;
 }
 
 template <typename T, usize C>
-typename IVector<T, C>::iterator
-operator-(typename IVector<T, C>::iterator it, typename IVector<T, C>::iterator::difference_type n) noexcept {
+typename IVector<T, C>::iterator operator-(typename IVector<T, C>::iterator it, typename IVector<T, C>::iterator::difference_type n) noexcept {
     it -= n;
     return it;
 }
 
 template <typename T, usize C>
-typename IVector<T, C>::iterator::difference_type
-operator-(const typename IVector<T, C>::iterator& a, const typename IVector<T, C>::iterator& b) noexcept {
+typename IVector<T, C>::iterator::difference_type operator-(const typename IVector<T, C>::iterator& a, const typename IVector<T, C>::iterator& b) noexcept {
     return a.m_ptr - b.m_ptr;
 }
 

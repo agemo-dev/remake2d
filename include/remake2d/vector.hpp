@@ -1,8 +1,8 @@
 #ifndef REMAKE2D_VECTOR_
 #define REMAKE2D_VECTOR_
 
-#include <remake2d/draw.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/private/draw.hpp>
 #include <remake2d/config/forward.hpp>
 
 #include <array>
@@ -129,9 +129,9 @@ public:
 public:
     std::array<Triangulation, 2> toTriangulation(void) const noexcept;
 
-private:
-    void draw(const Drawable&) const noexcept override;
-    void fill(const Fillable&) const noexcept override;
+public:
+    void draw(const Drawable&) noexcept override;
+    void fill(const Fillable&) noexcept override;
 };
 
 inline Vec2d::operator Fact2d(void) { return Fact2d{ (x < 0 ? 0 : x), (y < 0 ? 0 : y) }; }

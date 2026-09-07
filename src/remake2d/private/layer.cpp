@@ -2,7 +2,7 @@
 
 namespace rmk {
 
-namespace layer {
+namespace level {
 
 i16 ground(u8 wall) noexcept {
     return std::min(wall, (u8)layer::size - 1) + (i16)layer::ground;
@@ -20,6 +20,6 @@ i16 log(u8 wall) noexcept {
     return std::min(wall, (u8)layer::size - 1) + (i16)layer::log;
 }
 
-} // namespace layer
+} // namespace level
 
 } // namespace rmk

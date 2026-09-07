@@ -10,47 +10,61 @@ Grid2d::operator SDL_Point(void)  const { return SDL_Point{ (int)x, (int)y }; }
 Area::operator   SDL_Rect(void)   const { return SDL_Rect{ x, y, w, h }; }
 
 std::array<Triangulation, 2> Area::toTriangulation(void) const noexcept {
-	Vec2d topLeft     { (f32)x,     (f32)y };
-	Vec2d topRight    { (f32)(x+w), (f32)y };
-	Vec2d bottomLeft  { (f32)x,     (f32)(y+h) };
-	Vec2d bottomRight { (f32)(x+w), (f32)(y+h) };
+    Vec2d topLeft     { (f32)x,     (f32)y };
+    Vec2d topRight    { (f32)(x+w), (f32)y };
+    Vec2d bottomLeft  { (f32)x,     (f32)(y+h) };
+    Vec2d bottomRight { (f32)(x+w), (f32)(y+h) };
 
-	return {
-		Triangulation{ topLeft, topRight, bottomRight },
-		Triangulation{ topLeft, bottomRight, bottomLeft }
-	};
+    return {
+        Triangulation{ topLeft, topRight, bottomRight },
+        Triangulation{ topLeft, bottomRight, bottomLeft }
+    };
 }
 
-void Area::draw(const Drawable& main) const noexcept {
-	if (!m_is_dirty) return;
+void Area::draw(const Drawable& main) noexcept {
+    if (!is_draw_dirty) return;
 
-	main.__draw_cache__ = { DrawPack{ m_color, {
-		SDL_FPoint{ (f32)x,     (f32)y },
-		SDL_FPoint{ (f32)(x+w), (f32)y },
-		SDL_FPoint{ (f32)(x+w), (f32)(y+h) },
-		SDL_FPoint{ (f32)x,     (f32)(y+h) },
-		SDL_FPoint{ (f32)x,     (f32)y }
-	} } };
-	m_is_dirty = false;
+    if (&main != this) {
+        main.is_draw_dirty = false;
+        main.drawn        = true;
+        color(main.color());
+    }
+
+    main._draw_cache_.push_back_back(DrawPack{ color(), {
+        SDL_FPoint{ (f32)x,     (f32)y     },
+        SDL_FPoint{ (f32)(x+w), (f32)y     },
+        SDL_FPoint{ (f32)(x+w), (f32)(y+h) },
+        SDL_FPoint{ (f32)x,     (f32)(y+h) },
+        SDL_FPoint{ (f32)x,     (f32)y     }
+    } });
+    is_draw_dirty = false;
+    drawn         = true;
 }
 
-void Area::fill(const Fillable& main) const noexcept {
-	if (!m_is_fill_dirty) return;
+void Area::fill(const Fillable& main) noexcept {
+    if (!is_fill_dirty) return;
 
-	auto triangles = toTriangulation();
+    if (&main != this) {
+        main.is_fill_dirty = false;
+        main.filled        = true;
+        color(main.color());
+    }
 
-	VertexBatch batch;
-	batch.texture = nullptr;
-	batch.vertices.reserve(triangles.size() * 3);
+    auto triangles = toTriangulation();
 
-	for (const auto& tri : triangles) {
-		batch.vertices.push_back(Vertex{ tri.a.x, tri.a.y, m_color });
-		batch.vertices.push_back(Vertex{ tri.b.x, tri.b.y, m_color });
-		batch.vertices.push_back(Vertex{ tri.c.x, tri.c.y, m_color });
-	}
+    VertexBatch batch;
+    batch.texture = nullptr;
+    batch.vertices.reserve(triangles.size() * 3);
 
-	main.__fill_cache__ = { batch };
-	m_is_fill_dirty = false;
+    for (const auto& tri : triangles) {
+        batch.vertices.push_back(Vertex{ tri.a.x, tri.a.y, color() });
+        batch.vertices.push_back(Vertex{ tri.b.x, tri.b.y, color() });
+        batch.vertices.push_back(Vertex{ tri.c.x, tri.c.y, color() });
+    }
+
+    main._fill_cache_.push_back(batch);
+    is_fill_dirty = false;
+    filled        = true;
 }
 
 } // namespace rmk

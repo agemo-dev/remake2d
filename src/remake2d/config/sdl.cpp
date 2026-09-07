@@ -1,4 +1,4 @@
-#include <remake2d/sdl.hpp>
+#include <remake2d/config/sdl.hpp>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>

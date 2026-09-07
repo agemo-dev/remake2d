@@ -11,8 +11,14 @@ Geometry::Geometry(const Vec2d& center, const Dim2d& size)
 		m_size.h = m_size.h == 0 ? 1 : m_size.h;
 	}
 
-void Geometry::fill(const Fillable& main) const noexcept {
-    if (!m_is_fill_dirty) return;
+void Geometry::fill(const Fillable& main) noexcept {
+    if (!is_fill_dirty) return;
+
+    if (&main != this) {
+        main.is_fill_dirty = false;
+        main.filled        = true;
+        color(main.color());
+    }
 
     VertexBatch batch;
     batch.texture = nullptr;
@@ -20,23 +26,32 @@ void Geometry::fill(const Fillable& main) const noexcept {
     auto raw = _verticesImpl();
     batch.vertices.reserve(raw.size());
     for (auto v : raw) {
-        v.color = m_color;
+        v.color = color();
         batch.vertices.push_back(v);
     }
 
-    main.__fill_cache__ = { batch };
-    m_is_fill_dirty = false;
+    main._fill_cache_.push_back(batch);
+    is_fill_dirty   = false;
+    filled          = true;
+
 }
 
-void Geometry::draw(const Drawable& main) const noexcept {
-    if (!m_is_dirty) return;
+void Geometry::draw(const Drawable& main) noexcept {
+    if (!is_draw_dirty) return;
+
+    if (&main != this) {
+        main.is_draw_dirty = false;
+        main.drawn        = true;
+        color(main.color());
+    }
 
     auto raw = _contourImpl();
     std::vector<SDL_FPoint> contour;
     contour.reserve(raw.size());
     for (const auto& p : raw) contour.push_back((SDL_FPoint)p);
-    main.__draw_cache__ = { DrawPack{ m_color, std::move(contour) } };
-    m_is_dirty = false;
+    main._draw_cache_.push_back({ color(), std::move(contour) });
+    is_draw_dirty    = false;
+    drawn    = true;
 }
 
 template<> Circle Geometry::as(void) const noexcept {

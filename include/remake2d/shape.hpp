@@ -56,11 +56,11 @@ public:
     virtual const Vec2d* pointsPos(void) const noexcept = 0;
     virtual Vec2d center(void) const noexcept override = 0;
 
+public:
+    void draw(const Drawable&) noexcept override;
+    void fill(const Fillable&) noexcept override;
+
 private:
-    void draw(const Drawable&) const noexcept override;
-    void fill(const Fillable&) const noexcept override;
-
-
     virtual bool hasIntersected(const Geometry&) const noexcept = 0;
 
 public:

@@ -7,10 +7,12 @@
 
 namespace rmk {
 
+constexpr Vertex::Vertex(f32 X, f32 Y, Color C, f32 U, f32 V) : x(X), y(Y), color(C), u(U), v(V) {}
+
 void Printable::color(Color c) noexcept {
-	m_color         = c;
-	m_is_dirty      = true;
-	m_is_fill_dirty = true;
+	m_color           = c;
+	is_draw_dirty = true;
+	is_fill_dirty = true;
 }
 
 Vertex::operator SDL_Vertex(void) const {
@@ -26,9 +28,7 @@ Vertex::operator SDL_Vertex(void) const {
 	return sdlv;
 }
 
-void  Printable::layer(u16 l)       noexcept { m_layer = l; }
 Color Printable::color(void)  const noexcept { return m_color; }
-u16   Printable::layer(void)  const noexcept { return m_layer; }
 
 namespace contour {
 
@@ -43,14 +43,20 @@ bool isBreak(SDL_FPoint p) noexcept {
 
 } // namespace contour
 
-const std::vector<DrawPack>& Drawable::__draw__(void) const {
-	if (m_is_dirty) draw(*this);
-	return __draw_cache__;
+const std::vector<DrawPack>& Drawable::_draw_(void) {
+	if (is_draw_dirty) {
+		_draw_cache_.clear();
+		draw(*this);
+	}
+	return _draw_cache_;
 }
 
-const std::vector<VertexBatch>& Fillable::__fill__(void) const {
-		if (m_is_fill_dirty) fill(*this);
-		return __fill_cache__;
+const std::vector<VertexBatch>& Fillable::_fill_(void) {
+		if (is_fill_dirty) {
+			_fill_cache_.clear();
+			fill(*this);
+		}
+		return _fill_cache_;
 }
 
 

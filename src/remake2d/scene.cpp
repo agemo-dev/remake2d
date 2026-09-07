@@ -1,5 +1,4 @@
 #include <remake2d/scene.hpp>
-#include <remake2d/layer.hpp>
 
 #include <functional>
 #include <algorithm>
@@ -13,8 +12,8 @@ void Scene::_rebuildCache(void) {
     m_actors_cache.clear();
     m_layers_cache.clear();
 
-	m_actors_cache.reserve(m_actors_map.size());
-	m_layers_cache.reserve(m_layers_map.size());
+    m_actors_cache.reserve(m_actors_map.size());
+    m_layers_cache.reserve(m_layers_map.size());
 
     for (const auto& [layer, actor] : m_actors_map) {
         m_actors_cache.push_back(actor);
@@ -39,7 +38,7 @@ void Scene::add(const Frame& function, i16 layer) {
     m_cache_dirty = true;
 }
 
-void Scene::add(ActorBase& actor, i16 layer) {
+void Scene::add(Actor& actor, i16 layer) {
     if (layer < (i16)layer::min || layer > (i16)layer::max) {
         rmk_dynamicAssert(rmk::SceneError, error::scene::layer_is_overlimits);
     }
@@ -47,7 +46,7 @@ void Scene::add(ActorBase& actor, i16 layer) {
     m_cache_dirty = true;
 }
 
-void Scene::remove(const ActorBase& actor) {
+void Scene::remove(const Actor& actor) {
     for (auto it = m_actors_map.begin(); it != m_actors_map.end(); ++it) {
         if (it->second == actor.tracker()) {
             m_actors_map.erase(it);
@@ -64,16 +63,16 @@ void Scene::setLayerActive(i16 layer, bool active) {
     }
 }
 
-void Scene::setActorActive(ActorBase& actor, bool active) {
+void Scene::setActorActive(Actor& actor, bool active) {
     actor.active(active);
 }
 
 void Scene::active(bool stat) noexcept {
-	m_is_active = true;
+    m_is_active = true;
 }
 
 bool Scene::active(void) const noexcept {
-	return m_is_active;
+    return m_is_active;
 }
 
 void Scene::update(void) const {
@@ -84,8 +83,8 @@ void Scene::update(void) const {
     
     for (auto& actor : m_actors_cache) {
         if (!actor->active()) continue;
-		actor->update();
-		actor->_updates();
+        actor->update();
+        actor->_updates();
     }
     
     for (const auto& frame : m_layers_cache) frame();

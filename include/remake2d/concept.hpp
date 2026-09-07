@@ -6,7 +6,7 @@
 namespace rmk {
 
 template<typename G>
-concept IsShape = std::derived_from<G, class Geometry>;
+concept IsShape = std::<G, class Geometry>;
 
 template<typename T>
 concept IsTexture = std::derived_from<T, class TextureBase>;
@@ -15,7 +15,7 @@ template<typename P>
 concept IsPhysic = std::derived_from<P, class PhysicBody>;
 
 template<typename A>
-concept IsActor  = std::derived_from<A, class ActorBase>;
+concept IsActor  = std::derived_from<A, class Actor>;
 
 template<typename S>
 concept IsSignal = std::derived_from<S, class SignalBase>;
@@ -29,25 +29,25 @@ concept IsDrawable = std::derived_from<T, class Drawable>;
 template<typename T>
 concept IsFillable = std::derived_from<T, class Fillable>;
 
-template<typename T>
-concept IsTracker = std::derived_from<T, class TrackerBase>;
-
-template<typename T>
-concept IsTrackable = std::derived_from<T, class TrackableBase>;
-
 template<typename F>
 concept IsFollowable = std::derived_from<F, class Followable>;
 
 template<typename T>
-concept IsBasicType = std::same_as<T, struct Vec2d>  		||
-                      std::same_as<T, struct Fact2d> 		||
-                      std::same_as<T, struct Grid2d> 		||
-                      std::same_as<T, struct Dim2d>  		||
-                      std::same_as<T, struct Area>   		||
-                      std::same_as<T, struct Triangulation> ||
-                      std::same_as<T, struct Color>  		||
-                      std::same_as<T, struct HSL>			||
-					  std::is_arithmetic_v<T>;
+concept IsTracker = requires { typename T::rmk_getID(Tracker); };
+
+template<typename T>
+concept IsTrackable = requires { typename T::rmk_getID(Trackable); };
+
+template<typename T>
+concept IsBasicType = std::same_as<T, struct Vec2d>          ||
+                      std::same_as<T, struct Fact2d>         ||
+                      std::same_as<T, struct Grid2d>         ||
+                      std::same_as<T, struct Dim2d>          ||
+                      std::same_as<T, struct Area>           ||
+                      std::same_as<T, struct Triangulation>  ||
+                      std::same_as<T, struct Color>          ||
+                      std::same_as<T, struct HSL>            ||
+                      std::is_arithmetic_v<T>;
 
 template<typename U, typename T>
 concept IsRelatedTo = std::same_as<U, T>        ||

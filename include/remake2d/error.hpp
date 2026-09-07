@@ -130,7 +130,7 @@ namespace scene {
 inline static constexpr const char *any_focus               = "any focus scene or link found — please choose a focus scene or link with Act::focus(std::string_view)";
 inline static constexpr const char *scene_unexist           = "scene don\'t exist";
 inline static constexpr const char *multiple_scene_declared = "cannot initialize multiple scene with same name";
-inline static constexpr const char *layer_is_overlimits     = "cannot place function in a invalid layer, please respect a layers range (-256, 1023) or range of layers function if used (0, 255)";
+inline static constexpr const char *layer_is_overlimits     = "cannot place function in a invalid layer, please respect a layers range (-50, 249) or range of layers function if used (0, 49)";
 }//namespace scene
 
 namespace croutine {

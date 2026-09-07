@@ -164,4 +164,4 @@ rmk::Color result = rmk::color::HSLToRGB(hsl);
 ---
 
 [:octicons-arrow-left-24: Previous Chapter](area.md){ .md-button }
-[Next Chapter :octicons-arrow-right-24:](../graphics/window.md){ .md-button .md-button--primary }
+[Next Chapter :octicons-arrow-right-24:](trait.md){ .md-button .md-button--primary }
