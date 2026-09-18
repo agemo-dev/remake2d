@@ -32,7 +32,8 @@ enum class id : u8 {
 
 class PhysicBody : public Trackable<PhysicBody>, public Drawable, public Fillable {
 public:
-    using AnimMap   = std::map<std::string,  Animation>;
+    using AnimMap      = std::map<std::string,  Animation>;
+    using ContourCache = IVector<Vec2d, (usize)point::max>;
 
 protected:
     struct ShapeCache {
@@ -48,7 +49,7 @@ protected:
     physic::id              m_type_id{physic::id::physics};
     ShapeCache              m_shape_cache;
     std::vector<SDL_Vertex> m_cached_vertices;
-    std::vector<SDL_FPoint> m_cached_contour;
+    ContourCache            m_cached_contour;
     bool                    m_vertices_dirty{true};
     AnimMap                 m_animations;
     std::string             m_focused_anim{""};
@@ -102,8 +103,8 @@ protected:
     void         _detachFromWorld(void) noexcept;
 
 public:
-    void draw(const Drawable&) noexcept override;
-    void fill(const Fillable&) noexcept override;
+    void draw(const Drawable&) const noexcept override;
+    void fill(const Fillable&) const noexcept override;
 
 protected:
 	b2Circle  _makeB2Circle(const PhysicBody::ShapeCache&);

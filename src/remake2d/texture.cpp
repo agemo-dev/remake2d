@@ -21,33 +21,29 @@ bool TextureBase::hasIntersected(const TextureBase& other) const noexcept {
     return hasIntersected(other.shape());
 }
 
-void TextureBase::draw(const Drawable& main) noexcept {
+void TextureBase::draw(const Drawable& main) const noexcept {
     if (!is_draw_dirty) return;
 
-    if (&main != this) {
+    if (&main != static_cast<const Drawable*>(this)) {
         main.is_draw_dirty = false;
         main.drawn        = true;
-        color(main.color());
+        _color(main.color());
     }
 
     const auto& s = shape();
-    const auto* pts = s.pointsPos();
-    u8 n = s.points();
-    std::vector<SDL_FPoint> contour;
-    contour.reserve(n + 1);
-    for (u8 i = 0; i < n; i++) contour.push_back(SDL_FPoint{ pts[i].x, pts[i].y });
-    if (n > 0) contour.push_back(SDL_FPoint{ pts[0].x, pts[0].y });
-    main._draw_cache_.push_back({ color(), std::move(contour) });
+    std::vector<Vec2d> pts(s.pointsPos(), s.pointsPos() + s.points());
+    pts.push_back(pts[0]);
+    main._draw_cache_.push_back(DrawPack{ color(), pts });
     is_draw_dirty = false;
 }
 
-void TextureBase::fill(const Fillable& main) noexcept {
+void TextureBase::fill(const Fillable& main) const noexcept {
     if (!is_fill_dirty) return;
 
-    if (&main != this) {
+    if (&main != static_cast<const Fillable*>(this)) {
         main.is_fill_dirty = false;
         main.filled        = true;
-        color(main.color());
+        _color(main.color());
     }
 
     const auto& win = xwindow.lastDrawnWindow();
@@ -148,7 +144,8 @@ void FontManager::_buildAtlas(FontEntry& entry, SDL_Renderer* renderer) {
             sdl.destroyTexture(tempTex);
         }
         char ch = static_cast<char>(firstChar + i);
-        entry.atlas.glyphs[ch] = {xOffset, 0, surf->w, surf->h};
+        Area rect(xOffset, 0, surf->w, surf->h);
+        entry.atlas.glyphs[ch] = rect;
         xOffset += surf->w;
         sdl.freeSurface(surf);
     }

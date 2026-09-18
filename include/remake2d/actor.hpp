@@ -14,9 +14,9 @@ namespace rmk {
 class Actor : public Trackable<Actor> {
 
 protected:
-    std::vector<Tracker<Actor>> m_children;
-    Tracker<Actor>              m_parent;
-    bool                        m_active{true};
+    std::vector<UnsafeTracker<Actor>> m_children;
+    UnsafeTracker<Actor>              m_parent;
+    bool                              m_active{true};
 
 public:
     Actor(void)                     = default;
@@ -29,11 +29,11 @@ public:
     void addChild(Actor&)           noexcept;
     void removeChild(Actor&)        noexcept;
 
-    Tracker<Actor>& parent(void)             noexcept;
-    const Tracker<Actor>& parent(void) const noexcept;
+    UnsafeTracker<Actor>& parent(void)             noexcept;
+    const UnsafeTracker<Actor>& parent(void) const noexcept;
 
-    std::vector<Tracker<Actor>>& children(void)             noexcept;
-    const std::vector<Tracker<Actor>>& children(void) const noexcept;
+    std::vector<UnsafeTracker<Actor>>& children(void)             noexcept;
+    const std::vector<UnsafeTracker<Actor>>& children(void) const noexcept;
 
 public:
     virtual void update(void) = 0;
@@ -59,7 +59,7 @@ public:
     PhysicActor(const Geometry&);
 
 public:
-    virtual void update(void) override {};
+    virtual void update(void) override = 0;
 
 public:
     rmk_heritableBaseClass(PhysicActor);

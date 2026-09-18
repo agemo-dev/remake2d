@@ -258,11 +258,11 @@ _EventSignal<> onPressBackspace, onPressTab, onPressCapsLock;
 _EventSignal<> onPressDelete, onPressInsert, onPressHome;
 _EventSignal<> onPressEnd, onPressPageUp, onPressPageDown;
 _EventSignal<> onPressLeft, onPressRight, onPressUp, onPressDown; // arrow keys
-_EventSignal<> onPressLShift, onPressRShift;               // shift keys
-_EventSignal<> onPressLCtrl, onPressRCtrl;                 // control keys
-_EventSignal<> onPressLAlt, onPressRAlt;                   // alt keys
-_EventSignal<> onPressAny;                                 // any key pressed
-_EventSignal<> onPressF1 .. onPressF12;                    // function keys
+_EventSignal<> onPressShift, onPressLShift, onPressRShift;        // shift keys
+_EventSignal<> onPressCtrl, onPressLCtrl, onPressRCtrl;           // control keys
+_EventSignal<> onPressAlt, onPressLAlt, onPressRAlt;              // alt keys
+_EventSignal<> onPressAny;                                        // any key pressed
+_EventSignal<> onPressF1 .. onPressF12;                           // function keys
 
 // Equivalent onRelease* events for key releases
 // Equivalent onPressScan*, onReleaseScan* events (scancode-based, layout-independent)
@@ -278,8 +278,8 @@ _EventSignal<std::string> onTextEdit;    // composition / IME editing
 ### Mouse
 
 ```cpp
-_EventSignal<Vec2d> onMouseMove;                    // mouse position
-_EventSignal<Vec2d> onMouseRawMove;                 // relative mouse motion
+_EventSignal<Vec2d> onMouseMove;                     // mouse position
+_EventSignal<Vec2d> onMouseRawMove;                  // relative mouse motion
 _EventSignal<Vec2d> onLeftDown, onLeftUp;            // left button
 _EventSignal<Vec2d> onRightDown, onRightUp;          // right button
 _EventSignal<Vec2d> onMiddleDown, onMiddleUp;        // middle button
@@ -290,12 +290,15 @@ _EventSignal<Vec2d> onWheel;                         // mouse wheel (x, y)
 ### Gamepad
 
 ```cpp
+// i32 : controller ID
 _EventSignal<i32> onPressACtrl, onPressBCtrl, onPressXCtrl, onPressYCtrl;
 _EventSignal<i32> onPressStart, onPressSelect;
 _EventSignal<i32> onPressLShoulder, onPressRShoulder;
 _EventSignal<i32> onPressDpadLeft, onPressDpadRight, onPressDpadUp, onPressDpadDown;
 _EventSignal<i32> onPressLStick, onPressRStick;
+
 // Equivalent onRelease* events
+// i16 : axis value
 _EventSignal<i32, i16> onAxisLeftX, onAxisLeftY;       // left stick
 _EventSignal<i32, i16> onAxisRightX, onAxisRightY;     // right stick
 _EventSignal<i32, i16> onAxisLTrigger, onAxisRTrigger; // triggers
@@ -306,15 +309,26 @@ _EventSignal<i32> onControllerRemoved;                 // controller unplugged
 ### Touch
 
 ```cpp
+// Vec2d : click position
 _EventSignal<Vec2d> onFingerDown;     // finger touched screen
 _EventSignal<Vec2d> onFingerUp;       // finger lifted
 _EventSignal<Vec2d> onFingerMove;     // finger moved
 _EventSignal<Vec2d> onMultiGesture;   // multi-touch gesture
 ```
 
+
+### Mouse and Touch (mobile / mouse compatibility)
+
+```cpp
+// Vec2d : click position
+_EventSignal<Vec2d> onPointerUp;    // left button or finger up
+_EventSignal<Vec2d> onPointerDown;  // left button or finger down
+```
+
 ### Window events
 
 ```cpp
+// u32 : window ID
 _EventSignal<u32>        onWindowClose;        // window close requested
 _EventSignal<u32>        onWindowMinimized;    // window minimized
 _EventSignal<u32>        onWindowMaximized;    // window maximized
@@ -895,18 +909,26 @@ Signal<> onFileChanged;                       // emitted when script file change
 
 ```cpp
 // Actor
-virtual void update(void) = 0;                                // update logic (override in derived)
-void             addChild(Actor*) noexcept;               // add child actor
-void             removeChild(Actor*) noexcept;            // remove child actor
-Actor*       parent(void) const noexcept;                 // get parent actor
-const std::vector<Actor*>& children(void) const noexcept; // get child actors
-void             active(bool) noexcept;                       // enable or disable actor
-bool             active(void) const noexcept;                 // check if active
+virtual void update(void) = 0;     // update logic (override in derived)
 
-// Actor (concrete, no physics)
-// PhysicActor<P> (StaticActor, DynamicActor)
+void addChild(Actor&)           noexcept;  // add child
+void removeChild(Actor&)        noexcept;  // remove child
+
+UnsafeTracker<Actor>& parent(void)             noexcept; // get current parent (mutable)
+const UnsafeTracker<Actor>& parent(void) const noexcept; // get current parent (constant)
+
+std::vector<UnsafeTracker<Actor>>& children(void)             noexcept; // get all children (mutable)
+const std::vector<UnsafeTracker<Actor>>& children(void) const noexcept; // get all children (constant)
+
+void active(bool)       noexcept; // enable/disable active
+bool active(void) const noexcept; // check if is active
+
+
+// template<IsPhysic P> PhysicActor<P> (inherit from Actor)
 PhysicActor(const Geometry&); // create actor with physics body
 P body; // public physics body member
+
+virtual void update(void) override = 0; // update logic (override in derived)
 
 using StaticActor  = PhysicActor<StaticBody>;
 using DynamicActor = PhysicActor<DynamicBody>;

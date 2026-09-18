@@ -3,6 +3,7 @@
 
 #include <remake2d/error.hpp>
 #include <remake2d/concept.hpp>
+#include <remake2d/private/struct.hpp>
 
 #include <memory>
 #include <compare>
@@ -10,7 +11,7 @@
 
 namespace rmk {
 
-template<IsTrackable T> struct Slot {
+template<typename T> struct Slot {
 public:
     const T* ptr{nullptr};
 
@@ -19,23 +20,23 @@ public:
 	bool operator!=(const Slot<T>&)      const noexcept;
 };
 
+template<typename T> using Balise = std::shared_ptr<Slot<T>>;
 
-template<IsTrackable T> class Tracker {
+class TrackerBaseID { rmk_heritableBaseClass(TrackerBaseID); };
+
+template<typename T> class UnsafeTracker : public TrackerBaseID {
 private:
     std::weak_ptr<Slot<T>> m_tracked;
 
 public:
-    using Balise = std::shared_ptr<Slot<T>>;
+    UnsafeTracker(void)                             = default;
+    UnsafeTracker(UnsafeTracker&&)                  = default;
+    UnsafeTracker(const UnsafeTracker&)             = default;
+    UnsafeTracker& operator=(UnsafeTracker&&)       = default;
+    UnsafeTracker& operator=(const UnsafeTracker&)  = default;
 
-public:
-    Tracker(void)                       = default;
-    Tracker(Tracker&&)                  = default;
-    Tracker(const Tracker&)             = default;
-    Tracker& operator=(Tracker&&)       = default;
-    Tracker& operator=(const Tracker&)  = default;
-
-public:
-    Tracker(const Balise&);
+private:
+    UnsafeTracker(const Balise<T>&);
 
 public:
 	T&       operator*(void);
@@ -43,25 +44,28 @@ public:
 	const T& operator*(void)  const;
 	const T* operator->(void) const;
 	explicit operator bool()  const;
-	bool     operator==(const Tracker<T>&) const noexcept;
-	bool     operator!=(const Tracker<T>&) const noexcept;
+	bool     operator==(const UnsafeTracker<T>&) const noexcept;
+	bool     operator!=(const UnsafeTracker<T>&) const noexcept;
 
 public:
-    void track(const Balise&) noexcept;
-
     template<typename U = T> requires IsRelatedTo<U, T>
     U* locate(void) noexcept;
 
     template<typename U = T> requires IsRelatedTo<U, T>
     const U* locate(void) const noexcept;
 
-rmk_defineID(Tracker);
+private:
+    template<typename Derived> friend class Trackable;
 };
 
-template<typename Derived> class Trackable {
+template<IsTrackable SafeType> using Tracker = UnsafeTracker<SafeType>;
+
+class TrackableBaseID { rmk_heritableBaseClass(TrackableBaseID); };
+
+template<typename Derived> class Trackable : public TrackableBaseID {
 
 protected:
-    mutable typename Tracker<Derived>::Balise m_slot;
+    mutable Balise<Derived> m_slot;
 
 public:
     Trackable(void)                        = default;
@@ -73,14 +77,12 @@ public:
     Trackable& operator=(Trackable&&);
 
 public:
-    void relocate(void)                  noexcept;
-    Tracker<Derived> tracker(void)       noexcept;
-    Tracker<Derived> tracker(void) const noexcept;
+    void relocate(void)                         noexcept;
+    UnsafeTracker<Derived> tracker(void)        noexcept;
+    UnsafeTracker<Derived> tracker(void)  const noexcept;
 
 public:
     virtual ~Trackable(void);
-
-rmk_defineID(Trackable);
 };
 
 } // namespace rmk

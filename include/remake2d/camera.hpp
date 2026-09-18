@@ -1,8 +1,6 @@
 #ifndef REMAKE2D_CAMERA_
 #define REMAKE2D_CAMERA_
 
-#include <functional>
-
 #include <remake2d/time.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/signal.hpp>
@@ -17,7 +15,8 @@ class Followable : public Trackable<Followable> {
 public:
 	virtual Vec2d center(void) const noexcept = 0;
 
-rmk_heritableBaseClass(Followable);
+public:
+    rmk_heritableBaseClass(Followable);
 };
 
 class Camera : public Trackable<Camera> {
@@ -65,8 +64,8 @@ public:
 	void follow(const Followable&) noexcept;
 
 private:
-    void _offset(void)  noexcept;
-    void _replace(void) noexcept;
+    void _offset(void)        noexcept;
+    void _replace(void)       noexcept;
     bool _hasMove(void) const noexcept;
 };
 

@@ -1,6 +1,7 @@
 #ifndef REMAKE2D_WINDOW_
 #define REMAKE2D_WINDOW_
 
+#include <remake2d/area.hpp>
 #include <remake2d/system.hpp>
 #include <remake2d/camera.hpp>
 #include <remake2d/tracker.hpp>
@@ -67,7 +68,7 @@ public:
     private:
         Area            m_zone{0, 0, 0, 0};
         Camera          m_camera{};
-        Tracker<Window> m_window{nil};
+        UnsafeTracker<Window> m_window{nil};
 
     public:
         explicit Viewport(const Area&);
@@ -116,7 +117,7 @@ private:
     FillLayers m_fill_layers;
 
 private:
-    std::vector<Tracker<Viewport>>           m_viewports;
+    std::vector<UnsafeTracker<Viewport>>    m_viewports;
 
 public:
     Window(void);
@@ -143,8 +144,8 @@ public:
     void rename(std::string_view) noexcept;
 
 public:
-    void connectViewport(Viewport&)        noexcept;
-    void disconnectViewport(Viewport&)     noexcept;
+    void connectViewport(Viewport&)     noexcept;
+    void disconnectViewport(Viewport&)  noexcept;
 
 public:
     void icon(std::string_view);
@@ -159,7 +160,7 @@ public:
     Area area(void)             const noexcept;
     bool isOpen(void)           const noexcept;
     bool isFocus(void)          const noexcept;
-    bool isResizable(void)      const noexcept;
+    bool resizable(void)        const noexcept;
     void blendMode(window::blendmode) noexcept;
 
     void clear(Color = rmk::color::black)    noexcept;
@@ -179,7 +180,7 @@ private:
     static void _testLayer(i16, UsedLayers&, ActiveLayers&);
 
 private: // place VertexBatch / DrawPack in buffer
-    static void _pushFill(const std::vector<VertexBatch>&, i16, const Camera&, Dim2d, FillLayers&) noexcept;
+    static void _pushFill(const std::vector<VertexBatch>&, i16, const Camera&, Dim2d, FillLayers&)  noexcept;
     static void _pushDraw(const std::vector<DrawPack>&,    i16, const Camera&, Dim2d, DrawLayers&)  noexcept;
 
 public:
@@ -191,7 +192,6 @@ private:
     friend class FontManager;
     template<IsShape> friend class Texture;
 };
-
 
 
 class XWindow {

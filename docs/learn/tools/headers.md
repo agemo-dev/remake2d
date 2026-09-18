@@ -198,6 +198,7 @@ And finally, the baby of the family, which simply includes the **base
 type** modules:
 
 ```cpp
+#include <remake2d/area.hpp>
 #include <remake2d/color.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/numeric.hpp>
@@ -205,5 +206,5 @@ type** modules:
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](scene.md){ .md-button }
+[:octicons-arrow-left-24: Previous chapter](random.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](../data/data.md){ .md-button .md-button--primary }

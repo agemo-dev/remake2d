@@ -219,23 +219,28 @@ Dim2d operator%(const Dim2d& lhs, const Dim2d& rhs) noexcept {
 }
 
 Area& operator+=(Area& lhs, const Area& rhs) noexcept {
-    return lhs = lhs + rhs;
+    lhs.x += rhs.x; lhs.y += rhs.y; lhs.w += rhs.w; lhs.h += rhs.h;
+    return lhs;
 }
 
 Area& operator-=(Area& lhs, const Area& rhs) noexcept {
-    return lhs = lhs - rhs;
+    lhs.x -= rhs.x; lhs.y -= rhs.y; lhs.w -= rhs.w; lhs.h -= rhs.h;
+    return lhs;
 }
 
 Area& operator/=(Area& lhs, const Area& rhs) noexcept {
-    return lhs = lhs / rhs;
+    lhs.x /= rhs.x; lhs.y /= rhs.y; lhs.w /= rhs.w; lhs.h /= rhs.h;
+    return lhs;
 }
 
 Area& operator*=(Area& lhs, const Area& rhs) noexcept {
-    return lhs = lhs * rhs;
+    lhs.x *= rhs.x; lhs.y *= rhs.y; lhs.w *= rhs.w; lhs.h *= rhs.h;
+    return lhs;
 }
 
 Area& operator%=(Area& lhs, const Area& rhs) noexcept {
-    return lhs = lhs % rhs;
+    lhs.x %= rhs.x; lhs.y %= rhs.y; lhs.w %= rhs.w; lhs.h %= rhs.h;
+    return lhs;
 }
 
 Area operator+(const Area& lhs, const Area& rhs) noexcept {

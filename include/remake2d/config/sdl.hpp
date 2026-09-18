@@ -11,7 +11,7 @@ namespace rmk {
 
 class SDLWrapper {
 private:
-    SDLWrapper(void)                       = default;
+    SDLWrapper(void)                            = default;
     SDLWrapper(SDLWrapper&&)                    = delete;
     SDLWrapper(const SDLWrapper&)               = delete;
     SDLWrapper& operator=(SDLWrapper&&)         = delete;
@@ -36,7 +36,7 @@ public:
     void         renderCopy(SDL_Renderer*, SDL_Texture*, const SDL_Rect*, const SDL_Rect*) const noexcept;
 
     std::string getError(void) const noexcept;
-    void setHint(std::string_view, std::string_view) const noexcept;
+    bool setHint(std::string_view, std::string_view) const noexcept;
 
     void freeSurface(SDL_Surface*) const noexcept;
     void freeChunk(Mix_Chunk*)     const noexcept;

@@ -3,6 +3,7 @@
 
 #include <remake2d/tracker.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/texture.hpp>
 #include <remake2d/private/nil.hpp>
 #include <remake2d/private/draw.hpp>
 #include <remake2d/private/update.hpp>
@@ -28,7 +29,7 @@ private:
     Dim2d                       m_size{0.0f};
     Vec2d                       m_center{0.0f};
     u32                         m_parse{0};
-    Tracker<Camera>             m_sync_cam{nil};
+    UnsafeTracker<Camera>       m_sync_cam{nil};
     std::vector<Sprite>         m_sprite_list;
 
 public:
@@ -56,7 +57,7 @@ private:
     void _moveAndResize(const Vec2d&, const Dim2d&) noexcept;
 
 public:
-    void fill(const Fillable&) noexcept override;
+    void fill(const Fillable&) const noexcept override;
 
 public:
     ~Parallax(void);

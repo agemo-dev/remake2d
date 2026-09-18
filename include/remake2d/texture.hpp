@@ -60,8 +60,8 @@ public:
     virtual std::vector<Vertex> vertices(void)    const noexcept = 0;
 
 public:
-    void draw(const Drawable&) noexcept override;
-    void fill(const Fillable&) noexcept override;
+    void draw(const Drawable&) const noexcept override;
+    void fill(const Fillable&) const noexcept override;
 
 public:
     virtual ~TextureBase(void) = default;

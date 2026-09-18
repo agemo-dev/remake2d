@@ -1,7 +1,6 @@
+
 #ifndef REMAKE2D_STRUCT_
 #define REMAKE2D_STRUCT_
-
-#define rmk_getID(CLASS) _ ## CLASS ## ID_
 
 #define rmk_defineID(CLASS) using _ ## CLASS ## ID_ = void;
 
@@ -19,7 +18,8 @@
     CLASS& operator=(CLASS&&)       = default; \
     CLASS& operator=(const CLASS&)  = default; \
 public: \
-    virtual ~CLASS(void) = default; \
-    using _ ## CLASS ## ID_ = void;
+    virtual ~CLASS(void) = default;
+
+#define rmk_getBaseID(CLASS) _ ## CLASS ## BaseID_
 
 #endif

@@ -8,6 +8,7 @@
 
 #include <span>
 #include <string>
+#include <atomic>
 #include <stdlib.h>
 #include <algorithm>
 
@@ -32,22 +33,22 @@ public:
 
     struct Setup {
         void allocateChannels(u16);
-        void backend(std::string_view);
-        void audioMode(std::string_view);
-        void scalingMode(std::string_view);
-        void audioCategory(std::string_view);
-        void mouseRelativeMode(std::string_view);
-        void mobileOrientation(std::span<std::string_view>);
+        bool backend(std::string_view);
+        bool audioMode(std::string_view);
+        bool scalingMode(std::string_view);
+        bool audioCategory(std::string_view);
+        bool mouseRelativeMode(std::string_view);
+        bool mobileOrientation(std::span<std::string_view>);
     };
 
     struct Toggle {
-        void vsync(bool);
-        void blockOnPause(bool);
+        bool vsync(bool);
+        bool blockOnPause(bool);
         void gameController(bool);
-        void hideHomeIndicator(bool);
+        bool hideHomeIndicator(bool);
         void relativeMouseMode(bool);
-        void materialAcceleration(bool);
-        void accelerometerAsJoystick(bool);
+        bool materialAcceleration(bool);
+        bool accelerometerAsJoystick(bool);
     };
 
 public:
@@ -56,10 +57,10 @@ public:
     Info info;
 
 private:
-    bool        m_is_init{false};
-	u32			m_instance{0};
-    u32         m_channel_count{0};
-    SDL_bool    m_relative_mouse_mode{SDL_FALSE};
+	std::atomic<u32>  m_instance{0};
+    bool              m_is_init{false};
+    u32               m_channel_count{0};
+    bool              m_relative_mouse_mode{false};
 
 private:
     System(void)                        = default;

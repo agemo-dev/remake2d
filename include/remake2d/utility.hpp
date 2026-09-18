@@ -4,6 +4,7 @@
 #include <remake2d/time.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/private/nil.hpp>
+#include <remake2d/private/var.hpp>
 #include <remake2d/private/layer.hpp>
 #include <remake2d/config/forward.hpp>
 #include <remake2d/config/version.hpp>
@@ -57,16 +58,6 @@ time::Year        operator""_y(unsigned long long)   noexcept;
 } // namespace literal
 } // namespace time
 
-
-inline constexpr u8 fail      = 1;
-inline constexpr u8 success   = 0;
-inline constexpr bool on      = true;
-inline constexpr bool off     = false;
-inline constexpr bool isTrue  = true;
-inline constexpr bool isFalse = false;
-
 } // namespace rmk
-
-#include <remake2d/template/utility.tpp>
 
 #endif

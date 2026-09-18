@@ -36,26 +36,26 @@ if(EXISTS "${LOSLIB_PATH}")
 #if defined(_WIN32)
 #include <io.h>
 #include <process.h>
-#define lua_tmpnam(b,e) { \
-  char *tmp_dir = getenv("TMP"); \
-  if (!tmp_dir) tmp_dir = getenv("TEMP"); \
-  if (!tmp_dir) tmp_dir = "."; \
-  snprintf(b, LUA_TMPNAMBUFSIZE, "%s\\lua_XXXXXX", tmp_dir); \
-  e = (_mktemp_s(b, strlen(b) + 1) != 0); \
+#define lua_tmpnam(b,e) { \\
+  char *tmp_dir = getenv("TMP"); \\
+  if (!tmp_dir) tmp_dir = getenv("TEMP"); \\
+  if (!tmp_dir) tmp_dir = "."; \\
+  snprintf(b, LUA_TMPNAMBUFSIZE, "%s\\lua_XXXXXX", tmp_dir); \\
+  e = (_mktemp_s(b, strlen(b) + 1) != 0); \\
 }
 #else
 #include <unistd.h>
-#define lua_tmpnam(b,e) { \
-  char *tmp_dir = getenv("TMPDIR"); \
-  if (!tmp_dir) tmp_dir = "/tmp"; \
-  snprintf(b, LUA_TMPNAMBUFSIZE, "%s/lua_XXXXXX", tmp_dir); \
-  int fd = mkstemp(b); \
-  if (fd != -1) { \
-    close(fd); \
-    e = 0; \
-  } else { \
-    e = 1; \
-  } \
+#define lua_tmpnam(b,e) { \\
+  char *tmp_dir = getenv("TMPDIR"); \\
+  if (!tmp_dir) tmp_dir = "/tmp"; \\
+  snprintf(b, LUA_TMPNAMBUFSIZE, "%s/lua_XXXXXX", tmp_dir); \\
+  int fd = mkstemp(b); \\
+  if (fd != -1) { \\
+    close(fd); \\
+    e = 0; \\
+  } else { \\
+    e = 1; \\
+  } \\
 }
 #endif]])
 

@@ -31,7 +31,7 @@ markdown_extensions:
   - pymdownx.details
   - attr_list
   - md_in_html
-  
+
 
 nav:
   - Home:
@@ -66,6 +66,9 @@ nav:
         - Tile grid: learn/maps/tilegrid.md
         - Tile map:  learn/maps/tilemap.md
         - Parallax:  learn/maps/parallax.md
+    - Scene:
+        - Actor:       learn/scene/actor.md
+        - Scene & act: learn/scene/scene.md
     - time:
         - Delta time:  learn/time/delta.md
         - Timer:       learn/time/timer.md
@@ -78,7 +81,6 @@ nav:
         - Concept:           learn/tools/concept.md
         - Utility:           learn/tools/utility.md
         - Random:            learn/tools/random.md
-        - Scene & act:       learn/tools/scene.md
         - Interface Headers: learn/tools/headers.md
     - Data & Script:
         - Save & load data:    learn/data/data.md
@@ -111,6 +113,11 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/agemo-dev
     - icon: fontawesome/brands/discord
-      link: https://discord.gg/agemo405
+      link: https://discord.com/users/agemo405
     - icon: fontawesome/solid/envelope
       link: mailto:my.agemo.dev@email.com
+  meta:
+    - name: "google-site-verification"
+      content: "iD_UVf6foJs16QF6AnDeJCx-iXjCrcO5WKp7aZxdqvI"
+    - name: "msvalidate.01"
+      content: "03831693F6B3BA05E7B1284E475B4F67"

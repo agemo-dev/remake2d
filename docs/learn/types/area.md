@@ -6,7 +6,7 @@
 
 ## Overview
 
-**Area** is represented by the type `Area`, included in the header **"remake2d/vector.hpp"**.
+**Area** is represented by the type `Area`, included in the header **"remake2d/area.hpp"**.
 It is composed of four integers:
 
 - `i32 x` : coordinate on the X axis
@@ -41,7 +41,7 @@ constexpr Area(i32 x, i32 y, i32 w, i32 h);
 ```
 
 ```cpp
-#include <remake2d/vector.hpp>
+#include <remake2d/area.hpp>
 
 int main(void) {
     rmk::Area zone = { 400, 300, 100, 100 }; // Area at coordinates (400, 300) with size (100, 100)

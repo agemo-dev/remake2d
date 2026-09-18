@@ -112,18 +112,18 @@ void Parallax::update(void) noexcept {
     is_fill_dirty = true;
 }
 
-void Parallax::fill(const Fillable& main) noexcept {
+void Parallax::fill(const Fillable& main) const noexcept {
     if (!is_fill_dirty) return;
 
-    if (&main != this) {
+    if (&main != static_cast<const Fillable*>(this)) {
         main.is_fill_dirty = false;
         main.filled        = true;
-        color(main.color());
+        _color(main.color());
     }
 
-    for (const auto& layer : m_layers) {
-        auto a = layer.sprite_a.fill(main);
-        auto b = layer.sprite_b.fill(main);
+    for (auto& layer : m_layers) {
+        layer.sprite_a.fill(main);
+        layer.sprite_b.fill(main);
     }
 
     is_fill_dirty = false;
@@ -161,7 +161,7 @@ Parallax::~Parallax(void) {
 }
 
 void ParallaxManager::update(void) {
-    for (const auto& para : m_parallaxs) if (para) para->update();
+    for (auto& para : m_parallaxs) if (para) para->update();
 }
 
 ParallaxManager& ParallaxManager::getInstance(void) noexcept {

@@ -19,19 +19,20 @@ Which allows checking if an event is active during the analysis of another one. 
 
 ```cpp
 rmk::event.onPressS.join([&](void) {
-    if(rmk::event.onPressLCtrl.isActive()) save();
+    if(rmk::event.onPressCtrl.isActive()) save();
 });
 ```
 
 !!! warning
-    isActive() is preferred for key combinations because `event` handles one SDL event at a time. Two keys pressed simultaneously will
+    `isActive()` is preferred for key combinations because `event` handles one SDL event at a time. Two keys pressed simultaneously will
 	be processed in separate calls, so a combination like Ctrl+S cannot be detected by connecting both events independently.
+    `isActive()` work with keyboard and console press events only .
 
 ---
 
 ## Different events
 
-The `EventManager` class covers 300+ events, handling keyboard, mouse, gamepad, touch, window and application events. 
+The `EventManager` class covers 300+ events, handling keyboard, mouse, gamepad, touch, window and application events.
 Each event is a `_EventSignal` instance that can be connected just like a regular `Signal`.
 
 ### Keyboard
@@ -44,9 +45,9 @@ _EventSignal<> onPressBackspace, onPressTab, onPressCapsLock;
 _EventSignal<> onPressDelete, onPressInsert, onPressHome;
 _EventSignal<> onPressEnd, onPressPageUp, onPressPageDown;
 _EventSignal<> onPressLeft, onPressRight, onPressUp, onPressDown;
-_EventSignal<> onPressLShift, onPressRShift;
-_EventSignal<> onPressLCtrl, onPressRCtrl;
-_EventSignal<> onPressLAlt, onPressRAlt;
+_EventSignal<> onPressShift, onPressLShift, onPressRShift;
+_EventSignal<> onPressCtrl, onPressLCtrl, onPressRCtrl;
+_EventSignal<> onPressAlt, onPressLAlt, onPressRAlt;
 _EventSignal<> onPressAny;
 _EventSignal<> onPressF1 .. onPressF12;
 
@@ -76,13 +77,16 @@ _EventSignal<Vec2d> onWheel;             // scroll delta (x, y)
 ### Gamepad
 
 ```cpp
+// i32 : controller ID
 _EventSignal<i32> onPressACtrl, onPressBCtrl, onPressXCtrl, onPressYCtrl;
 _EventSignal<i32> onPressStart, onPressSelect;
 _EventSignal<i32> onPressLShoulder, onPressRShoulder;
 _EventSignal<i32> onPressDpadLeft, onPressDpadRight, onPressDpadUp, onPressDpadDown;
 _EventSignal<i32> onPressLStick, onPressRStick;
 // Equivalent onRelease* events
-_EventSignal<i32, i16> onAxisLeftX, onAxisLeftY;       // i32 = controller id, i16 = axis value
+
+// i16 : axis value
+_EventSignal<i32, i16> onAxisLeftX, onAxisLeftY;
 _EventSignal<i32, i16> onAxisRightX, onAxisRightY;
 _EventSignal<i32, i16> onAxisLTrigger, onAxisRTrigger;
 _EventSignal<i32> onControllerAdded;
@@ -92,22 +96,33 @@ _EventSignal<i32> onControllerRemoved;
 ### Touch
 
 ```cpp
-_EventSignal<Vec2d> onFingerDown;    // normalized position (0.0 - 1.0)
+// Vec2d : click position
+_EventSignal<Vec2d> onFingerDown;
 _EventSignal<Vec2d> onFingerUp;
 _EventSignal<Vec2d> onFingerMove;
 _EventSignal<Vec2d> onMultiGesture;
 ```
 
+
+### Mouse and Touch (mobile / mouse compatibility)
+
+```cpp
+// Vec2d : click position
+_EventSignal<Vec2d> onPointerUp;    // left button or finger up
+_EventSignal<Vec2d> onPointerDown;  // left button or finger down
+```
+
 ### Window
 
 ```cpp
+// u32 = window ID
 _EventSignal<u32>        onWindowClose;
 _EventSignal<u32>        onWindowMinimized, onWindowMaximized, onWindowRestored;
 _EventSignal<u32>        onWindowShown, onWindowHidden, onWindowExposed;
 _EventSignal<u32>        onWindowFocusGained, onWindowFocusLost;
 _EventSignal<u32>        onWindowMouseEnter, onWindowMouseLeave;
-_EventSignal<u32, Dim2d> onWindowResized;    // u32 = window id, Dim2d = new size
-_EventSignal<u32, Vec2d> onWindowMoved;      // u32 = window id, Vec2d = new position
+_EventSignal<u32, Dim2d> onWindowResized;    // Dim2d = new size
+_EventSignal<u32, Vec2d> onWindowMoved;      // Vec2d = new position
 ```
 
 ### Application
@@ -144,6 +159,7 @@ The `EventManager` provides three ways to read events each frame, depending on h
 void poll(void);                        // process all pending events (non-blocking)
 void wait(void);                        // wait indefinitely for an event
 void wait(time::Millisecond timeout);   // wait for an event with timeout
+void update(void);                      // EventManager::poll alias
 
 void textInput(bool);					// Enable/disable text read mode
 bool textInput(void);   				// check text read mode stat
@@ -159,9 +175,9 @@ rmk::loop.execute(win, [&]() {
 ```
 
 !!! info
-	le text read mode permet d'activer/desactiver les evenements de lecture de text (e.g: `onTextInput`) .
-	Si desactiver, les entrées clavier ne sont plus vu comme du text literal .
-	
+    Text read mode allows you to enable or disable text input events (e.g., `onTextInput`).
+    If disabled, keyboard inputs are no longer treated as literal text.
+
 ---
 
 [:octicons-arrow-left-24: Previous chapter](signal.md){ .md-button }

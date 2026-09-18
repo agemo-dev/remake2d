@@ -35,7 +35,10 @@ public:
     TileMapData(const TileMapData&)             = default;
     TileMapData& operator=(TileMapData&&)       = default;
     TileMapData& operator=(const TileMapData&)  = default;
-    TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d = 0, Vec2d = 0);
+
+public:
+    TileMapData(Vec2d c, Dim2d s, Grid2d ct, Dim2d csize, Vec2d cstart = 0, Vec2d marg = 0)
+        : center(c), size(s), cut(ct), clip_size(csize), clip_start(cstart), margin(marg) {}
 };
 
 class TileMap : public Fillable {
@@ -106,7 +109,7 @@ private:
     StaticBody* _bodyAt(usize) const noexcept;
 
 public:
-    void fill(const Fillable&) noexcept override;
+    void fill(const Fillable&) const noexcept override;
 
 public:
     ~TileMap(void) = default;

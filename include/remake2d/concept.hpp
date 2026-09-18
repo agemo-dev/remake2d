@@ -2,11 +2,12 @@
 #define REMAKE2D_CONCEPT_
 
 #include <concepts>
+#include <remake2d/private/struct.hpp>
 
 namespace rmk {
 
 template<typename G>
-concept IsShape = std::<G, class Geometry>;
+concept IsShape = std::derived_from<G, class Geometry>;
 
 template<typename T>
 concept IsTexture = std::derived_from<T, class TextureBase>;
@@ -33,10 +34,10 @@ template<typename F>
 concept IsFollowable = std::derived_from<F, class Followable>;
 
 template<typename T>
-concept IsTracker = requires { typename T::rmk_getID(Tracker); };
+concept IsTracker = std::derived_from<T, class TrackerBaseID>;
 
 template<typename T>
-concept IsTrackable = requires { typename T::rmk_getID(Trackable); };
+concept IsTrackable = std::is_base_of_v<class TrackableBaseID, T>;
 
 template<typename T>
 concept IsBasicType = std::same_as<T, struct Vec2d>          ||

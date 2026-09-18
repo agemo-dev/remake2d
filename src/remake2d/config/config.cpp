@@ -1,5 +1,5 @@
 #include <remake2d/config/config.hpp>
-#include <remake2d/sound.hpp>
+#include <remake2d/all/everything.hpp>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -7,6 +7,45 @@
 #include <SDL2/SDL_mixer.h>
 
 namespace rmk {
+
+void _hookMusicFinished(void) {
+    if(!rmk::Music::m_current_music) return;
+
+    auto* mus = rmk::Music::m_current_music.locate<Music>();
+
+    if(!mus) return;
+    if(mus->m_loops_remaining < 0) {
+        return;
+    } else if(mus->m_loops_remaining > 0) {
+        mus->m_loops_remaining -= 1;
+		mus->onRepeat.emit();
+    } else {
+        mus->stop();
+        mus->onFinish.emit();
+        rmk::Music::m_current_music = nil;
+    }
+}
+
+ void _channelFinished(int channel) {
+    if(channel >= (int)system.info.channelCount()) return;
+
+    rmk::SFX* sfx = rmk::SFX::m_channel_owners[channel].locate<SFX>();
+
+    if(!sfx) return;
+    if(sfx->m_loops_remaining < 0) {
+        return;
+    } else if(sfx->m_loops_remaining > 0) {
+        sfx->m_loops_remaining -= 1;
+		sfx->onRepeat.emit();
+    } else {
+        rmk::SFX::m_free_channels.push(channel);
+        rmk::SFX::m_channel_owners[channel] = nil;
+        sfx->m_is_playing = false;
+        sfx->onFinish.emit();
+    }
+ }
+
+
 namespace config {
 
 namespace system {
@@ -35,8 +74,26 @@ void initSDL(void) {
     if(TTF_Init() != 0) {
         rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_ttf_init_fail) + " : " + TTF_GetError()));
     }
+
+    Mix_ChannelFinished(_channelFinished);
+    Mix_HookMusicFinished(_hookMusicFinished);
 }
+
 } //namespace system
+
+
+namespace loop {
+
+void init (void) noexcept {
+    rmk::loop.add(event.tracker());
+    rmk::loop.add(delta.tracker());
+    rmk::loop.add(physics.tracker());
+    rmk::loop.add(parallax.tracker());
+    rmk::loop.add(animation.tracker());
+}
+
+} // namespace loop
+
 
 namespace sound {
 void initQueue(void) noexcept {
@@ -45,7 +102,7 @@ void initQueue(void) noexcept {
     if(isInit) return;
     for(u16 i = 0; i < rmk::system.info.channelCount(); i++) {
         rmk::SFX::m_free_channels.push(i);
-        rmk::SFX::m_channel_owners[i] = nullptr;
+        rmk::SFX::m_channel_owners[i] = nil;
     }
     isInit = true;
 }

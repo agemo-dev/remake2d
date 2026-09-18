@@ -1,6 +1,7 @@
 #ifndef REMAKE2D_DATA_
 #define REMAKE2D_DATA_
 
+#include <remake2d/area.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/color.hpp>
 #include <remake2d/vector.hpp>

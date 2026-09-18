@@ -68,7 +68,7 @@ void* b2Alloc( uint32_t size )
 #ifdef B2_PLATFORM_WINDOWS
 	void* ptr = _aligned_malloc( size32, B2_ALIGNMENT );
 #else
-	void* ptr = aligned_alloc( B2_ALIGNMENT, size32 );
+	void* ptr = NULL; posix_memalign(&ptr, B2_ALIGNMENT, size32);
 #endif
 
 	b2TracyCAlloc( ptr, size );

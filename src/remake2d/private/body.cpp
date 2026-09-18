@@ -67,9 +67,9 @@ PhysicBody& PhysicBody::operator=(const PhysicBody& other) {
 
 PhysicBody::PhysicBody(PhysicBody&& other) noexcept
     : Trackable<PhysicBody>(std::move(other))
-    , m_type_id(other.m_type_id)
     , m_body(other.m_body)
     , m_shape_id(other.m_shape_id)
+    , m_type_id(other.m_type_id)
     , m_shape_cache(std::move(other.m_shape_cache))
     , m_cached_vertices(std::move(other.m_cached_vertices))
     , m_cached_contour(std::move(other.m_cached_contour))
@@ -173,7 +173,7 @@ void PhysicBody::move(const Vec2d& pos) noexcept {
         b2Body_SetTransform(m_body, {pm.x, pm.y}, b2Body_GetRotation(m_body));
     }
 
-    for (auto& anim : m_animations) anim.move(pos);
+    for (auto& [tag, anim] : m_animations) anim.move(pos);
     m_vertices_dirty = true;
     _calculateVertices();
 }
@@ -193,7 +193,7 @@ void PhysicBody::rotate(f32 angle) noexcept {
         b2Body_SetTransform(m_body, b2Body_GetPosition(m_body), rot);
     }
 
-    for (auto& anim : m_animations) anim.rotate(angle);
+    for (auto& [tag, anim] : m_animations) anim.rotate(angle);
     m_vertices_dirty = true;
     _calculateVertices();
 }
@@ -207,7 +207,7 @@ void PhysicBody::scale(const Fact2d& s) noexcept {
     if (m_shape_cache.is_circle)
         m_shape_cache.radius *= std::max(s.x, s.y);
 
-    for (auto& anim : m_animations) anim.scale(s);
+    for (auto& [tag, anim] : m_animations) anim.scale(s);
     m_vertices_dirty = true;
     _calculateVertices();
     _rebuildShape();
@@ -223,7 +223,7 @@ void PhysicBody::linkAnimation(std::string_view tag, const Animation& anim) {
 	std::string t(tag);
 	if (m_animations.empty()) m_focused_anim = t;
     m_animations.emplace(t, anim);
-    auto& a = m_animations.at(tag);
+    auto& a = m_animations.at(t);
     a.move(center());
     a.resize(size());
 }
@@ -279,11 +279,11 @@ void PhysicBody::_calculateVertices(void) noexcept {
         for (u32 i = 0; i <= segments; i++) {
             f32   angle = 2.0f * pi * i / segments;
             Vec2d p     = { c.x + r * std::cos(angle), c.y + r * std::sin(angle) };
-            m_cached_contour.push_back({p.x, p.y});
+            m_cached_contour.push_back(p);
         }
         for (u32 i = 1; i < segments - 1; i++) {
-            auto toVertex = [](SDL_FPoint p) -> SDL_Vertex {
-                return { {p.x, p.y}, {255, 255, 255, 255}, {0, 0} };
+            auto toVertex = [](Vec2d p) -> SDL_Vertex {
+                return { p, {255, 255, 255, 255}, {0, 0} };
             };
             m_cached_vertices.push_back(toVertex(m_cached_contour[0]));
             m_cached_vertices.push_back(toVertex(m_cached_contour[i]));
@@ -293,9 +293,8 @@ void PhysicBody::_calculateVertices(void) noexcept {
         auto& pts = m_shape_cache.points;
         u32   n   = pts.size();
         if (n == 0) { m_vertices_dirty = false; is_draw_dirty = true; is_fill_dirty = true; return; }
-        for (u32 i = 0; i < n; i++)
-            m_cached_contour.push_back({pts[i].x, pts[i].y});
-        m_cached_contour.push_back({pts[0].x, pts[0].y});
+        for (const auto& pt : pts) m_cached_contour.push(pt);
+        m_cached_contour.push_back(pts[0]);
 
         for (u32 i = 1; i + 1 < n; i++) {
             m_cached_vertices.push_back({{pts[0].x, pts[0].y},     {255,255,255,255}, {0,0}});
@@ -308,27 +307,27 @@ void PhysicBody::_calculateVertices(void) noexcept {
     is_fill_dirty    = true;
 }
 
-void PhysicBody::draw(const Drawable& main) noexcept {
+void PhysicBody::draw(const Drawable& main) const noexcept {
     if (!is_draw_dirty) return;
 
-    if (&main != this) {
+    if (&main != static_cast<const Drawable*>(this)) {
         main.is_draw_dirty = false;
         main.drawn        = true;
-        color(main.color());
+        _color(main.color());
     }
 
-    main._draw_cache_.push_back({ color(), m_cached_contour });
+    main._draw_cache_.push_back(DrawPack{ color(), m_cached_contour });
     is_draw_dirty = false;
     drawn = true;
 }
 
-void PhysicBody::fill(const Fillable& main) noexcept {
+void PhysicBody::fill(const Fillable& main) const noexcept {
     if (!is_fill_dirty) return;
 
-    if (&main != this) {
+    if (&main != static_cast<const Fillable*>(this)) {
         main.is_fill_dirty = false;
         main.filled        = true;
-        color(main.color());
+        _color(main.color());
     }
 
     VertexBatch batch;
@@ -802,7 +801,7 @@ void DynamicBody::_syncAndUpdate(void) {
     _applyWarp();
     _applyLimit();
 
-    if (m_cached_velocity.y < -0.01f || m_cached_velocity.y >  0.01f
+    if (m_cached_velocity.y < -0.01f || m_cached_velocity.y >  0.01f ||
         m_cached_velocity.x < -0.01f || m_cached_velocity.x >  0.01f
     ) onMove._evaluate(this);
 

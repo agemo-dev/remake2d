@@ -13,9 +13,6 @@
 
 namespace rmk {
 
-TileMapData::TileMapData(Vec2d c, Dim2d s, Grid2d ct, Dim2d csize, Vec2d cstart, Vec2d marg)
-	: center(c), size(s), cut(ct), clip_size(csize), clip_start(cstart), margin(marg)   {}
-
 TileMap::TileMap(std::string_view path, TileMapData data) : m_data(data)
     , m_tileset(path, Rectangle(data.center, data.size)) {}
 
@@ -83,13 +80,13 @@ void TileMap::_applyAttributes(void) noexcept {
 
 
 
-void TileMap::fill(const Fillable& main) noexcept {
+void TileMap::fill(const Fillable& main) const noexcept {
     if (!is_fill_dirty) return;
 
-    if (&main != this) {
+    if (&main != static_cast<const Fillable*>(this)) {
         main.is_fill_dirty = false;
         main.filled        = true;
-        color(main.color());
+        _color(main.color());
     }
 
     if (m_build_future.valid()) m_build_future.wait();

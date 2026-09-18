@@ -58,14 +58,14 @@ public:
     _EventSignal<> onPress5, onPress6, onPress7, onPress8, onPress9;
 
 
-    _EventSignal<> onPressSpace,    onPressEnter,    onPressEscape;
-    _EventSignal<> onPressBackspace, onPressTab,     onPressCapsLock;
-    _EventSignal<> onPressDelete,   onPressInsert,   onPressHome;
-    _EventSignal<> onPressEnd,      onPressPageUp,   onPressPageDown;
-    _EventSignal<> onPressLeft,     onPressRight,    onPressUp,    onPressDown;
-    _EventSignal<> onPressLShift,   onPressRShift;
-    _EventSignal<> onPressLCtrl,    onPressRCtrl;
-    _EventSignal<> onPressLAlt,     onPressRAlt;
+    _EventSignal<> onPressSpace,     onPressEnter,    onPressEscape;
+    _EventSignal<> onPressBackspace, onPressTab,      onPressCapsLock;
+    _EventSignal<> onPressDelete,    onPressInsert,   onPressHome;
+    _EventSignal<> onPressEnd,       onPressPageUp,   onPressPageDown;
+    _EventSignal<> onPressLeft,      onPressRight,    onPressUp,    onPressDown;
+    _EventSignal<> onPressShift,     onPressLShift,   onPressRShift;
+    _EventSignal<> onPressCtrl,      onPressLCtrl,    onPressRCtrl;
+    _EventSignal<> onPressAlt,       onPressLAlt,     onPressRAlt;
     _EventSignal<> onPressAny;
 
 
@@ -86,14 +86,14 @@ public:
     _EventSignal<> onRelease5, onRelease6, onRelease7, onRelease8, onRelease9;
 
 
-    _EventSignal<> onReleaseSpace,    onReleaseEnter,    onReleaseEscape;
-    _EventSignal<> onReleaseBackspace, onReleaseTab,     onReleaseCapsLock;
-    _EventSignal<> onReleaseDelete,   onReleaseInsert,   onReleaseHome;
-    _EventSignal<> onReleaseEnd,      onReleasePageUp,   onReleasePageDown;
-    _EventSignal<> onReleaseLeft,     onReleaseRight,    onReleaseUp,  onReleaseDown;
-    _EventSignal<> onReleaseLShift,   onReleaseRShift;
-    _EventSignal<> onReleaseLCtrl,    onReleaseRCtrl;
-    _EventSignal<> onReleaseLAlt,     onReleaseRAlt;
+    _EventSignal<> onReleaseSpace,      onReleaseEnter,    onReleaseEscape;
+    _EventSignal<> onReleaseBackspace,  onReleaseTab,      onReleaseCapsLock;
+    _EventSignal<> onReleaseDelete,     onReleaseInsert,   onReleaseHome;
+    _EventSignal<> onReleaseEnd,        onReleasePageUp,   onReleasePageDown;
+    _EventSignal<> onReleaseLeft,       onReleaseRight,    onReleaseUp,  onReleaseDown;
+    _EventSignal<> onReleaseShift,      onReleaseLShift,   onReleaseRShift;
+    _EventSignal<> onReleaseCtrl,       onReleaseLCtrl,    onReleaseRCtrl;
+    _EventSignal<> onReleaseAlt,        onReleaseLAlt,     onReleaseRAlt;
     _EventSignal<> onReleaseAny;
 
 
@@ -136,25 +136,27 @@ public:
 
 
 
-    _EventSignal<std::string> onTextInput; 
-    _EventSignal<std::string> onTextEdit;  
+    _EventSignal<std::string> onTextInput;
+    _EventSignal<std::string> onTextEdit;
 
 
 
 
-    _EventSignal<Vec2d> onMouseMove;    
-    _EventSignal<Vec2d> onMouseRawMove; 
+    _EventSignal<Vec2d> onMouseMove;
+    _EventSignal<Vec2d> onMouseRawMove;
     _EventSignal<Vec2d> onLeftDown;
     _EventSignal<Vec2d> onLeftUp;
     _EventSignal<Vec2d> onRightDown;
     _EventSignal<Vec2d> onRightUp;
     _EventSignal<Vec2d> onMiddleDown;
     _EventSignal<Vec2d> onMiddleUp;
-    _EventSignal<Vec2d> onDoubleClick;  
+    _EventSignal<Vec2d> onDoubleClick;
     _EventSignal<Vec2d> onWheel;
 
 
 
+    _EventSignal<Vec2d> onPointerUp;
+    _EventSignal<Vec2d> onPointerDown;
 
 
 
@@ -187,10 +189,10 @@ public:
 
 
 
-    _EventSignal<Vec2d> onFingerDown;   
+    _EventSignal<Vec2d> onFingerDown;
     _EventSignal<Vec2d> onFingerUp;
     _EventSignal<Vec2d> onFingerMove;
-    _EventSignal<Vec2d> onMultiGesture; 
+    _EventSignal<Vec2d> onMultiGesture;
 
 
 
@@ -212,15 +214,15 @@ public:
 
 
 
-    _EventSignal<>            onQuit;            
+    _EventSignal<>            onQuit;
     _EventSignal<std::string> onDropFile;
     _EventSignal<>            onClipboardUpdate;
     _EventSignal<>            onAppForeground;
     _EventSignal<>            onAppBackground;
     _EventSignal<>            onAppLowMemory;
-    _EventSignal<>            onLocaleChanged;   
-    _EventSignal<>            onDisplayChanged;  
-    _EventSignal<>            onRenderReset;     
+    _EventSignal<>            onLocaleChanged;
+    _EventSignal<>            onDisplayChanged;
+    _EventSignal<>            onRenderReset;
 
 
 

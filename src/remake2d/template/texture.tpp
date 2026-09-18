@@ -111,7 +111,8 @@ void Texture<S>::clip(const Vec2d& clip_pos, const Dim2d& clip_size) noexcept {
     m_clip_size = clip_size;
     
     if (clip_size.w > 0 && clip_size.h > 0) {
-        m_srcrect = {(int)clip_pos.x, (int)clip_pos.y, (int)clip_size.w, (int)clip_size.h};
+        Area rect(clip_pos, clip_size);
+        m_srcrect = rect;
         m_use_clip = true;
     } else {
         m_use_clip = false;

@@ -1,6 +1,9 @@
 #ifndef REMAKE2D_IVECTOR_TPP_
 #define REMAKE2D_IVECTOR_TPP_
 
+
+#include <remake2d/private/var.hpp>
+
 namespace rmk {
 
 template <typename T, usize C>
@@ -75,7 +78,7 @@ bool IVector<T, C>::push(const T& value) noexcept {
 }
 
 template <typename T, usize Capacity>
-bool IVector<T, Capacity>::pushAndSort(const T& value) {
+bool IVector<T, Capacity>::pushAndSort(const T& value) noexcept {
     if (m_size >= Capacity) return fail;
     
     pointer ptr = data();
@@ -173,6 +176,16 @@ typename IVector<T, C>::iterator IVector<T, C>::begin(void) noexcept {
 
 template <typename T, usize C>
 typename IVector<T, C>::iterator IVector<T, C>::end(void) noexcept {
+    return iterator(data() + m_size);
+}
+
+template <typename T, usize C>
+const typename IVector<T, C>::iterator IVector<T, C>::begin(void) const noexcept {
+    return iterator(data());
+}
+
+template <typename T, usize C>
+const typename IVector<T, C>::iterator IVector<T, C>::end(void)  const noexcept {
     return iterator(data() + m_size);
 }
 

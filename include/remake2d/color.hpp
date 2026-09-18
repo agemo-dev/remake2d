@@ -18,24 +18,18 @@ public:
     byte a{255};
 
 public:
-    constexpr Color(byte, byte, byte, byte = 255);
+    constexpr Color(byte R, byte G, byte B, byte A = 255) : r(R), g(G), b(B), a(A) {}
     constexpr Color(void)                       = default;
     constexpr Color(Color&&)                    = default;
     constexpr Color(const Color&)               = default;
     constexpr Color& operator=(Color&&)         = default;
     constexpr Color& operator=(const Color&)    = default;
 
-private:
-    constexpr SDL_Color _data(void) const noexcept;
+public:
+    operator SDL_Color (void) const noexcept;
 
 public:
     constexpr auto operator<=>(const Color&) const noexcept = default;
-
-private:
-    friend class Window;
-    friend class Text;
-    friend class FontManager;
-    template<IsShape S> friend class Texture;
 };
 
 // HSL : Hue - Saturation - Luminosity
@@ -46,7 +40,7 @@ public:
     f32 l{0.0f};
 
 public:
-    constexpr HSL(f32, f32, f32);
+    constexpr HSL(f32 H, f32 S, f32 L) : h(H), s(S), l(L) {}
     constexpr HSL(void)                   = default;
     constexpr HSL(HSL&&)                  = default;
     constexpr HSL(const HSL&)             = default;

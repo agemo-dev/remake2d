@@ -219,7 +219,7 @@ void PhysicManager::update(void) {
         if (!body) continue;
 
              if (body->m_type_id == physic::id::statics)  body->_sync();
-        else if (body->m_type_id == physic::id::dynamics) body->_syncAndUpdate();
+        else if (body->m_type_id == physic::id::dynamics) body.locate<DynamicBody>()->_syncAndUpdate();
 
         if (body->m_vertices_dirty && body->filled) body->_calculateVertices();
     }

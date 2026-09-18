@@ -1,11 +1,14 @@
 #ifndef REMAKE2D_SHAPE_
 #define REMAKE2D_SHAPE_
 
+#include <remake2d/area.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/camera.hpp>
 #include <remake2d/utility.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/private/draw.hpp>
+#include <remake2d/private/point.hpp>
 #include <remake2d/config/forward.hpp>
 
 #include <array>
@@ -22,7 +25,7 @@ protected:
     bool              m_is_changed{false};
 
 protected:
-    virtual void _build(void) 		noexcept = 0;
+    virtual void _build(void)       noexcept = 0;
     virtual void _triangulate(void) noexcept = 0;
 
 protected:
@@ -45,20 +48,20 @@ public:
 
 public:
 
-    virtual void rotate(f32) 		  noexcept = 0;
+    virtual void rotate(f32)          noexcept = 0;
     virtual void move(const Vec2d&)   noexcept = 0;
     virtual void resize(const Dim2d&) noexcept = 0;
     virtual void scale(const Fact2d&) noexcept = 0;
     virtual void transform(const Vec2d& , f32, const Fact2d&) noexcept = 0;
 
-    virtual u8 points(void)   			 const noexcept = 0;
-    virtual Dim2d size(void)   			 const noexcept = 0;
-    virtual const Vec2d* pointsPos(void) const noexcept = 0;
-    virtual Vec2d center(void) const noexcept override = 0;
+    virtual u8 points(void)                 const noexcept = 0;
+    virtual Dim2d size(void)                const noexcept = 0;
+    virtual const Vec2d* pointsPos(void)    const noexcept = 0;
+    virtual Vec2d center(void)              const noexcept override = 0;
 
 public:
-    void draw(const Drawable&) noexcept override;
-    void fill(const Fillable&) noexcept override;
+    void draw(const Drawable&) const noexcept override;
+    void fill(const Fillable&) const noexcept override;
 
 private:
     virtual bool hasIntersected(const Geometry&) const noexcept = 0;
@@ -74,13 +77,7 @@ private:
 };
 
 
-enum class point : u8 {
-	min = 0,
-	max = 50
-};
-
-
-template<size_t POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COUNT <= (u8)point::max)
+template<usize POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COUNT <= (u8)point::max)
 class Shape : public Geometry {
 protected:
     u8                  m_n{POINT_COUNT};
@@ -94,35 +91,35 @@ protected:
     virtual void _build(void) noexcept override;
 
 protected:
-    std::vector<Vec2d>  _contourImpl(void)     const noexcept override;
-    std::vector<Vertex> _verticesImpl(void)    const noexcept override;
-    const Triangulation* _triangulations(void) const noexcept override;
+    std::vector<Vec2d>   _contourImpl(void)     const noexcept override;
+    std::vector<Vertex>  _verticesImpl(void)    const noexcept override;
+    const Triangulation* _triangulations(void)  const noexcept override;
 
 public:
-  Shape(void) 									= default;
-  Shape(Shape<POINT_COUNT>&&) 					= default;
-  Shape(const Shape<POINT_COUNT>&)				= default;
-  Shape& operator=(Shape<POINT_COUNT>&&)		= default;
-  Shape& operator=(const Shape<POINT_COUNT>&)	= default;
+    Shape(void)                                     = default;
+    Shape(Shape<POINT_COUNT>&&)                     = default;
+    Shape(const Shape<POINT_COUNT>&)                = default;
+    Shape& operator=(Shape<POINT_COUNT>&&)          = default;
+    Shape& operator=(const Shape<POINT_COUNT>&)     = default;
 
 public:
-  Shape(const Vec2d&, const Dim2d&);
+    Shape(const Vec2d&, const Dim2d&);
 
 public:
-    void rotate(f32) 									noexcept override;
-    void move(const Vec2d&) 							noexcept override;
-    virtual void scale(const Fact2d&) 					noexcept override;
-	virtual void resize(const Dim2d&) 					noexcept override;
-    void transform(const Vec2d& , f32, const Fact2d&)	noexcept override;
+    void rotate(f32)                                          noexcept override;
+    void move(const Vec2d&)                                   noexcept override;
+    void scale(const Fact2d&)                                 noexcept override;
+    void resize(const Dim2d&)                                 noexcept override;
+    virtual void transform(const Vec2d& , f32, const Fact2d&) noexcept override;
 
 public:
-  u8 points(void)				const noexcept override;
-  Dim2d size(void)				const noexcept override;
-  Vec2d center(void)			const noexcept override;
-  const Vec2d* pointsPos(void)	const noexcept override;
+  u8 points(void)                const noexcept override;
+  Dim2d size(void)               const noexcept override;
+  Vec2d center(void)             const noexcept override;
+  const Vec2d* pointsPos(void)   const noexcept override;
 
 public:
-  bool hasIntersected(const Geometry&) const noexcept override;
+  virtual bool hasIntersected(const Geometry&) const noexcept override;
 
 public:
   virtual ~Shape(void) = default;
@@ -137,18 +134,17 @@ private:
 
 class Point : public Shape<1> {
 public:
-    Point(void)						= default;
-    Point(Point&&)					= default;
-    Point(const Point&)				= default;
-    Point& operator=(Point&&)		= default;
-    Point& operator=(const Point&)	= default;
+    Point(void)                       = default;
+    Point(Point&&)                    = default;
+    Point(const Point&)               = default;
+    Point& operator=(Point&&)         = default;
+    Point& operator=(const Point&)    = default;
 
 public:
     Point(const Vec2d&);
 
 public:
-    void scale(const Fact2d&) noexcept override;
-    void resize(const Dim2d&) noexcept override;
+    void transform(const Vec2d& , f32, const Fact2d&)  noexcept override;
 
 public:
     friend class Window;
@@ -159,18 +155,17 @@ public:
 
 class Circle : public Shape<36> {
 public:
-    Circle(void)						= default;
-    Circle(Circle&&)					= default;
-    Circle(const Circle&)				= default;
-    Circle& operator=(Circle&&)			= default;
-    Circle& operator=(const Circle&)	= default;
+    Circle(void)                        = default;
+    Circle(Circle&&)                    = default;
+    Circle(const Circle&)               = default;
+    Circle& operator=(Circle&&)         = default;
+    Circle& operator=(const Circle&)    = default;
 
 public:
     Circle(const Vec2d&, f32);
 
 public:
-    void scale(const Fact2d&) noexcept override;
-    void resize(const Dim2d&) noexcept override;
+    void transform(const Vec2d& , f32, const Fact2d&)  noexcept override;
 
 public:
     friend class Window;
@@ -181,11 +176,11 @@ public:
 
 class Triangle : public Shape<3> {
 public:
-    Triangle(void)						    = default;
-    Triangle(Triangle&&)					= default;
-    Triangle(const Triangle&)				= default;
-    Triangle& operator=(Triangle&&)			= default;
-    Triangle& operator=(const Triangle&)	= default;
+    Triangle(void)                          = default;
+    Triangle(Triangle&&)                    = default;
+    Triangle(const Triangle&)               = default;
+    Triangle& operator=(Triangle&&)         = default;
+    Triangle& operator=(const Triangle&)    = default;
 
 public:
     Triangle(const Vec2d&, const Dim2d&);
@@ -199,11 +194,11 @@ public:
 
 class Rectangle : public Shape<4> {
 public:
-    Rectangle(void)							= default;
-    Rectangle(Rectangle&&)					= default;
-    Rectangle(const Rectangle&)				= default;
-    Rectangle& operator=(Rectangle&&)		= default;
-    Rectangle& operator=(const Rectangle&)	= default;
+    Rectangle(void)                          = default;
+    Rectangle(Rectangle&&)                   = default;
+    Rectangle(const Rectangle&)              = default;
+    Rectangle& operator=(Rectangle&&)        = default;
+    Rectangle& operator=(const Rectangle&)   = default;
 
 public:
     Rectangle(const Vec2d&, const Dim2d&);
@@ -220,18 +215,17 @@ private:
 
 class Square : public Rectangle {
 public:
-    Square(void)						= default;
-    Square(Square&&)					= default;
-    Square(const Square&)				= default;
-    Square& operator=(Square&&)			= default;
-    Square& operator=(const Square&)	= default;
+    Square(void)                        = default;
+    Square(Square&&)                    = default;
+    Square(const Square&)               = default;
+    Square& operator=(Square&&)         = default;
+    Square& operator=(const Square&)    = default;
 
 public:
     Square(const Vec2d&, f32);
 
 public:
-	void scale(const Fact2d&) noexcept override;
-    void resize(const Dim2d&) noexcept override;
+    void transform(const Vec2d& , f32, const Fact2d&)  noexcept override;
 
 public:
     friend class Window;

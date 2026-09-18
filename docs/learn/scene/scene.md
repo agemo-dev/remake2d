@@ -165,5 +165,5 @@ if (menu) menu->disable();
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](random.md){ .md-button }
+[:octicons-arrow-left-24: Previous chapter](actor.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](headers.md){ .md-button .md-button--primary }

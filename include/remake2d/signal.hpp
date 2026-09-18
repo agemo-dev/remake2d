@@ -5,6 +5,7 @@
 #include <remake2d/error.hpp>
 #include <remake2d/croutine.hpp>
 #include <remake2d/config/sdl.hpp>
+#include <remake2d/private/ivector.hpp>
 
 #include <tuple>
 #include <mutex>
@@ -14,6 +15,7 @@
 #include <optional>
 #include <algorithm>
 #include <functional>
+#include <initializer_list>
 
 
 namespace rmk {
@@ -128,7 +130,7 @@ public:
     void joinOnce(Slot&&);
     void joinPriority(Slot&&);
 
-    void connectPriority(void (*)(Args...));
+    void connectPriority(void    (*)(Args...));
     void disconnectPriority(void (*)(Args...));
     void connectPriority(Slot&);
     void disconnectPriority(Slot&);
@@ -204,8 +206,8 @@ private:
 template<typename... Args>
 class _EventSignal : public _EngineSignal<Args...> {
 private:
-    i32 m_scancode{0};
-    i32 m_button{-1};
+    IVector<i32, 3> m_scancodes;
+    i32             m_button{-1};
 
 private:
     _EventSignal(void) = default;
@@ -216,8 +218,9 @@ public:
     bool isActive(void) const noexcept;
 
 private:
-    void _setScancode(i32) noexcept;
     void _setButton(i32)   noexcept;
+    void _setScancode(i32) noexcept;
+    void _setScancode(std::initializer_list<i32>) noexcept;
 
     friend class EventManager;
     friend class SignalManager;

@@ -6,11 +6,12 @@
 
 namespace rmk {
 
-class Updatable : Trackable<Updatable> {
+class Updatable : public Trackable<Updatable> {
 public:
     virtual void update(void) = 0;
 
-rmk_heritableBaseClass(Updatable);
+public:
+    rmk_heritableBaseClass(Updatable);
 };
 
 } // namespace rmk

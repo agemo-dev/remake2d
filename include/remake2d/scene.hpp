@@ -13,7 +13,7 @@
 
 namespace rmk {
 
-class Scene {
+class Scene : public Trackable<Scene> {
 
 public:
     using Frame = std::function<void(void)>;
@@ -24,7 +24,7 @@ private:
     mutable std::vector<Tracker<Actor>>     m_actors_cache;
     mutable std::vector<Frame>              m_layers_cache;
     Frame                                   m_main;
-    bool                                    m_cache_dirty{true};
+    mutable bool                            m_cache_dirty{true};
     bool                                    m_is_active{true};
 
 public:
@@ -35,7 +35,7 @@ public:
     Scene& operator=(const Scene&)   = delete;
 
 public:
-    void update(void);
+    void update(void) const;
     void remove(Actor&);
     void add(Actor&, i16 = 0);
     void execute(const Frame&);
@@ -48,17 +48,17 @@ public:
     void setActorActive(Actor&, bool);
 
 private:
-    void _rebuildCache(void);
+    void _rebuildCache(void) const;
 };
 
 
 class Act {
 private:
     std::map<std::string, std::vector<std::string>> m_links;
-    std::map<std::string, Scene>                    m_scenes;
+    std::map<std::string, Tracker<Scene>>           m_scenes;
     std::vector<std::string>                        m_focused_tags;
-    mutable std::vector<Scene>                      m_focused_cache;
-    bool                                            m_focus_dirty{true};
+    mutable std::vector<Tracker<Scene>>             m_focused_cache;
+    mutable bool                                    m_focus_dirty{true};
 
 public:
     Act(void)                    = default;
@@ -69,7 +69,7 @@ public:
 
 public:
     void focus(std::string_view);
-    void add(std::string_view, const Scene&);
+    void add(std::string_view, Scene&);
     void link(std::string_view, std::span<std::string_view>);
 
 public:

@@ -2,17 +2,16 @@
 #define REMAKE2D_SOUND_
 
 #include <remake2d/signal.hpp>
+#include <remake2d/tracker.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/resource.hpp>
 
 #include <array>
 #include <memory>
 
-#include <SDL2/SDL_mixer.h>
-
 namespace rmk {
 
-class Sound {
+class Sound : public Trackable<Sound> {
 
 protected:
     u8      m_volume;
@@ -31,10 +30,10 @@ public:
     Sound(const Sound&)             = default;
     Sound& operator=(Sound&&)       = default;
     Sound& operator=(const Sound&)  = default;
-    
+
 public:
     i8 playFor(void) const noexcept;
-    u8 getVolume(void) const noexcept;
+    u8 volume(void)  const noexcept;
 
 public:
     virtual void play(i8 = 0) = 0;
@@ -42,18 +41,20 @@ public:
     virtual void pause(void)  = 0;
     virtual void resume(void) = 0;
     virtual void volume(u8) noexcept = 0;
-    
+
 public:
     virtual ~Sound(void) = default;
-    
+
 private:
     friend class System;
 };
 
 class Music : public Sound {
 private:
-    MUS 				 m_music;
-    inline static Music *m_current_music;
+    MUS    m_music;
+
+private:
+    inline static Tracker<Sound> m_current_music;
 
 public:
     Music(std::string_view, u8 = 64);
@@ -62,20 +63,20 @@ public:
     Music(const Music&)             = default;
     Music& operator=(Music&&)       = default;
     Music& operator=(const Music&)  = default;
-    
+
 public:
-    void play(i8 = 0)		 override;
-    void stop(void)			 override;
-    void pause(void)		 override;
-    void resume(void)		 override;
+    void play(i8 = 0)        override;
+    void stop(void)          override;
+    void pause(void)         override;
+    void resume(void)        override;
     void volume(u8) noexcept override;
 
 public:
     ~Music(void) override;
-    
+
 private:
     friend class System;
-    friend void _hookFunc(void);
+    friend void _hookMusicFinished(void);
 };
 
 class SFX : public Sound {
@@ -84,8 +85,8 @@ private:
     u32       m_channel{0};
 
 private:
-    inline static std::queue<u32>                           m_free_channels;
-    inline static std::array<SFX*, (usize)channel::max>     m_channel_owners;
+    inline static std::queue<u32>                                 m_free_channels;
+    inline static std::array<Tracker<Sound>, (usize)channel::max> m_channel_owners;
 
 public:
     SFX(std::string_view, u8 = 64);
@@ -100,8 +101,8 @@ public:
 
 public:
     void play(i8 = 0)        override;
-    void stop(void) 		 override;
-    void pause(void)	     override;
+    void stop(void)          override;
+    void pause(void)         override;
     void resume(void)        override;
     void volume(u8) noexcept override;
 
@@ -110,13 +111,13 @@ public:
 
 private:
     friend class System;
-    friend void _subHook(int);
+    friend void _channelFinished(int);
     friend void config::sound::initQueue(void) noexcept;
 };
 
 enum class volume : u8 {
-	min = 0,
-	max = 128
+    min = 0,
+    max = 128
 };
 
 } // namespace rmk

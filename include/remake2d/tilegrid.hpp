@@ -1,6 +1,7 @@
 #ifndef REMAKE2D_TILEGRID_
 #define REMAKE2D_TILEGRID_
 
+#include <remake2d/area.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/private/draw.hpp>
 #include <remake2d/config/forward.hpp>
@@ -41,7 +42,7 @@ private:
     void _build(void)  noexcept;
 
 public:
-    void draw(const Drawable&) noexcept override;
+    void draw(const Drawable&) const noexcept override;
 
 private:
     friend class Window;

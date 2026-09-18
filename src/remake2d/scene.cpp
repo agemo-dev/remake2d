@@ -8,7 +8,7 @@
 
 namespace rmk {
 
-void Scene::_rebuildCache(void) {
+void Scene::_rebuildCache(void) const {
     m_actors_cache.clear();
     m_layers_cache.clear();
 
@@ -46,7 +46,7 @@ void Scene::add(Actor& actor, i16 layer) {
     m_cache_dirty = true;
 }
 
-void Scene::remove(const Actor& actor) {
+void Scene::remove(Actor& actor) {
     for (auto it = m_actors_map.begin(); it != m_actors_map.end(); ++it) {
         if (it->second == actor.tracker()) {
             m_actors_map.erase(it);
@@ -68,7 +68,7 @@ void Scene::setActorActive(Actor& actor, bool active) {
 }
 
 void Scene::active(bool stat) noexcept {
-    m_is_active = true;
+    m_is_active = stat;
 }
 
 bool Scene::active(void) const noexcept {
@@ -80,13 +80,13 @@ void Scene::update(void) const {
     if (!m_is_active)    return;
     if (m_main)          m_main();
     if (m_cache_dirty)   _rebuildCache();
-    
+
     for (auto& actor : m_actors_cache) {
         if (!actor->active()) continue;
         actor->update();
         actor->_updates();
     }
-    
+
     for (const auto& frame : m_layers_cache) frame();
 }
 
@@ -122,7 +122,7 @@ std::vector<std::string> Act::_resolveTag(std::string_view tag) const {
     } else {
         rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
     }
-    
+
     return result;
 }
 
@@ -146,9 +146,7 @@ void Act::update(std::string_view tag) const {
     auto tags = _resolveTag(tag);
     for (const auto& scene_tag : tags) {
         auto it = m_scenes.find(scene_tag);
-        if (it != m_scenes.end()) {
-            it->second->update();
-        }
+        if (it != m_scenes.end()) it->second->update();
     }
 }
 
@@ -156,31 +154,31 @@ void Act::update(void) const {
     if (m_focused_tags.empty()) {
         rmk_dynamicAssert(rmk::SceneError, error::scene::any_focus);
     }
-    
+
     if (m_focus_dirty) _rebuildFocusCache();
-    
+
     for (const auto& scene : m_focused_cache) {
-        scene.update();
+        scene->update();
     }
 }
 
 void Act::updates(void) const {
     for (const auto& [tag, scene] : m_scenes) {
-        scene.update();
+        scene->update();
     }
 }
 
 Scene& Act::scene(std::string_view tag) {
     std::string key(tag);
     auto it = m_scenes.find(key);
-    if (it != m_scenes.end()) return it->second;
+    if (it != m_scenes.end()) return *(it->second);
     rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
 }
 
 const Scene& Act::scene(std::string_view tag) const {
     std::string key(tag);
     auto it = m_scenes.find(key);
-    if (it != m_scenes.end()) return it->second;
+    if (it != m_scenes.end()) return *(it->second);
     rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
 }
 

@@ -55,7 +55,7 @@ void TileGrid::_build(void) noexcept {
     Vec2d vlast = { 0, 0 };
     Dim2d csize = { m_size.w / m_cut.x, m_size.h / m_cut.y };
     Vec2d start = { m_center.x - m_size.w / 2, m_center.y - m_size.h / 2 };
-    
+
     for(int i = 0; i < count; i++) {
         vlast.x = i % m_cut.x;
         vlast.y = i / m_cut.x;
@@ -69,19 +69,19 @@ void TileGrid::_build(void) noexcept {
     is_draw_dirty = true;
 }
 
-void TileGrid::draw(const Drawable& main) noexcept {
+void TileGrid::draw(const Drawable& main) const noexcept {
     if (!is_draw_dirty) return;
 
-    if (&main != this) {
+    if (&main != static_cast<const Drawable*>(this)) {
         main.is_draw_dirty = false;
-        main.drawn        = true;
-        color(main.color());
+        main.drawn         = true;
+        _color(main.color());
     }
 
-    for (const auto& cell : m_cells) cell.draw(main);
+    for (auto& cell : m_cells) cell.draw(main);
 
     is_draw_dirty = false;
-    drawn = true;
+    drawn         = true;
 }
 
 } //namespace rmk

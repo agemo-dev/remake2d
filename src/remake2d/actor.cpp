@@ -27,19 +27,19 @@ bool Actor::active(void) const noexcept {
     return m_active;
 }
 
-Tracker<Actor>& Actor::parent(void) noexcept {
+UnsafeTracker<Actor>& Actor::parent(void) noexcept {
     return m_parent;
 }
 
-const Tracker<Actor>& Actor::parent(void) const noexcept {
+const UnsafeTracker<Actor>& Actor::parent(void) const noexcept {
     return m_parent;
 }
 
-std::vector<Tracker<Actor>>& Actor::children(void) noexcept {
+std::vector<UnsafeTracker<Actor>>& Actor::children(void) noexcept {
     return m_children;
 }
 
-const std::vector<Tracker<Actor>>& Actor::children(void) const noexcept {
+const std::vector<UnsafeTracker<Actor>>& Actor::children(void) const noexcept {
     return m_children;
 }
 

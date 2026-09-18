@@ -56,7 +56,7 @@ void SDLWrapper::renderCopy(SDL_Renderer* renderer, SDL_Texture* texture, const 
     SDL_RenderCopy(renderer, texture, src, dst);
 }
 
-bool setHint(std::string_view name, std::string_view val) const noexcept {
+bool SDLWrapper::setHint(std::string_view name, std::string_view val) const noexcept {
     return SDL_SetHint(std::string(name).c_str(), std::string(val).c_str());
 }
 
@@ -105,11 +105,11 @@ std::string SDLWrapper::getFontError(void) const noexcept {
 }
 
 SDL_Surface* SDLWrapper::renderGlyphBlended(TTF_Font* font, char ch, Color color) const noexcept {
-    return TTF_RenderGlyph_Blended(font, ch, color._data());
+    return TTF_RenderGlyph_Blended(font, ch, color);
 }
 
 SDL_Surface* SDLWrapper::renderUTF8BlendedWrapped(TTF_Font* font, std::string_view text, Color color, u32 wrapLength) const noexcept {
-    return TTF_RenderUTF8_Blended_Wrapped(font, std::string(text).c_str(), color._data(), wrapLength);
+    return TTF_RenderUTF8_Blended_Wrapped(font, std::string(text).c_str(), color, wrapLength);
 }
 
 i32 SDLWrapper::fontAscent(TTF_Font* font) const noexcept {

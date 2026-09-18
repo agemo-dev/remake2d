@@ -3,7 +3,7 @@
 
 #include <remake2d/concept.hpp>
 
-struct SDL_Bool;
+struct SDL_Color;
 struct SDL_Window;
 struct SDL_Surface;
 struct SDL_Renderer;
@@ -13,9 +13,10 @@ struct SDL_FPoint;
 struct SDL_Vertex;
 struct SDL_Texture;
 struct TTF_Font;
-struct SDL_GameController;
 struct Mix_Music;
 struct Mix_Chunk;
+struct _SDL_GameController;
+typedef struct _SDL_GameController SDL_GameController;
 
 namespace rmk {
 
@@ -33,12 +34,8 @@ class StaticBody;
 class DynamicBody;
 
 class Actor;
-class StaticActor;
-class DynamicActor;
 
 class Geometry;
-class TrackerBase;
-class TrackableBase;
 
 class Text;
 class Sprite;
@@ -56,14 +53,16 @@ class Window;
 class TileMap;
 class TileGrid;
 class Parallax;
-class TileMapData;
+struct TileMapData;
 
 class Savable;
 class Followable;
 template<typename T> class Trackable;
 
-template<IsTrackable T>    struct Slot;
-template<IsTrackable T>    class Tracker;
+template<typename T>       struct Slot;
+template<typename T>       class UnsafeTracker;
+template<IsTrackable SafeType> using Tracker = UnsafeTracker<SafeType>;
+
 template<typename... Args> class Signal;
 template<typename... Args> class Croutine;
 

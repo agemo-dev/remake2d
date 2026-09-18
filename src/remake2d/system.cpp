@@ -5,6 +5,7 @@
 #include <remake2d/config/sdl.hpp>
 
 #include <cmath>
+#include <mutex>
 #include <chrono>
 #include <time.h>
 #include <sstream>
@@ -17,54 +18,66 @@
 
 namespace rmk {
 
-void System::Setup::scalingMode(std::string_view mode) {
+bool System::Setup::scalingMode(std::string_view mode) {
     #ifdef SDL_HINT_RENDER_SCALE_QUALITY
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
-    sdl.setHint(SDL_HINT_RENDER_SCALE_QUALITY, mode);
+    return sdl.setHint(SDL_HINT_RENDER_SCALE_QUALITY, mode);
+    #else
+    (void) mode;
+    return false;
     #endif
-	return (void) mode;
 }
 
-void System::Setup::backend(std::string_view bcknd) {
+bool System::Setup::backend(std::string_view bcknd) {
     #ifdef SDL_HINT_RENDER_DRIVER
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
-    sdl.setHint(SDL_HINT_RENDER_DRIVER, bcknd);
+    return sdl.setHint(SDL_HINT_RENDER_DRIVER, bcknd);
+    #else
+    (void) bcknd;
+    return false;
     #endif
-	return (void) bcknd;
 }
 
-void System::Setup::audioMode(std::string_view mode) {
+bool System::Setup::audioMode(std::string_view mode) {
     #ifdef SDL_AUDIO_RESAMPLING_MODE
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
-    sdl.setHint(SDL_AUDIO_RESAMPLING_MODE, mode);
+    return sdl.setHint(SDL_AUDIO_RESAMPLING_MODE, mode);
+    #else
+	(void) mode;
+    return false;
     #endif
-	return (void) mode;
 }
 
-void System::Setup::audioCategory(std::string_view category) {
+bool System::Setup::audioCategory(std::string_view category) {
     #ifdef SDL_AUDIO_CATEGORY
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
-    sdl.setHint(SDL_AUDIO_CATEGORY, category);
+    return sdl.setHint(SDL_AUDIO_CATEGORY, category);
+    #else
+	(void) category;
+    return false;
     #endif
-	return (void) category;
 }
 
-void System::Setup::mouseRelativeMode(std::string_view mode) {
+bool System::Setup::mouseRelativeMode(std::string_view mode) {
     #ifdef SDL_HINT_MOUSE_RELATIVE_MODE_WARP
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
-    sdl.setHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, mode);
+    return sdl.setHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, mode);
+    #else
+	(void) mode;
+    return false;
     #endif
-	return (void) mode;
 }
 
-void System::Setup::mobileOrientation(std::span<std::string_view> orients) {
+bool System::Setup::mobileOrientation(std::span<std::string_view> orients) {
     #ifdef SDL_HINT_ORIENTATION
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     std::string flags;
     for(const auto& e : orients) flags += std::string(e) + " ";
-    sdl.setHint(SDL_HINT_ORIENTATION, flags);
+    return sdl.setHint(SDL_HINT_ORIENTATION, flags);
+    #else
+	(void) orients;
+    return false;
     #endif
-	return (void) orients;
 }
 
 
@@ -73,45 +86,53 @@ void System::Setup::allocateChannels(u16 channels) {
     system.m_channel_count = std::clamp(channels, (u16)channel::min, (u16)channel::max);
 }
 
-void System::Toggle::vsync(bool statut) {
+bool System::Toggle::vsync(bool statut) {
     #ifdef SDL_HINT_RENDER_VSYNC
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     std::string s = std::to_string((int)statut);
-    sdl.setHint(SDL_HINT_RENDER_VSYNC, s);
+    return sdl.setHint(SDL_HINT_RENDER_VSYNC, s);
+    #else
+	(void) statut;
+    return false;
     #endif
-	return (void) statut;
 }
 
-void System::Toggle::blockOnPause(bool statut) {
+bool System::Toggle::blockOnPause(bool statut) {
     #ifdef SDL_HINT_ANDROID_BLOCK_ON_PAUSE
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     std::string s = std::to_string((int)statut);
-    sdl.setHint(SDL_HINT_ANDROID_BLOCK_ON_PAUSE, s);
+    return sdl.setHint(SDL_HINT_ANDROID_BLOCK_ON_PAUSE, s);
+    #else
+	(void) statut;
+    return false;
     #endif
-	return (void) statut;
 }
 
-void System::Toggle::hideHomeIndicator(bool statut) {
+bool System::Toggle::hideHomeIndicator(bool statut) {
     #ifdef SDL_HINT_IOS_HIDE_HOME_INDICATOR
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     std::string s = std::to_string((int)statut);
-    sdl.setHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, s);
+    return sdl.setHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, s);
+    #else
+	(void) statut;
+    return false;
     #endif
-	return (void) statut;
 }
 
 void System::Toggle::relativeMouseMode(bool statut) {
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
-    system.m_relative_mouse_mode = statut ? SDL_TRUE : SDL_FALSE;
+    system.m_relative_mouse_mode = statut;
 }
 
-void System::Toggle::materialAcceleration(bool statut) {
+bool System::Toggle::materialAcceleration(bool statut) {
     #ifdef SDL_HINT_FRAMEBUFFER_ACCELERATION
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     std::string s = std::to_string((int)statut);
-    sdl.setHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, s);
+    return sdl.setHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, s);
+    #else
+	(void) statut;
+    return false;
     #endif
-	return (void) statut;
 }
 
 void System::Toggle::gameController(bool statut) {
@@ -120,17 +141,20 @@ void System::Toggle::gameController(bool statut) {
     auto flags = SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC;
     if (statut) SDL_InitSubSystem(flags);
     else SDL_QuitSubSystem(flags);
+    #else
+    (void) statut;
     #endif
-	return (void) statut;
 }
 
-void System::Toggle::accelerometerAsJoystick(bool statut) {
+bool System::Toggle::accelerometerAsJoystick(bool statut) {
     #ifdef SDL_HINT_ACCELEROMETER_AS_JOYSTICK
     if(system.m_is_init) rmk_dynamicAssert(rmk::SystemError, error::system::bad_call);
     std::string s = std::to_string((int)statut);
-    sdl.setHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, s);
+    return sdl.setHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, s);
+    #else
+	(void) statut;
+    return false;
     #endif
-	return (void) statut;
 }
 
 u32 System::Info::ramMB(void) {
@@ -188,57 +212,24 @@ System &System::getInstance(void) noexcept {
     return sys;
 }
 
-void _hookFunc(void) {
-    if(!rmk::Music::m_current_music) return;
-    auto* m = rmk::Music::m_current_music;
-    if(m->m_loops_remaining < 0) {
-        return;
-    } else if(m->m_loops_remaining > 0) {
-        m->m_loops_remaining -= 1;
-		m->onRepeat.emit();
-    } else {
-        m->stop();
-        m->onFinish.emit();
-        rmk::Music::m_current_music = nullptr;
-    }
-}
-
- void _subHook(int channel) {
-    if(channel >= (int)system.info.channelCount()) return;
-    rmk::SFX* sfx = rmk::SFX::m_channel_owners[channel];
-    if(!sfx) return;
-    if(sfx->m_loops_remaining < 0) {
-        return;
-    } else if(sfx->m_loops_remaining > 0) {
-        sfx->m_loops_remaining -= 1;
-		sfx->onRepeat.emit();
-    } else {
-        rmk::SFX::m_free_channels.push(channel);
-        rmk::SFX::m_channel_owners[channel] = nullptr;
-        sfx->m_is_playing = false;
-        sfx->onFinish.emit();
-    }
-}
-
 void System::init(void) {
 	if(m_is_init) return;
+    std::mutex mut;
+    std::lock_guard<std::mutex> lock(mut);
 
     config::system::initSDL();
 
     toggle.vsync(true);
-    SDL_SetRelativeMouseMode(m_relative_mouse_mode);
+    SDL_SetRelativeMouseMode(m_relative_mouse_mode ? SDL_TRUE : SDL_FALSE);
 
     m_channel_count = m_channel_count ? m_channel_count : (u16)channel::mid;
     Mix_AllocateChannels((int)m_channel_count);
-
-    Mix_ChannelFinished(_subHook);
-    Mix_HookMusicFinished(_hookFunc);
 
     m_is_init = true;
 }
 
 void System::_init(void) {
-	m_instance++;
+	m_instance.fetch_add(1);
     init();
 }
 
@@ -247,13 +238,16 @@ bool System::isInit(void) {
 }
 
 void System::_quit(void) {
-	m_instance--;
+	m_instance.fetch_sub(1);
 	quit();
 }
 
 void System::quit(void) {
 	if (!m_is_init || m_instance) return;
-	
+
+	std::mutex mut;
+    std::lock_guard<std::mutex> lock(mut);
+
     Mix_CloseAudio();
     IMG_Quit();
     TTF_Quit();

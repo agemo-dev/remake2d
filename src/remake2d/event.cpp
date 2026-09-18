@@ -39,7 +39,7 @@ EventManager::EventManager(void) {
     onPressScanY._setScancode(SDL_SCANCODE_Y);
     onPressScanZ._setScancode(SDL_SCANCODE_Z);
 
-    
+
     onPressScan0._setScancode(SDL_SCANCODE_0);
     onPressScan1._setScancode(SDL_SCANCODE_1);
     onPressScan2._setScancode(SDL_SCANCODE_2);
@@ -51,7 +51,7 @@ EventManager::EventManager(void) {
     onPressScan8._setScancode(SDL_SCANCODE_8);
     onPressScan9._setScancode(SDL_SCANCODE_9);
 
-    
+
     onPressSpace._setScancode(SDL_SCANCODE_SPACE);
     onPressEnter._setScancode(SDL_SCANCODE_RETURN);
     onPressEscape._setScancode(SDL_SCANCODE_ESCAPE);
@@ -70,12 +70,15 @@ EventManager::EventManager(void) {
     onPressDown._setScancode(SDL_SCANCODE_DOWN);
     onPressLShift._setScancode(SDL_SCANCODE_LSHIFT);
     onPressRShift._setScancode(SDL_SCANCODE_RSHIFT);
+    onPressShift._setScancode({ SDL_SCANCODE_LSHIFT, SDL_SCANCODE_RSHIFT });
     onPressLCtrl._setScancode(SDL_SCANCODE_LCTRL);
     onPressRCtrl._setScancode(SDL_SCANCODE_RCTRL);
+    onPressCtrl._setScancode({ SDL_SCANCODE_LCTRL, SDL_SCANCODE_RCTRL });
     onPressLAlt._setScancode(SDL_SCANCODE_LALT);
     onPressRAlt._setScancode(SDL_SCANCODE_RALT);
+    onPressAlt._setScancode({ SDL_SCANCODE_LALT, SDL_SCANCODE_RALT });
 
-    
+
     onPressF1._setScancode(SDL_SCANCODE_F1);
     onPressF2._setScancode(SDL_SCANCODE_F2);
     onPressF3._setScancode(SDL_SCANCODE_F3);
@@ -89,7 +92,7 @@ EventManager::EventManager(void) {
     onPressF11._setScancode(SDL_SCANCODE_F11);
     onPressF12._setScancode(SDL_SCANCODE_F12);
 
-    
+
     onPressScanSpace._setScancode(SDL_SCANCODE_SPACE);
     onPressScanEnter._setScancode(SDL_SCANCODE_RETURN);
     onPressScanEscape._setScancode(SDL_SCANCODE_ESCAPE);
@@ -98,7 +101,7 @@ EventManager::EventManager(void) {
     onPressScanUp._setScancode(SDL_SCANCODE_UP);
     onPressScanDown._setScancode(SDL_SCANCODE_DOWN);
 
-    
+
     onPressACtrl._setButton(SDL_CONTROLLER_BUTTON_A);
     onPressBCtrl._setButton(SDL_CONTROLLER_BUTTON_B);
     onPressXCtrl._setButton(SDL_CONTROLLER_BUTTON_X);
@@ -119,8 +122,6 @@ EventManager& EventManager::getInstance(void) {
     static EventManager instance;
     return instance;
 }
-
-
 
 
 void EventManager::_process(SDL_Event& e) {
@@ -183,12 +184,12 @@ void EventManager::_process(SDL_Event& e) {
                 case SDLK_RIGHT:     onPressRight._evaluate();     break;
                 case SDLK_UP:        onPressUp._evaluate();        break;
                 case SDLK_DOWN:      onPressDown._evaluate();      break;
-                case SDLK_LSHIFT:    onPressLShift._evaluate();    break;
-                case SDLK_RSHIFT:    onPressRShift._evaluate();    break;
-                case SDLK_LCTRL:     onPressLCtrl._evaluate();     break;
-                case SDLK_RCTRL:     onPressRCtrl._evaluate();     break;
-                case SDLK_LALT:      onPressLAlt._evaluate();      break;
-                case SDLK_RALT:      onPressRAlt._evaluate();      break;
+                case SDLK_LSHIFT:    onPressLShift._evaluate(); onPressShift._evaluate(); break;
+                case SDLK_RSHIFT:    onPressRShift._evaluate(); onPressShift._evaluate(); break;
+                case SDLK_LCTRL:     onPressLCtrl._evaluate();  onPressCtrl._evaluate();  break;
+                case SDLK_RCTRL:     onPressRCtrl._evaluate();  onPressCtrl._evaluate();  break;
+                case SDLK_LALT:      onPressLAlt._evaluate();   onPressAlt._evaluate();   break;
+                case SDLK_RALT:      onPressRAlt._evaluate();   onPressAlt._evaluate();   break;
                 case SDLK_F1:        onPressF1._evaluate();        break;
                 case SDLK_F2:        onPressF2._evaluate();        break;
                 case SDLK_F3:        onPressF3._evaluate();        break;
@@ -204,7 +205,6 @@ void EventManager::_process(SDL_Event& e) {
                 default: break;
             }
 
-            
             switch (e.key.keysym.scancode) {
                 case SDL_SCANCODE_A: onPressScanA._evaluate(); break;
                 case SDL_SCANCODE_B: onPressScanB._evaluate(); break;
@@ -254,7 +254,7 @@ void EventManager::_process(SDL_Event& e) {
             break;
         }
 
-        
+
         case SDL_KEYUP: {
             onReleaseAny._evaluate();
 
@@ -311,12 +311,12 @@ void EventManager::_process(SDL_Event& e) {
                 case SDLK_RIGHT:     onReleaseRight._evaluate();     break;
                 case SDLK_UP:        onReleaseUp._evaluate();        break;
                 case SDLK_DOWN:      onReleaseDown._evaluate();      break;
-                case SDLK_LSHIFT:    onReleaseLShift._evaluate();    break;
-                case SDLK_RSHIFT:    onReleaseRShift._evaluate();    break;
-                case SDLK_LCTRL:     onReleaseLCtrl._evaluate();     break;
-                case SDLK_RCTRL:     onReleaseRCtrl._evaluate();     break;
-                case SDLK_LALT:      onReleaseLAlt._evaluate();      break;
-                case SDLK_RALT:      onReleaseRAlt._evaluate();      break;
+                case SDLK_LSHIFT:    onReleaseLShift._evaluate();  onReleaseShift._evaluate();  break;
+                case SDLK_RSHIFT:    onReleaseRShift._evaluate();  onReleaseShift._evaluate();  break;
+                case SDLK_LCTRL:     onReleaseLCtrl._evaluate();   onReleaseCtrl._evaluate();   break;
+                case SDLK_RCTRL:     onReleaseRCtrl._evaluate();   onReleaseCtrl._evaluate();   break;
+                case SDLK_LALT:      onReleaseLAlt._evaluate();    onReleaseAlt._evaluate();    break;
+                case SDLK_RALT:      onReleaseRAlt._evaluate();    onReleaseAlt._evaluate();    break;
                 case SDLK_F1:        onReleaseF1._evaluate();        break;
                 case SDLK_F2:        onReleaseF2._evaluate();        break;
                 case SDLK_F3:        onReleaseF3._evaluate();        break;
@@ -401,6 +401,7 @@ void EventManager::_process(SDL_Event& e) {
             switch (e.button.button) {
                 case SDL_BUTTON_LEFT:
                     onLeftDown._evaluate(pos);
+                    onPointerDown._evaluate(pos);
                     if (e.button.clicks == 2) onDoubleClick._evaluate(pos);
                     break;
                 case SDL_BUTTON_RIGHT:  onRightDown._evaluate(pos);  break;
@@ -412,7 +413,7 @@ void EventManager::_process(SDL_Event& e) {
         case SDL_MOUSEBUTTONUP: {
             Vec2d pos = {(f32)e.button.x, (f32)e.button.y};
             switch (e.button.button) {
-                case SDL_BUTTON_LEFT:   onLeftUp._evaluate(pos);   break;
+                case SDL_BUTTON_LEFT:   onLeftUp._evaluate(pos); onPointerUp._evaluate(pos); break;
                 case SDL_BUTTON_RIGHT:  onRightUp._evaluate(pos);  break;
                 case SDL_BUTTON_MIDDLE: onMiddleUp._evaluate(pos); break;
             }
@@ -423,7 +424,7 @@ void EventManager::_process(SDL_Event& e) {
             onWheel._evaluate({(f32)e.wheel.x, (f32)e.wheel.y});
             break;
 
-        
+
         case SDL_CONTROLLERBUTTONDOWN: {
             i32 id = e.cbutton.which;
             switch (e.cbutton.button) {
@@ -468,7 +469,7 @@ void EventManager::_process(SDL_Event& e) {
             break;
         }
 
-        
+
         case SDL_CONTROLLERAXISMOTION: {
             i32 id  = e.caxis.which;
             i16 val = e.caxis.value;
@@ -484,7 +485,7 @@ void EventManager::_process(SDL_Event& e) {
             break;
         }
 
-        
+
 		case SDL_CONTROLLERDEVICEADDED: {
 		    SDL_GameController* ctrl = SDL_GameControllerOpen(e.cdevice.which);
 		    if (ctrl) {
@@ -495,7 +496,7 @@ void EventManager::_process(SDL_Event& e) {
 		    }
 		    break;
 		}
-		
+
 		case SDL_CONTROLLERDEVICEREMOVED: {
 		    auto it = event.m_controllers.find(e.cdevice.which);
 		    if (it != event.m_controllers.end()) {
@@ -506,13 +507,15 @@ void EventManager::_process(SDL_Event& e) {
 		    break;
 		}
 
-        
+
         case SDL_FINGERDOWN:
             onFingerDown._evaluate({(f32)e.tfinger.x, (f32)e.tfinger.y});
+            onPointerDown._evaluate({(f32)e.tfinger.x, (f32)e.tfinger.y});
             break;
 
         case SDL_FINGERUP:
             onFingerUp._evaluate({(f32)e.tfinger.x, (f32)e.tfinger.y});
+            onPointerUp._evaluate({(f32)e.tfinger.x, (f32)e.tfinger.y});
             break;
 
         case SDL_FINGERMOTION:
@@ -523,7 +526,7 @@ void EventManager::_process(SDL_Event& e) {
             onMultiGesture._evaluate({(f32)e.mgesture.x, (f32)e.mgesture.y});
             break;
 
-        
+
         case SDL_WINDOWEVENT: {
             switch (e.window.event) {
                 case SDL_WINDOWEVENT_CLOSE:             onWindowClose._evaluate(e.window.windowID);                                        break;
@@ -544,7 +547,6 @@ void EventManager::_process(SDL_Event& e) {
             break;
         }
 
-        
         case SDL_QUIT:
             onQuit._evaluate();
             break;
@@ -583,7 +585,7 @@ void EventManager::_process(SDL_Event& e) {
         case SDL_RENDER_DEVICE_RESET:
             onRenderReset._evaluate();
             break;
-        
+
         default: break;
     }
 }

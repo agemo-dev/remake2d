@@ -34,7 +34,7 @@
 
 // beginning of sol/version.hpp
 
-#include <sol/config.hpp>
+#include <remake2d/sol2/config.hpp>
 
 #define SOL_VERSION_MAJOR 3
 #define SOL_VERSION_MINOR 5
@@ -3013,27 +3013,27 @@ struct pre_main {
 // beginning of sol/compatibility/lua_version.hpp
 
 #if SOL_IS_ON(SOL_USING_CXX_LUA)
-	#if __has_include(<lua/lua.h>)
-		#include <lua/lua.h>
-		#include <lua/lauxlib.h>
-		#include <lua/lualib.h>
+	#if __has_include(<remake2d/lua/lua.h>)
+		#include <remake2d/lua/lua.h>
+		#include <remake2d/lua/lauxlib.h>
+		#include <remake2d/lua/lualib.h>
 	#else
 		#include <lua.h>
 		#include <lauxlib.h>
 		#include <lualib.h>
 	#endif
 #elif SOL_IS_ON(SOL_USE_LUA_HPP)
-	#if __has_include(<lua/lua.hpp>)
-		#include <lua/lua.hpp>
+	#if __has_include(<remake2d/lua/lua.hpp>)
+		#include <remake2d/lua/lua.hpp>
 	#else
 		#include <lua.hpp>
 	#endif
 #else
 	extern "C" {
-		#if __has_include(<lua/lua.h>)
-			#include <lua/lua.h>
-			#include <lua/lauxlib.h>
-			#include <lua/lualib.h>
+		#if __has_include(<remake2d/lua/lua.h>)
+			#include <remake2d/lua/lua.h>
+			#include <remake2d/lua/lauxlib.h>
+			#include <remake2d/lua/lualib.h>
 		#else
 			#include <lua.h>
 			#include <lauxlib.h>
@@ -3243,10 +3243,10 @@ struct pre_main {
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 extern "C" {
 #endif
-#if __has_include(<lua/lua.h>)
-  #include <lua/lua.h>
-  #include <lua/lauxlib.h>
-  #include <lua/lualib.h>
+#if __has_include(<remake2d/lua/lua.h>)
+  #include <remake2d/lua/lua.h>
+  #include <remake2d/lua/lauxlib.h>
+  #include <remake2d/lua/lualib.h>
 #else
   #include <lua.h>
   #include <lauxlib.h>
@@ -4509,10 +4509,10 @@ COMPAT53_API void luaL_requiref(lua_State* L, const char* modname, lua_CFunction
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 extern "C" {
 #endif
-#if __has_include(<lua/lua.h>)
-  #include <lua/lua.h>
-  #include <lua/lauxlib.h>
-  #include <lua/lualib.h>
+#if __has_include(<remake2d/lua/lua.h>)
+  #include <remake2d/lua/lua.h>
+  #include <remake2d/lua/lauxlib.h>
+  #include <remake2d/lua/lualib.h>
 #else
   #include <lua.h>
   #include <lauxlib.h>
@@ -9668,7 +9668,7 @@ namespace sol {
 
 // beginning of sol/error_handler.hpp
 
-#include <sol/config.hpp>
+#include <remake2d/sol2/config.hpp>
 
 #include <cstdio>
 

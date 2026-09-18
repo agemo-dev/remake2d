@@ -1,7 +1,6 @@
 #ifndef REMAKE2D_IVECTOR_
 #define REMAKE2D_IVECTOR_
 
-#include <remake2d/utility.hpp>
 #include <remake2d/numeric.hpp>
 
 #include <vector>
@@ -39,22 +38,22 @@ public:
 
         explicit iterator(pointer p);
 
-        reference operator*(void) const;
-        pointer   operator->(void) const;
+        reference operator*(void)             const;
+        pointer   operator->(void)            const;
         reference operator[](difference_type) const;
 
-        iterator& operator++(void);
-        iterator  operator++(int);
-        iterator& operator--(void);
-        iterator  operator--(int);
+        iterator& operator++(void)  noexcept;
+        iterator  operator++(int)   noexcept;
+        iterator& operator--(void)  noexcept;
+        iterator  operator--(int)   noexcept;
 
-        iterator& operator+=(difference_type);
-        iterator& operator-=(difference_type);
+        iterator& operator+=(difference_type) noexcept;
+        iterator& operator-=(difference_type) noexcept;
 
-        template <typename T, usize C> friend iterator operator+(iterator, difference_type);
-        template <typename T, usize C> friend iterator operator+(difference_type, iterator);
-        template <typename T, usize C> friend iterator operator-(iterator, difference_type);
-        template <typename T, usize C> friend difference_type operator-(const iterator&, const iterator&);
+        template <typename U, usize V> friend iterator operator+(iterator, difference_type);
+        template <typename U, usize V> friend iterator operator+(difference_type, iterator);
+        template <typename U, usize V> friend iterator operator-(iterator, difference_type);
+        template <typename U, usize V> friend difference_type operator-(const iterator&, const iterator&);
 
         auto operator<=>(const iterator&) const noexcept = default;
     };
@@ -67,9 +66,9 @@ public:
     IVector& operator=(const IVector&)  = default;
 
 public:
-    IVector(std::initializer_list<T>);
-    IVector(const std::vector<T>&);
     IVector(std::vector<T>&&);
+    IVector(const std::vector<T>&);
+    IVector(std::initializer_list<T>);
 
 public:
     IVector& operator=(std::initializer_list<T>);
@@ -105,6 +104,8 @@ public:
 public:
     iterator begin(void) noexcept;
     iterator end(void)   noexcept;
+    const iterator begin(void) const noexcept;
+    const iterator end(void)   const noexcept;
 
 public:
     ~IVector(void);
@@ -112,5 +113,5 @@ public:
 
 } // namespace rmk
 
-#include <remake2d/template/ivector.tpp>
+#include <remake2d/template/private/ivector.tpp>
 #endif
