@@ -97,9 +97,9 @@ grid.resize({1000, 700});
 
 ## Property
 
-| Type | Copiable | Movable | Trait |
+| Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| TileGrid | Yes | Yes | Drawable |
+| TileGrid | Yes | Yes | Drawable and Fillable |
 
 ---
 

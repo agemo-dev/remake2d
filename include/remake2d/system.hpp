@@ -21,6 +21,15 @@ class System {
 
 public:
     struct Info {
+
+    public:
+        Info(void)                   = default;
+        Info(Info&&)                 = delete;
+        Info(const Info&)            = delete;
+        Info& operator=(Info&&)      = delete;
+        Info& operator=(const Info&) = delete;
+
+    public:
         u32 ramMB(void);
         u8 cpuCount(void);
         u8 displayCount(void);
@@ -32,6 +41,15 @@ public:
     };
 
     struct Setup {
+
+    public:
+        Setup(void)                    = default;
+        Setup(Setup&&)                 = delete;
+        Setup(const Setup&)            = delete;
+        Setup& operator=(Setup&&)      = delete;
+        Setup& operator=(const Setup&) = delete;
+
+    public:
         void allocateChannels(u16);
         bool backend(std::string_view);
         bool audioMode(std::string_view);
@@ -42,6 +60,15 @@ public:
     };
 
     struct Toggle {
+
+    public:
+        Toggle(void)                     = default;
+        Toggle(Toggle&&)                 = delete;
+        Toggle(const Toggle&)            = delete;
+        Toggle& operator=(Toggle&&)      = delete;
+        Toggle& operator=(const Toggle&) = delete;
+
+    public:
         bool vsync(bool);
         bool blockOnPause(bool);
         void gameController(bool);
@@ -52,9 +79,9 @@ public:
     };
 
 public:
-    Setup setup;
+    Setup  setup;
     Toggle toggle;
-    Info info;
+    Info   info;
 
 private:
 	std::atomic<u32>  m_instance{0};
@@ -64,7 +91,9 @@ private:
 
 private:
     System(void)                        = default;
+    System(System&&)                    = delete;
     System(const System &)              = delete;
+    System &operator=(System&&)         = delete;
     System &operator=(const System &)   = delete;
 
 public:

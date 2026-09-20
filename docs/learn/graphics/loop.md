@@ -136,5 +136,13 @@ int main(void) {
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| MainRenderLoop | No | Yes | None |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](window.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](shape.md){ .md-button .md-button--primary }

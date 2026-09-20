@@ -71,10 +71,13 @@ void initLuaEvent(sol::table& rmk) noexcept {
         ut["onPressRight"]       = &event.onPressRight;
         ut["onPressUp"]          = &event.onPressUp;
         ut["onPressDown"]        = &event.onPressDown;
+        ut["onPressShift"]       = &event.onPressShift;
         ut["onPressLShift"]      = &event.onPressLShift;
         ut["onPressRShift"]      = &event.onPressRShift;
+        ut["onPressCtrl"]        = &event.onPressCtrl;
         ut["onPressLCtrl"]       = &event.onPressLCtrl;
         ut["onPressRCtrl"]       = &event.onPressRCtrl;
+        ut["onPressAlt"]         = &event.onPressAlt;
         ut["onPressLAlt"]        = &event.onPressLAlt;
         ut["onPressRAlt"]        = &event.onPressRAlt;
         ut["onPressAny"]         = &event.onPressAny;
@@ -146,10 +149,13 @@ void initLuaEvent(sol::table& rmk) noexcept {
         ut["onReleaseRight"]       = &event.onReleaseRight;
         ut["onReleaseUp"]          = &event.onReleaseUp;
         ut["onReleaseDown"]        = &event.onReleaseDown;
+        ut["onReleaseShift"]       = &event.onReleaseShift;
         ut["onReleaseLShift"]      = &event.onReleaseLShift;
         ut["onReleaseRShift"]      = &event.onReleaseRShift;
+        ut["onReleaseCtrl"]        = &event.onReleaseCtrl;
         ut["onReleaseLCtrl"]       = &event.onReleaseLCtrl;
         ut["onReleaseRCtrl"]       = &event.onReleaseRCtrl;
+        ut["onReleaseAlt"]         = &event.onReleaseAlt;
         ut["onReleaseLAlt"]        = &event.onReleaseLAlt;
         ut["onReleaseRAlt"]        = &event.onReleaseRAlt;
         ut["onReleaseAny"]         = &event.onReleaseAny;
@@ -272,6 +278,8 @@ void initLuaEvent(sol::table& rmk) noexcept {
         ut["onMiddleUp"]      = &event.onMiddleUp;
         ut["onDoubleClick"]   = &event.onDoubleClick;
         ut["onWheel"]         = &event.onWheel;
+        ut["onPointerUp"]     = &event.onPointerUp;
+        ut["onPointerDown"]   = &event.onPointerDown;
 
         ut["onPressACtrl"]      = &event.onPressACtrl;
         ut["onPressBCtrl"]      = &event.onPressBCtrl;

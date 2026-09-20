@@ -55,11 +55,8 @@ public:
     mutable bool    is_fill_dirty{true};
 
 public:
-    void  color(Color)      noexcept;
-    Color color(void) const noexcept;
-
-protected:
-    void _color(Color) const noexcept;
+    void  color(Color) const noexcept;
+    Color color(void)  const noexcept;
 
 public:
     rmk_heritableBaseClass(Printable);
@@ -67,6 +64,7 @@ public:
 
 
 class Drawable : public virtual Printable {
+
 public:
     mutable bool  drawn{false};
 

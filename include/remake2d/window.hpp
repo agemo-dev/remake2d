@@ -175,9 +175,10 @@ private:
     static void _restoreViewport(SDL_Renderer*, std::stack<Area>&)            noexcept;
 
 private:
-    static void _flushLayer(SDL_Renderer*, i16, DrawLayers&, FillLayers&) noexcept; // draw a layer
-    static usize _normalise(i16)                                    noexcept; // transform layer (i16) to -> usize
-    static void _testLayer(i16, UsedLayers&, ActiveLayers&);
+    bool  _isUI(i16)                                                 const noexcept;
+    static usize _normalise(i16)                                           noexcept; // transform layer (i16) to -> usize
+    static void  _flushLayer(SDL_Renderer*, i16, DrawLayers&, FillLayers&) noexcept; // draw a layer
+    static void  _testLayer(i16, UsedLayers&, ActiveLayers&);
 
 private: // place VertexBatch / DrawPack in buffer
     static void _pushFill(const std::vector<VertexBatch>&, i16, const Camera&, Dim2d, FillLayers&)  noexcept;

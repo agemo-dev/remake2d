@@ -10,5 +10,5 @@ REASON: set include file directories to match .
 
 changed file:
 	- sol.hpp
-	
+
 removed files: none

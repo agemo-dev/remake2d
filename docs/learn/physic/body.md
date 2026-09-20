@@ -204,7 +204,15 @@ if you want a simple sprite, you can use animation too . just don't play it .
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](../sound/sound.md){ .md-button }
-[Next chapter :octicons-arrow-right-24:](physic.md){ .md-button .md-button--primary }
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| PhysicBody | Yes | Yes | Trackable, Fillable and Drawable |
+| StaticBody | Yes | Yes | PhysicBody |
+| DynamicBody | Yes | Yes | PhysicBody |
 
 ---
+
+[:octicons-arrow-left-24: Previous chapter](../sound/sound.md){ .md-button }
+[Next chapter :octicons-arrow-right-24:](physic.md){ .md-button .md-button--primary }

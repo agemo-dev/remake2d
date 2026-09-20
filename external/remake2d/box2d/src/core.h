@@ -47,7 +47,7 @@
 #elif defined( __EMSCRIPTEN__ )
 	#define B2_CPU_WASM
 #else
-	#define B2_CPU_ARM
+	#error Unsupported CPU
 #endif
 
 // Define compiler

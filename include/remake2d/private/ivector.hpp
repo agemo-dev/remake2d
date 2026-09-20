@@ -58,6 +58,39 @@ public:
         auto operator<=>(const iterator&) const noexcept = default;
     };
 
+    class const_iterator {
+    private:
+        const_pointer m_ptr;
+
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type        = T;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = const T*;
+        using reference         = const T&;
+
+        explicit const_iterator(const_pointer p);
+
+        reference operator*(void)             const;
+        pointer   operator->(void)            const;
+        reference operator[](difference_type) const;
+
+        const_iterator& operator++(void)  noexcept;
+        const_iterator  operator++(int)   noexcept;
+        const_iterator& operator--(void)  noexcept;
+        const_iterator  operator--(int)   noexcept;
+
+        const_iterator& operator+=(difference_type) noexcept;
+        const_iterator& operator-=(difference_type) noexcept;
+
+        template <typename U, usize V> friend const_iterator operator+(const_iterator, difference_type);
+        template <typename U, usize V> friend const_iterator operator+(difference_type, const_iterator);
+        template <typename U, usize V> friend const_iterator operator-(const_iterator, difference_type);
+        template <typename U, usize V> friend difference_type operator-(const const_iterator&, const const_iterator&);
+
+        auto operator<=>(const const_iterator&) const noexcept = default;
+    };
+
 public:
     IVector(void)                       = default;
     IVector(IVector&&)                  = default;
@@ -104,8 +137,8 @@ public:
 public:
     iterator begin(void) noexcept;
     iterator end(void)   noexcept;
-    const iterator begin(void) const noexcept;
-    const iterator end(void)   const noexcept;
+    const_iterator begin(void) const noexcept;
+    const_iterator end(void)   const noexcept;
 
 public:
     ~IVector(void);

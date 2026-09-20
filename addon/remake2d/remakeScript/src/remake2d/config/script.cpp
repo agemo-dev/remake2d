@@ -8,8 +8,9 @@ namespace solstat {
 void initLua(void) noexcept {
     auto& table = script.m_table;
 
-    initLuaSignal();
+    initLuaTrait();
     initLuaTracker();
+    initLuaSignal();
 
     initLuaType();
     initLuaClass();

@@ -8,6 +8,8 @@ void initLuaUtility(sol::table& rmk) noexcept {
 
 	rmk["currentVersion"] = &currentVersion;
 
+    rmk["pi"] = pi;
+
     rmk["angle"].get_or_create<sol::table>();
     rmk["angle"]["degToRad"] = &angle::degToRad;
     rmk["angle"]["radToDeg"] = &angle::radToDeg;

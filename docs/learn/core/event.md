@@ -180,5 +180,13 @@ rmk::loop.execute(win, [&]() {
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| EventManager | No | Yes | None |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](signal.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](tracker.md){ .md-button .md-button--primary }

@@ -29,6 +29,13 @@ public:
     mutable std::source_location info;
 
 public:
+    Error(void)                    = delete;
+    Error(Error&&)                 = default;
+    Error(const Error&)            = default;
+    Error& operator=(Error&&)      = default;
+    Error& operator=(const Error&) = default;
+
+public:
     Error(std::string_view msg) : m_msg(msg) {}
 
     const char *what() const noexcept override { return m_msg.c_str(); }

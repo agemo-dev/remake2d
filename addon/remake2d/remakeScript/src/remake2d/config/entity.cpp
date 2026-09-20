@@ -1,4 +1,5 @@
 #include <remake2d/all/everything.hpp>
+#include <remake2d/config/otracker.hpp>
 
 namespace rmk {
 namespace config {
@@ -96,21 +97,21 @@ void initLuaEntity(void) noexcept {
         ut["update"]        = &Actor::update;
         ut["addChild"]      = &Actor::addChild;
         ut["removeChild"]   = &Actor::removeChild;
-        ut["parent"]        = &Actor::parent;
-        ut["children"]      = &Actor::children;
+        ut["parent"]        = [](Actor& self) -> UnsafeTracker<Actor>               { return self.parent();   };
+        ut["children"]      = [](Actor& self) -> std::vector<UnsafeTracker<Actor>>& { return self.children(); };
         ut["active"]        = sol::overload(
-            [](Actor& self) { return self.active(); },
-            [](Actor& self, bool a) { self.active(a); }
+            [](Actor& self)         { return self.active(); },
+            [](Actor& self, bool a) { self.active(a);       }
         );
     });
 
-    script._registerEngineType<StaticActor, StaticActor(const Geometry&)>("StaticActor", [](SolState::Type& ut) {
-        ut["body"] = &StaticActor::body;
-    }, type::base<Actor>);
+    script._registerEngineType<StaticActor, StaticActor(const Geometry&)>("StaticActor", nullptr, type::base<Actor>,
+        "body", &StaticActor::body
+    );
 
-    script._registerEngineType<DynamicActor, DynamicActor(const Geometry&)>("DynamicActor", [](SolState::Type& ut) {
-        ut["body"] = &DynamicActor::body;
-    }, type::base<Actor>);
+    script._registerEngineType<DynamicActor, DynamicActor(const Geometry&)>("DynamicActor", nullptr, type::base<Actor>,
+        "body", &DynamicActor::body
+    );
 }
 
 } // namespace solstat

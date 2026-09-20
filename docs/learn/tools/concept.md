@@ -7,7 +7,7 @@ tool that makes this clean.
 
 ## Overview
 
-**RE:MAKE 2D** defines its own concepts to restrict its templates to the expected types: shapes, textures, physics bodies, 
+**RE:MAKE 2D** defines its own concepts to restrict its templates to the expected types: shapes, textures, physics bodies,
 actors, signals, savable types, and base value types. This lives in the header **"remake2d/concept.hpp"**, relying on `std::derived_from`
 and `std::same_as`/`std::is_arithmetic_v`.
 
@@ -34,21 +34,41 @@ template<typename S>
 concept IsSignal = std::derived_from<S, class SignalBase>;
 
 template<typename S>
-concept IsSavable = std::derived_from<S, class ISavable>;
+concept IsSavable = std::derived_from<S, class Savable>;
+
+template<typename T>
+concept IsDrawable = std::derived_from<T, class Drawable>;
+
+template<typename T>
+concept IsFillable = std::derived_from<T, class Fillable>;
+
+template<typename F>
+concept IsFollowable = std::derived_from<F, class Followable>;
+
+template<typename T>
+concept IsTracker = std::is_base_of_v<class TrackerBaseID, T>;
+
+template<typename T>
+concept IsTrackable = std::is_base_of_v<class TrackableBaseID, T>;
 ```
 
-- `IsShape`   : constrains a type to inherit from `Geometry`.
-- `IsTexture` : constrains a type to inherit from `TextureBase`.
-- `IsPhysic`  : constrains a type to inherit from `PhysicBody`.
-- `IsActor`   : constrains a type to inherit from `Actor`.
-- `IsSignal`  : constrains a type to inherit from `SignalBase`.
-- `IsSavable` : constrains a type to implement `ISavable`.
+- `IsShape`      : constrains a type to inherit from `Geometry`.
+- `IsTexture`    : constrains a type to inherit from `TextureBase`.
+- `IsPhysic`     : constrains a type to inherit from `PhysicBody`.
+- `IsSignal`     : constrains a type to inherit from `SignalBase`.
+- `IsTracker`    : constrains a type to inherit from `TrackerBaseID`.
+- `IsActor`      : constrains a type to implement `Actor`.
+- `IsSavable`    : constrains a type to implement `Savable`.
+- `IsTrackable`  : constrains a type to implement `Trackable`.
+- `IsDrawable`   : constrains a type to implement `Drawable`.
+- `IsFillable`   : constrains a type to implement `Fillable`.
+- `IsFollowable` : constrains a type to implement `Followable`.
 
 These show up throughout the engine whenever a function or class needs to stay generic while still rejecting arbitrary types:
 
 ```cpp
 // collision test between two shapes
-template<IsShape T1, IsShape T2> bool intersect(T1 a, T2 b) {
+template<IsShape T> bool intersect(T a, T b) {
 	return a.hasIntersected(b);
 }
 ```
@@ -82,6 +102,26 @@ template<IsBasicType T> T add(T a, T b) {
 
 !!! info
     `IsBasicType` accepts any arithmetic type. This means custom numeric aliases such as `rmk::i32` or `rmk::f32` also satisfy the concept.
+
+---
+
+## `IsRelatedTo`
+
+`IsRelatedTo` check if first type maybe converse to a pointer of second type .
+
+```cpp
+template<typename U, typename T>
+concept IsRelatedTo = std::same_as<U, T>        ||
+                      std::derived_from<T, U>   ||
+                      std::derived_from<U, T>   ||
+                      std::same_as<U, void>;
+```
+
+```cpp
+if constexpr (IsRelatedTo<Base, Player>) {
+    static_cast<Base*>(player)->doSomething();
+}
+```
 
 ---
 

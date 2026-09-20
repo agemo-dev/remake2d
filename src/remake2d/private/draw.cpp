@@ -7,12 +7,8 @@
 
 namespace rmk {
 
-void Printable::color(Color c) noexcept {
-	_color(c);
-}
-
-void Printable::_color(Color c) const noexcept {
-	m_color           = c;
+void Printable::color(Color c) const noexcept {
+	m_color       = c;
 	is_draw_dirty = true;
 	is_fill_dirty = true;
 }

@@ -58,11 +58,11 @@ void initLuaGlobal(sol::table& rmk) noexcept {
     rmk["anchor"]["y"]["bottom"] = anchor::y::bottom;
 
     rmk["layer"].get_or_create<sol::table>();
-    rmk["layer"]["ground"] = &layer::ground;
-    rmk["layer"]["world"]  = &layer::world;
-    rmk["layer"]["sky"]    = &layer::sky;
-    rmk["layer"]["ui"]     = &layer::ui;
-    rmk["layer"]["log"]    = &layer::log;
+    rmk["layer"]["ground"] = layer::ground;
+    rmk["layer"]["world"]  = layer::world;
+    rmk["layer"]["sky"]    = layer::sky;
+    rmk["layer"]["ui"]     = layer::ui;
+    rmk["layer"]["log"]    = layer::log;
     rmk["layer"]["min"]    = layer::min;
     rmk["layer"]["max"]    = layer::max;
 

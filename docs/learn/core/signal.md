@@ -113,5 +113,13 @@ onHealthChanged.joinOnce([](f32 hp) {
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Signal | Yes | Yes | SignalBase |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](error.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](event.md){ .md-button .md-button--primary }

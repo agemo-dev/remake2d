@@ -101,7 +101,7 @@ rmk::Data first = inv[0];
 ```
 
 !!! info
-    `Data`'s numeric constructors accept `byte`, `rune`, `imax` and `fmax`; smaller integer or floating-point 
+    `Data`'s numeric constructors accept `byte`, `rune`, `imax` and `fmax`; smaller integer or floating-point
 	types are implicitly widened into one of these.
 
 ---

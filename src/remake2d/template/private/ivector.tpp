@@ -180,13 +180,13 @@ typename IVector<T, C>::iterator IVector<T, C>::end(void) noexcept {
 }
 
 template <typename T, usize C>
-const typename IVector<T, C>::iterator IVector<T, C>::begin(void) const noexcept {
-    return iterator(data());
+typename IVector<T, C>::const_iterator IVector<T, C>::begin(void) const noexcept {
+    return const_iterator(data());
 }
 
 template <typename T, usize C>
-const typename IVector<T, C>::iterator IVector<T, C>::end(void)  const noexcept {
-    return iterator(data() + m_size);
+typename IVector<T, C>::const_iterator IVector<T, C>::end(void)  const noexcept {
+    return const_iterator(data() + m_size);
 }
 
 template <typename T, usize C>
@@ -274,6 +274,94 @@ typename IVector<T, C>::iterator operator-(typename IVector<T, C>::iterator it, 
 
 template <typename T, usize C>
 typename IVector<T, C>::iterator::difference_type operator-(const typename IVector<T, C>::iterator& a, const typename IVector<T, C>::iterator& b) noexcept {
+    return a.m_ptr - b.m_ptr;
+}
+
+template <typename T, usize C>
+IVector<T, C>::const_iterator::const_iterator(const_pointer p) : m_ptr(p) {}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator::reference
+IVector<T, C>::const_iterator::operator*(void) const {
+    return *m_ptr;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator::pointer
+IVector<T, C>::const_iterator::operator->(void) const {
+    return m_ptr;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator::reference
+IVector<T, C>::const_iterator::operator[](difference_type n) const {
+    return m_ptr[n];
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator&
+IVector<T, C>::const_iterator::operator++(void) noexcept {
+    m_ptr++;
+    return *this;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator
+IVector<T, C>::const_iterator::operator++(int) noexcept {
+    const_iterator tmp = *this;
+    m_ptr++;
+    return tmp;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator&
+IVector<T, C>::const_iterator::operator--(void) noexcept {
+    m_ptr--;
+    return *this;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator
+IVector<T, C>::const_iterator::operator--(int) noexcept {
+    const_iterator tmp = *this;
+    m_ptr--;
+    return tmp;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator&
+IVector<T, C>::const_iterator::operator+=(difference_type n) noexcept {
+    m_ptr += n;
+    return *this;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator&
+IVector<T, C>::const_iterator::operator-=(difference_type n) noexcept {
+    m_ptr -= n;
+    return *this;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator operator+(typename IVector<T, C>::const_iterator it, typename IVector<T, C>::const_iterator::difference_type n) noexcept {
+    it += n;
+    return it;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator operator+(typename IVector<T, C>::const_iterator::difference_type n, typename IVector<T, C>::const_iterator it) noexcept {
+    it += n;
+    return it;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator operator-(typename IVector<T, C>::const_iterator it, typename IVector<T, C>::const_iterator::difference_type n) noexcept {
+    it -= n;
+    return it;
+}
+
+template <typename T, usize C>
+typename IVector<T, C>::const_iterator::difference_type operator-(const typename IVector<T, C>::const_iterator& a, const typename IVector<T, C>::const_iterator& b) noexcept {
     return a.m_ptr - b.m_ptr;
 }
 

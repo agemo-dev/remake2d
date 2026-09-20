@@ -75,7 +75,7 @@ Area operator%(const Area&, const Area&) noexcept;
 ```
 
 !!! info
-    For `Grid2d` and `Area`, whose members are integers, the `%` operator performs a **classic integer modulo** rather 
+    For `Grid2d` and `Area`, whose members are integers, the `%` operator performs a **classic integer modulo** rather
 	than an `fmod`, unlike `Vec2d`, `Dim2d` and `Fact2d` whose members are floating-point.
 
 ### Usage

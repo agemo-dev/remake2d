@@ -24,8 +24,7 @@ type inherits from one of the engine's **traits** or not.
 
 Well, a **trait** is the name given to a class that serves as an interface
 for the engine, allowing for an extensible user-facing API.
-This name is borrowed from **Rust traits**. For reference, see the
-[official Rust documentation on traits](https://doc.rust-lang.org/book/ch10-02-traits.html).
+This name is borrowed from [Rust traits](https://doc.rust-lang.org/book/ch10-02-traits.html).
 
 ---
 
@@ -61,7 +60,6 @@ Most of the time, their name will end with **-able**, but there can be
 exceptions (such as `Actor`).
 
 ---
-
 
 [:octicons-arrow-left-24: Previous Chapter](color.md){ .md-button }
 [Next Chapter :octicons-arrow-right-24:](../graphics/window.md){ .md-button .md-button--primary }

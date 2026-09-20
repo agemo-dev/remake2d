@@ -1,4 +1,5 @@
 #include <remake2d/all/everything.hpp>
+#include <remake2d/config/otracker.hpp>
 
 namespace rmk {
 namespace config {
@@ -32,6 +33,15 @@ void initLuaSingleton(sol::table& rmk) noexcept {
         ut["bodies"]   = &PhysicManager::bodies;
         ut["dynamics"] = &PhysicManager::dynamics;
         ut["statics"]  = &PhysicManager::statics;
+        ut["remove"]   = &PhysicManager::remove;
+        ut["useFixedStep"] = sol::overload(
+            [](PhysicManager& self) { return self.useFixedStep(); },
+            [](PhysicManager& self, bool s) { self.useFixedStep(s); }
+        );
+        ut["fixedStep"] = sol::overload(
+            [](PhysicManager& self) { return self.fixedStep(); },
+            [](PhysicManager& self, f32 s) { self.fixedStep(s); }
+        );
     });
     rmk["physics"] = &physics;
 
@@ -41,6 +51,7 @@ void initLuaSingleton(sol::table& rmk) noexcept {
             [](Random& self, u32 s) { self.seed(s); }
         );
         ut["rollSeed"] = &Random::rollSeed;
+        ut["randSeed"] = &Random::randSeed;
         ut["chance"]   = &Random::chance;
         ut["dice"]     = &Random::dice;
         ut["rand"] = sol::overload(
@@ -62,6 +73,7 @@ void initLuaSingleton(sol::table& rmk) noexcept {
             [](SaveManager& self) { return self.root(); },
             [](SaveManager& self, std::string_view p) { self.root(p); }
         );
+        ut["isInitialized"] = &SaveManager::isInitialized;
     });
     rmk["data"] = &data;
 
@@ -78,14 +90,16 @@ void initLuaSingleton(sol::table& rmk) noexcept {
             [](MainRenderLoop& self, sol::function condition, sol::function body) { self.execute([condition]() -> bool { return condition(); }, [body]() { body(); }); }
         );
     });
-    rmk["loop"] = &loop;
+    rmk["loop"] = &rmk::loop;
 
     script._registerEngineType<FontManager>("FontManager", [](SolState::Type& ut) {
         ut["load"] = &FontManager::load;
     });
     rmk["font"] = &font;
 
-    script._registerEngineType<XWindow>("XWindow");
+    script._registerEngineType<XWindow>("XWindow", [](SolState::Type& ut) {
+        ut["lastDrawnWindow"] = &XWindow::lastDrawnWindow;
+    });
     rmk["xwindow"] = &xwindow;
 
     script._registerEngineType<System::Info>("System::Info", [](SolState::Type& ut) {

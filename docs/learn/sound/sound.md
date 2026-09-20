@@ -19,10 +19,10 @@ The methods shared by every `Sound` are as follows:
 i8 playFor(void)   const noexcept; // remaining loops
 u8 getVolume(void) const noexcept; // current volume
 
-virtual void play(i8 loop = 0) = 0; // start playback
-virtual void stop(void)        = 0; // stop playback
-virtual void pause(void)       = 0; // pause playback
-virtual void resume(void)      = 0; // resume playback
+virtual void play(i8 loop = 0)   = 0; // start playback
+virtual void stop(void)          = 0; // stop playback
+virtual void pause(void)         = 0; // pause playback
+virtual void resume(void)        = 0; // resume playback
 virtual void volume(u8) noexcept = 0; // set volume (1-128)
 
 Signal<> onRepeat; // emit when sound remaining
@@ -59,7 +59,11 @@ rmk::SFX   jump("jump.wav");
 
 ### Playing
 
-Play accepts a loop count: `0` plays once, a positive number repeats that many times, `-1` loops forever:
+Play accepts a loop count:
+
+- `0`  : plays once
+- `-1` : loops forever
+- A positive number repeats that many times
 
 ```cpp
 theme.play(-1); // endless background music
@@ -73,10 +77,10 @@ Both `Music` and `SFX` are copyable and movable, so an `SFX` instance can be reu
 Volume ranges from `1` to `128`, independent of the host device's system volume, and is also exposed through the `volume` namespace:
 
 ```cpp
-namespace volume {
-    inline constexpr u8 min = 1;
-    inline constexpr u8 max = 128;
-}
+enum class volume : u8 {
+    min = 1,
+    max = 128
+};
 ```
 
 ```cpp
@@ -93,7 +97,7 @@ theme.stop();
 
 ### Multiple simultaneous sound effects
 
-Each call to play on an `SFX` allocates that instance to a distinct audio channel, which means triggering the same `SFX` in rapid 
+Each call to play on an `SFX` allocates that instance to a distinct audio channel, which means triggering the same `SFX` in rapid
 succession can result in several overlapping playbacks at once. The regular `stop` method only affects the most recent one, which is
 awhere stopAll comes in: it stops every channel currently occupied by that instance.
 
@@ -113,6 +117,16 @@ theme.onFinish.join([&]() {
     playNextTrack();
 });
 ```
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Sound | Yes | Yes | Trackable |
+| Music | Yes | Yes | Sound |
+| SFX | Yes | Yes | Sound |
 
 ---
 

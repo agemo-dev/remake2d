@@ -38,11 +38,11 @@ To use colors, include the header **"remake2d/color.hpp"**.
 #include <remake2d/color.hpp>
 
 int main(void) {
-    
+
     rmk::Color black(0, 0, 0, 255);      // pure black
     rmk::Color red(255, 0, 0, 255);      // pure red
     rmk::Color purple(255, 0, 255, 255); // purple
-    
+
     rmk::byte r = red.r; // retrieve the amount of red
 
 }
@@ -160,6 +160,15 @@ Color HSLToRGB(const HSL&);
 rmk::HSL hsl     = rmk::color::RGBToHSL(rmk::color::red);
 rmk::Color result = rmk::color::HSLToRGB(hsl);
 ```
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Color | Yes | Yes | None |
+| HSL | Yes | Yes | None |
 
 ---
 

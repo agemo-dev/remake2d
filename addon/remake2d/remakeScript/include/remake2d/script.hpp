@@ -10,6 +10,18 @@
 #include <string>
 #include <filesystem>
 
+namespace sol {
+    template <typename T>
+    struct unique_usertype_traits<rmk::UnsafeTracker<T>> {
+        static const bool value = false;
+    };
+
+    template <rmk::IsTrackable T>
+    struct unique_usertype_traits<rmk::Tracker<T>> {
+        static const bool value = false;
+    };
+}
+
 namespace rmk {
 
 namespace type {
@@ -52,11 +64,16 @@ private:
 public:
 	template<typename T, typename... Ctors, typename B = const std::tuple<>, typename... Fields>
 	void registerType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
+    template<typename T> void loadVar(std::string_view id, T&) noexcept;
 
+private:
+    template<typename T> void _generateOperator(Type&)    noexcept;
+    template<typename T> void _generateSpecialType(Type&) noexcept;
+
+private:
 	template<typename T, typename... Ctors, typename B = const std::tuple<>, typename... Fields>
 	void _registerEngineType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
 
-    template<typename T> void loadVar(std::string_view id, T&) noexcept;
 
 public:
     std::string loadedTypes(void) 		const noexcept;
@@ -70,6 +87,7 @@ private:
     friend class System;
     friend void config::solstat::initLua(void) 				   noexcept;
     friend void config::solstat::initLuaType(void) 			   noexcept;
+    friend void config::solstat::initLuaTrait(void) 		   noexcept;
     friend void config::solstat::initLuaClass(void)			   noexcept;
     friend void config::solstat::initLuaEntity(void) 		   noexcept;
     friend void config::solstat::initLuaSignal(void) 		   noexcept;

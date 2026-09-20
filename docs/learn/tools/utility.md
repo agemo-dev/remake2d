@@ -129,12 +129,12 @@ std::string jump(std::span<std::string_view> paths) noexcept;
 ```
 
 ```cpp
-std::string_view paths [] = {
-    "assets/player.png",
-    "fallback/player.png"
-};
+std::string path1("assets/player.png");
+std::string path2("fallback/player.png");
 
-std::string path = rmk::file::jump(paths);
+std::string path = rmk::file::jump(std::Vector{
+    path1, path2
+});
 ```
 
 !!! info

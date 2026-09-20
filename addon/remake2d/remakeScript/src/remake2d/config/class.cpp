@@ -1,4 +1,5 @@
 #include <remake2d/all/everything.hpp>
+#include <remake2d/config/otracker.hpp>
 
 namespace rmk {
 namespace config {
@@ -26,24 +27,46 @@ void initLuaClass(void) noexcept {
         ut["title"]          = &Window::title;
         ut["clear"]          = &Window::clear;
         ut["present"]        = &Window::present;
-        ut["resizable"]      = &Window::resizable;
         ut["screenshot"]     = &Window::screenshot;
         ut["connectViewport"]    = &Window::connectViewport;
         ut["disconnectViewport"] = &Window::disconnectViewport;
+        ut["border"]         = &Window::border;
+        ut["maxSize"]        = &Window::maxSize;
+        ut["fullScreen"]     = &Window::fullScreen;
+        ut["blendMode"]      = &Window::blendMode;
+        ut["icon"]           = &Window::icon;
+        ut["camera"] = sol::overload(
+            [](Window& self) -> Camera& { return self.camera(); },
+            [](const Window& self) -> const Camera& { return self.camera(); }
+        );
+        ut["resizable"]      = sol::overload(
+            [](Window& self)            { return self.resizable(); },
+            [](Window& self, bool stat) { self.resizable(stat);    }
+        );
         ut["draw"] = sol::overload(
-            [](Window& win, const Drawable& obj)         { win.draw(obj, 0); },
-            [](Window& win, const Drawable& obj, i16 l)  { win.draw(obj, l); },
+            [](Window& self, const Drawable& obj)         { self.draw(obj, 0); },
+            [](Window& self, const Drawable& obj, i16 l)  { self.draw(obj, l); }
         );
         ut["fill"] = sol::overload(
-            [](Window& win, const Fillable& obj)         { win.fill(obj, 0); },
-            [](Window& win, const Fillable& obj, i16 l)  { win.fill(obj, l); },
+            [](Window& self, const Fillable& obj)         { self.fill(obj, 0); },
+            [](Window& self, const Fillable& obj, i16 l)  { self.fill(obj, l); }
         );
     }, type::base<Trackable<Window>>);
 
-	rmk::script._registerEngineType<Window::Viewport, Window::Viewport(), Window::Viewport(const Area&), Window::Viewport(const Area&, const Camera&)>("Window::Viewport", [](SolState::Type& ut) {
-        ut["area"]   = Window::Viewport::area;
-        ut["camera"] = [](Camera& self) { return self.camera(); };
-    }, rmk::type::base<Trackable<Window::Viewport>);
+	rmk::script._registerEngineType<Window::Viewport, Window::Viewport(), Window::Viewport(const Area&)>("Window::Viewport", [](SolState::Type& ut) {
+        ut["area"]   = sol::overload(
+            [](Window::Viewport& self)         { return self.area(); },
+            [](Window::Viewport& self, Area a) { self.area(a);       }
+        );
+        ut["camera"] = sol::overload(
+            [](Window::Viewport& self) -> Camera& { return self.camera(); },
+            [](const Window::Viewport& self) -> const Camera& { return self.camera(); }
+        );
+        ut["clear"]  = sol::overload(
+            [](Window::Viewport& self)          { self.clear(); },
+            [](Window::Viewport& self, Color c) { self.clear(c); }
+        );
+    }, rmk::type::base<Trackable<Window::Viewport>>);
 
     script._registerEngineType<Camera,
         Camera(),
@@ -184,7 +207,8 @@ void initLuaClass(void) noexcept {
         ut["center"]        = &TileMap::center;
         ut["size"]          = &TileMap::size;
         ut["cut"]           = &TileMap::cut;
-    }, type::base<Drawable, Fillable>);
+        ut["data"]          = &TileMap::data;
+    }, type::base<Fillable>);
 
     script._registerEngineType<TileGrid, TileGrid(const Vec2d&, const Dim2d&, const Grid2d&)>("TileGrid", [](SolState::Type& ut) {
         ut["move"]   = &TileGrid::move;
@@ -198,19 +222,20 @@ void initLuaClass(void) noexcept {
         ut["center"] = &TileGrid::center;
         ut["cell"]   = &TileGrid::cell;
         ut["cells"]  = &TileGrid::cells;
-    }, type::base<Drawable, Fillable>);
+    }, type::base<Drawable>);
 
     script._registerEngineType<Parallax, Parallax(const Vec2d&, const Dim2d&, const std::vector<Sprite>&, const std::vector<u8>&)>("Parallax", [](SolState::Type& ut) {
-        ut["move"]     = &Parallax::move;
-        ut["resize"]   = &Parallax::resize;
-        ut["velocity"] = sol::overload(
+        ut["move"]       = &Parallax::move;
+        ut["resize"]     = &Parallax::resize;
+        ut["velocity"]   = sol::overload(
             [](Parallax& self) { return self.velocity(); },
             [](Parallax& self, const Vec2d& v) { self.velocity(v); }
         );
-        ut["center"]   = &Parallax::center;
-        ut["size"]     = &Parallax::size;
-        ut["update"]   = &Parallax::update;
-    }, type::base<Drawable, Fillable>);
+        ut["center"]     = &Parallax::center;
+        ut["size"]       = &Parallax::size;
+        ut["update"]     = &Parallax::update;
+        ut["linkCamera"] = &Parallax::linkCamera;
+    }, type::base<Fillable>);
 
 	script._registerEngineType<Data,
 		Data(),       Data(byte),
@@ -266,9 +291,10 @@ void initLuaClass(void) noexcept {
             [](Scene& s, const Scene::Frame& f, int l) { s.add(f, (i16)l); }
         );
         ut["remove"]          = &Scene::remove;
-        ut["enable"]          = &Scene::enable;
-        ut["disable"]         = &Scene::disable;
-        ut["isEnabled"]       = &Scene::isEnabled;
+        ut["active"]          = sol::overload(
+            [](Scene& s) { return s.active(); },
+            [](Scene& s, bool a) { s.active(a); }
+        );
         ut["setLayerActive"]  = &Scene::setLayerActive;
         ut["setActorActive"]  = &Scene::setActorActive;
     });
@@ -284,7 +310,7 @@ void initLuaClass(void) noexcept {
             [](Act& a, std::string_view tag) { a.update(tag); }
         );
         ut["updates"]   = &Act::updates;
-        ut["scene"]     = &Act::scene;
+        ut["scene"]     = [](Act& self, std::string_view s) -> Scene& { return self.scene(s); };
     });
 
     script._registerEngineType<Sound>("Sound", [](SolState::Type& ut) {
@@ -295,7 +321,11 @@ void initLuaClass(void) noexcept {
         ut["stop"]     = &Sound::stop;
         ut["pause"]    = &Sound::pause;
         ut["resume"]   = &Sound::resume;
-        ut["volume"]   = &Sound::volume;
+        ut["volume"]   = sol::overload(
+            [](Sound& self)       { return self.volume(); },
+            [](Sound& self, u8 v) { self.volume(v);       }
+        );
+        ut["playFor"]  = &Sound::playFor;
     }, type::base<>,
 		"onFinish" , &SFX::onFinish,
 		"onRepeat" , &SFX::onRepeat
@@ -317,7 +347,7 @@ void initLuaClass(void) noexcept {
             [](Date& d, u8 v) { d.month(v); }
         );
         ut["year"]   = sol::overload(
-            [](Date& d) { return d.year(); },
+            [](Date& d) { return d.year();  },
             [](Date& d, i32 v) { d.year(v); }
         );
         ut["format"] = &Date::format;
@@ -325,6 +355,8 @@ void initLuaClass(void) noexcept {
             [](Date& d) { return d.date(); },
             [](Date& d, std::string_view s) { d.date(s); }
         );
+        ut["slice"] = &Date::slice;
+        ut["dayIs"] = &Date::dayIs;
     });
 
     script._registerEngineType<Clock, Clock(), Clock(u8, u8, u8)>("Clock", [](SolState::Type& ut) {
@@ -345,6 +377,8 @@ void initLuaClass(void) noexcept {
             [](Clock& c) { return c.time(); },
             [](Clock& c, std::string_view s) { c.time(s); }
         );
+        ut["slice"]  = &Clock::slice;
+        ut["timeIs"] = &Clock::timeIs;
     });
 
 	script._registerEngineType<Chronometer, Chronometer()>("Chronometer", [](SolState::Type& ut) {

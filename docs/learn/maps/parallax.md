@@ -97,7 +97,7 @@ without ever having to reposition anything manually.
 
 ## Property
 
-| Type | Copiable | Movable | Trait |
+| Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
 | Parallax | Yes | Yes | Fillable and Trackable |
 

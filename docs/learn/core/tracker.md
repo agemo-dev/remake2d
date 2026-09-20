@@ -12,10 +12,14 @@ being followed safely: `Trackable<Derived>` is a base to inherit from, `Tracker<
 `Slot<Derived>` is the small piece of shared state that connects the two. `Camera::follow` is the main place this shows up in
 the engine, but nothing ties `Tracker` to cameras specifically , any class can use it.
 
+`Tracker<T>` is in fact an alias for `UnsafeTracker<T>` constrained by `IsTrackable<T>`; some parts of the public API (like
+`Actor::parent()`) hand out `UnsafeTracker` directly rather than `Tracker`, on the idea that at that point it's little more
+than a plain pointer, and it's up to you to decide whether to re-wrap it as a `Tracker` for that compile-time guarantee back.
+
 ```cpp
-template<typename T> class Slot;      // internal indirection, rarely touched directly
-template<typename T> class Tracker;   // the handle you keep
-template<typename Derived> class Trackable;   // the base you inherit from
+template<typename T> class Slot;            // internal indirection, rarely touched directly
+template<typename T> class Tracker;         // the handle you keep
+template<typename Derived> class Trackable; // the base you inherit from
 ```
 
 ---
@@ -44,9 +48,14 @@ if (Player* p = t.locate()) {
 ### Methods
 
 ```cpp
-Tracker<Derived> tracker(void) noexcept;   // hand out a safe reference to this instance
-void relocate(void) noexcept;              // rebind after a move
+UnsafeTracker<Derived> tracker(void) noexcept;   // hand out a reference to this instance
+void relocate(void) noexcept;                    // rebind after a move
 ```
+
+`tracker()` is declared to return `UnsafeTracker<Derived>` rather than `Tracker<Derived>`: inside `Trackable<Derived>`'s own
+generic implementation, there's no way to guarantee `Derived` already satisfies `IsTrackable<Derived>` at that point, since
+`Derived` is still being defined when it inherits from `Trackable<Derived>`. Writing `Tracker<Derived>` at the call site
+works fine once `Derived` is complete, since `Tracker<T>` is just `UnsafeTracker<T>` with that check attached.
 
 ### Usage
 
@@ -108,11 +117,11 @@ public:
 ```
 
 !!! warning
-    Forgetting `relocate()` in a move doesn't fail loudly. Any `Tracker` obtained *before* the move keeps pointing at the old 
-    address until something calls `tracker()` again , which, for an object living inside a reallocating `std::vector`, is 
+    Forgetting `relocate()` in a move doesn't fail loudly. Any `Tracker` obtained *before* the move keeps pointing at the old
+    address until something calls `tracker()` again , which, for an object living inside a reallocating `std::vector`, is
     exactly the address that just became invalid.
 
-Everyday containers reallocate all the time, and this is precisely the case `Tracker` is built to survive ; as long as the 
+Everyday containers reallocate all the time, and this is precisely the case `Tracker` is built to survive ; as long as the
 element type moves correctly:
 
 ```cpp
@@ -134,10 +143,24 @@ t.locate(); // still valid: points at the relocated element
 ### Methods
 
 ```cpp
-T* locate(void) const noexcept;     // current address, or nullptr if the object is gone
-T* operator->(void);                // shorthand for locate(); also nullptr if gone
-void track(const Balise&) noexcept; // rebind to a different Slot
+T&       operator*(void);
+T*       operator->(void);
+const T& operator*(void)  const;
+const T* operator->(void) const;
+explicit operator bool()  const;
+bool     operator==(const UnsafeTracker<T>&) const noexcept;
+bool     operator!=(const UnsafeTracker<T>&) const noexcept;
+
+template<typename U = T> requires IsRelatedTo<U, T>
+U* locate(void) noexcept; // current address as U, or nullptr if the object is gone (mutable)
+
+template<typename U = T> requires IsRelatedTo<U, T>
+const U* locate(void) const noexcept; // current address as U, or nullptr if the object is gone (constant)
 ```
+
+`locate()` takes an optional template parameter `U` (defaulting to `T`) and converts the returned pointer to it: a
+`static_cast` when `U` and `T` are related by inheritance, a `dynamic_cast` otherwise — handy for pulling out a base or
+derived pointer without going through `operator->` first.
 
 ### Usage
 
@@ -146,7 +169,7 @@ void track(const Balise&) noexcept; // rebind to a different Slot
 `locate()` and `operator->` never crash on a destroyed object . They return `nullptr` instead, so the check is explicit:
 
 ```cpp
-if (t.locate()) {
+if (t) {
     t->takeDamage(10);
 }
 ```
@@ -161,6 +184,15 @@ Player p;
 t = p.tracker();
 t.locate(); // &p
 ```
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| UnsafeTracker | Yes | Yes | None |
+| Tracker | Yes | Yes | None |
 
 ---
 

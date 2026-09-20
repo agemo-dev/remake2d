@@ -130,7 +130,7 @@ void EventManager::_process(SDL_Event& e) {
         case SDL_KEYDOWN: {
             if (e.key.repeat != 0) break;
             onPressAny._evaluate();
-            
+
             switch (e.key.keysym.sym) {
                 case SDLK_a: onPressA._evaluate(); break;
                 case SDLK_b: onPressB._evaluate(); break;

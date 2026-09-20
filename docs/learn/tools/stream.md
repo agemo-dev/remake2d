@@ -40,7 +40,7 @@ std::istream& operator>>(std::istream&, Area&);
 ```
 
 ```cpp
-std::istringstream iss("100,200");
+std::istringstream iss("100, 200");
 rmk::Vec2d pos;
 iss >> pos; // { 100, 200 }
 ```
@@ -103,7 +103,7 @@ template<IsSavable T> DataFile& operator>>(DataFile&, T&);
 ```
 
 ```cpp
-rmk::DataFile file("save1");
+rmk::DataFile file("player");
 
 file << player; // equivalent to file.save
 file >> player; // equivalent to file.load

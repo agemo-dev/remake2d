@@ -200,9 +200,9 @@ to avoid duplicating logic ;)
 
 ## Property
 
-| Type | Copiable | Movable | Trait |
+| Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| TileMap | No | Yes | Fillable |
+| TileMap | No | Yes | Drawable and Fillable |
 | TileMapData | Yes | Yes | None |
 
 ---

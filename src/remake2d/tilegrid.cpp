@@ -59,7 +59,7 @@ void TileGrid::_build(void) noexcept {
     for(int i = 0; i < count; i++) {
         vlast.x = i % m_cut.x;
         vlast.y = i / m_cut.x;
-        Area cell = {   i32(start.x + vlast.x * csize.w), 
+        Area cell = {   i32(start.x + vlast.x * csize.w),
                         i32(start.y + vlast.y * csize.h),
                         i32(csize.w), i32(csize.h)
                     };
@@ -78,7 +78,7 @@ void TileGrid::draw(const Drawable& main) const noexcept {
         _color(main.color());
     }
 
-    for (auto& cell : m_cells) cell.draw(main);
+    for (const auto& cell : m_cells) cell.draw(main);
 
     is_draw_dirty = false;
     drawn         = true;

@@ -286,6 +286,10 @@ void Window::fill(const Fillable& obj, i16 layer) noexcept {
     _pushFill(obj._fill_(), layer, m_camera, m_size, m_fill_layers);
 }
 
+bool Window::_isUI(i16 layer) noexcept {
+    return layer >= (i16) layer::ui;
+}
+
 usize Window::_normalise(i16 layer) noexcept {
     return layer - (i16)layer::min;
 }
@@ -324,7 +328,7 @@ void Window::_pushDraw(const std::vector<DrawPack>& pack, i16 layer, const Camer
 
         for (auto p : dp.points) {
             if (contour::isBreak(p)) { flushSegment(); continue; }
-            p = (p - origin) * zoom;
+            if (!_isUI(layer)) p = (p - origin) * zoom;
             segment.points.push_back(p);
             if (first) { minx = maxx = p.x; miny = maxy = p.y; first = false; }
             else {
@@ -351,8 +355,12 @@ void Window::_pushFill(const std::vector<VertexBatch>& batches, i16 layer, const
         f32 minx = 0, miny = 0, maxx = 0, maxy = 0;
         bool first = true;
         for (auto& v : transformed.vertices) {
-            v.x = (v.x - origin.x) * zoom;
-            v.y = (v.y - origin.y) * zoom;
+
+            if (!_isUI(layer)) {
+                v.x = (v.x - origin.x) * zoom;
+                v.y = (v.y - origin.y) * zoom;
+            }
+
             if (first) { minx = maxx = v.x; miny = maxy = v.y; first = false; }
             else {
                 minx = std::min(minx, v.x); maxx = std::max(maxx, v.x);

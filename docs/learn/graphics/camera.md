@@ -132,6 +132,15 @@ used `nil` to delete the limit:
 ```cpp
 cam.limit(rmk::nil);
 ```
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Camera | Yes | Yes | Trackable |
+
 ---
 
 [:octicons-arrow-left-24: Previous chapter](viewport.md){ .md-button }

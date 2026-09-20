@@ -90,11 +90,21 @@ class ScriptError;
 class PhysicError;
 class TileMapError;
 class SignalError;
+class TrackerError;
 ```
 
 !!! warning
     These types are reserved for internal use and are not intended
     to be used directly by the user.
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Error | Yes | Yes | None |
+| Error derived | Yes | Yes | Error |
 
 ---
 

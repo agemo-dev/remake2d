@@ -34,7 +34,7 @@ template<typename F>
 concept IsFollowable = std::derived_from<F, class Followable>;
 
 template<typename T>
-concept IsTracker = std::derived_from<T, class TrackerBaseID>;
+concept IsTracker = std::is_base_of_v<class TrackerBaseID, T>;
 
 template<typename T>
 concept IsTrackable = std::is_base_of_v<class TrackableBaseID, T>;

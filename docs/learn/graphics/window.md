@@ -118,7 +118,7 @@ inline constexpr Dim2d uhd    = { 3840, 2160 };
 
 ## Property
 
-| Type | Copiable | Movable | Traits |
+| Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
 | Window | No | Yes | Trackable |
 

@@ -59,7 +59,7 @@ public:
     PhysicActor(const Geometry&);
 
 public:
-    virtual void update(void) override = 0;
+    virtual void update(void) override {};
 
 public:
     rmk_heritableBaseClass(PhysicActor);

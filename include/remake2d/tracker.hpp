@@ -24,7 +24,7 @@ template<typename T> using Balise = std::shared_ptr<Slot<T>>;
 
 class TrackerBaseID { rmk_heritableBaseClass(TrackerBaseID); };
 
-template<typename T> class UnsafeTracker : public TrackerBaseID {
+template<typename T> class UnsafeTracker : private TrackerBaseID {
 private:
     std::weak_ptr<Slot<T>> m_tracked;
 
@@ -62,7 +62,7 @@ template<IsTrackable SafeType> using Tracker = UnsafeTracker<SafeType>;
 
 class TrackableBaseID { rmk_heritableBaseClass(TrackableBaseID); };
 
-template<typename Derived> class Trackable : public TrackableBaseID {
+template<typename Derived> class Trackable : private TrackableBaseID {
 
 protected:
     mutable Balise<Derived> m_slot;

@@ -69,13 +69,16 @@ struct Data {
     Data(std::span<std::pair<const std::string, Data>> list)
         : value(std::map<std::string, Data>(list.begin(), list.end())) {}
 
+public:
     static Data map(std::span<std::pair<const std::string, Data>> list) {
         return Data(list);
     }
+
     static Data list(std::span<Data> items) {
         return Data(std::vector<Data>(items.begin(), items.end()));
     }
 
+public:
     const Data& operator[](std::string_view key) const {
         const auto& m = std::get<std::map<std::string, Data>>(value);
         auto it = m.find(std::string(key));

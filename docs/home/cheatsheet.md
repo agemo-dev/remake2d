@@ -42,13 +42,14 @@ void     resizable(bool) noexcept;          // allow or forbid user resizing
 void     fullScreen(bool) noexcept;         // toggle fullscreen mode
 void     border(bool) noexcept;             // show or hide window decorations
 void     close(void) noexcept;              // close and destroy the window
+bool     resizable(void) const noexcept;    // check if window is resizable
 bool     isOpen(void) const noexcept;       // check if window is still open
 bool     isFocus(void) const noexcept;      // check if window has input focus
 std::string title(void) noexcept;           // get current window title
 void     blendMode(window::blendmode) noexcept; // set window blend mode
 
 void     present(void);                      // present current frame
-void     screenshot(std::string_view path);  // take a screenshot of current frame
+void     screenshot(std::string_view path);  // take a screenshot of current frame (.png)
 void     clear(Color = rmk::color::black) noexcept; // clear window with a solid color
 
 void     draw(const Drawable&, i16 layer = 0) noexcept; // draw a drawable object
@@ -60,17 +61,43 @@ void     disconnectViewport(Viewport&) noexcept;  // unregister viewport
 
 ---
 
-## Color / Vec2d / Dim2d / Fact2d / Grid2d / Area
+## Color
 
 ```cpp
 // Color
 Color(byte R, byte G, byte B, byte A = 255); // construct from RGBA components
 auto operator<=>(const Color&) const noexcept = default; // full comparison support
 
-// Named colors inside rmk::color::
-red, green, blue, skyblue, purple, orange, yellow, gray, gold,
-darkblue, darkgreen, lime, silver, maroon, pink, fuchsia, aqua,
-raywhite, cyan, emerald, teal, amber, indigo, black, white
+// Named colors
+namespace color {
+
+inline constexpr Color red       = { 255, 0,   0,   255 };
+inline constexpr Color green     = {   0, 230, 50,  255 };
+inline constexpr Color blue      = {   0, 0,   255, 255 };
+inline constexpr Color skyblue   = {   0, 191, 255, 255 };
+inline constexpr Color purple    = { 138, 43,  226, 255 };
+inline constexpr Color orange    = { 249, 115,  22, 255 };
+inline constexpr Color yellow    = { 255, 215, 0,   255 };
+inline constexpr Color gray      = { 128, 128, 128, 255 };
+inline constexpr Color gold      = { 255, 203,   0, 255 };
+inline constexpr Color darkblue  = {   0, 80,  180, 255 };
+inline constexpr Color darkgreen = {   0, 120,  50, 255 };
+inline constexpr Color lime      = {  34, 182, 212, 255 };
+inline constexpr Color silver    = { 192, 192, 192, 255 };
+inline constexpr Color maroon    = { 128, 0,   0,   255 };
+inline constexpr Color pink      = { 255, 0,   128, 255 };
+inline constexpr Color fuchsia   = { 255, 0,   255, 255 };
+inline constexpr Color aqua      = {   0, 255, 255, 255 };
+inline constexpr Color raywhite  = { 245, 245, 245, 255 };
+inline constexpr Color cyan      = {   6, 182, 212, 255 };
+inline constexpr Color emerald   = {   5, 150, 105, 255 };
+inline constexpr Color teal      = {  13, 148, 136, 255 };
+inline constexpr Color amber     = { 217, 119,   6, 255 };
+inline constexpr Color indigo    = {  79,  70, 229, 255 };
+inline constexpr Color black     = {   0, 0,   0,   255 };
+inline constexpr Color white     = { 255, 255, 255, 255 };
+
+} // namespace color
 
 // Free operators
 Color operator+(const Color&, const Color&) noexcept; // component-wise addition (clamped)
@@ -83,6 +110,8 @@ Color operator%(const Color&, const Color&) noexcept; // component-wise average
 HSL(f32 hue, f32 saturation, f32 luminosity); // construct from HSL components
 auto operator<=>(const Color&) const noexcept = default; // full comparison support
 ```
+
+## Vector & dimension
 
 ```cpp
 // Vec2d
@@ -140,6 +169,10 @@ Grid2d operator%(const Grid2d&, const Grid2d&) noexcept; // modulo
 !!! info
     `Vec2d` converts implicitly to both `Fact2d` and `Grid2d`, so a `Vec2d` literal can be passed anywhere either type is expected.
 
+---
+
+# Area
+
 ```cpp
 // Area
 Area(i32 x, i32 y, i32 w, i32 h); // construct from position and size
@@ -181,7 +214,7 @@ Shape(const Vec2d& center, const Dim2d& size); // construct a regular polygon
 // Triangulation for filled rendering is generated automatically.
 ```
 
-Aliases
+### Custom Shapes
 
 ```cpp
 using Line      = Shape<2>;   // line segment
@@ -238,7 +271,7 @@ void reserve(u32 size);  // pre-allocate internal storage
 
 ---
 
-## EventManager (singleton event)
+## EventManager (singleton `event`)
 
 ```cpp
 void poll(void);                  // process all pending events (non-blocking)
@@ -387,7 +420,7 @@ void update(void);                 // advance delta and dispatch signals (called
 
 ---
 
-## Timer / TimerManager (singleton timer)
+## Timer / TimerManager (singleton `timer`)
 
 ```cpp
 // Time unit
@@ -471,7 +504,7 @@ bool timeIs(const Clock& other) const noexcept; // compare with another time
 
 ---
 
-## System (singleton system)
+## System (singleton `system`)
 
 ```cpp
 void init(void);    // initialize SDL and all subsystems (must be called before Window)
@@ -487,24 +520,27 @@ struct Info {
     Date        currentDay(void);      // current system date
     Clock       currentTime(void);     // current system time
 };
+
 struct Setup {
-    void scalingMode(std::string_view);          // set render scaling quality
-    void backend(std::string_view);              // set render backend
-    void audioMode(std::string_view);            // set audio resampling mode
-    void audioCategory(std::string_view);        // set audio category
-    void mouseRelativeMode(std::string_view);    // set mouse relative mode
-    void mobileOrientation(std::span<std::string_view>); // set allowed orientations
     void allocateChannels(u16);                  // set number of audio channels
+    bool backend(std::string_view);              // set render backend
+    bool audioMode(std::string_view);            // set audio resampling mode
+    bool scalingMode(std::string_view);          // set render scaling quality
+    bool audioCategory(std::string_view);        // set audio category
+    bool mouseRelativeMode(std::string_view);    // set mouse relative mode
+    bool mobileOrientation(std::span<std::string_view>); // set allowed orientations
 };
+
 struct Toggle {
-    void vsync(bool);                  // enable/disable vsync
-    void blockOnPause(bool);           // block on pause (Android)
-    void gameController(bool);         // enable/disable game controller support
-    void hideHomeIndicator(bool);      // hide home indicator (iOS)
-    void relativeMouseMode(bool);      // enable/disable relative mouse mode
-    void materialAcceleration(bool);   // enable/disable framebuffer acceleration
-    void accelerometerAsJoystick(bool); // use accelerometer as joystick
+    bool vsync(bool);                   // enable/disable vsync
+    bool blockOnPause(bool);            // block on pause (Android)
+    void gameController(bool);          // enable/disable game controller support
+    bool hideHomeIndicator(bool);       // hide home indicator (iOS)
+    void relativeMouseMode(bool);       // enable/disable relative mouse mode
+    bool materialAcceleration(bool);    // enable/disable framebuffer acceleration
+    bool accelerometerAsJoystick(bool); // use accelerometer as joystick
 };
+
 Info   info;    // system information
 Setup  setup;   // system setup (must be called before init)
 Toggle toggle;  // system toggles (must be called before init)
@@ -512,7 +548,7 @@ Toggle toggle;  // system toggles (must be called before init)
 
 ---
 
-## PhysicManager (singleton physics)
+## PhysicManager (singleton `physics`)
 
 ```cpp
 f32   gravitationalConstant(void) const noexcept;  // get gravity
@@ -968,7 +1004,7 @@ void resume(void) noexcept;                    // resume after pause
 void stop(void) noexcept;                      // stop permanently
 void wait(void) noexcept;                      // block caller until coroutine finishes
 bool isRunning(void) noexcept;                 // check if currently running
-u64  id(void) const noexcept;                  // get coroutine ID
+u64  ID(void) const noexcept;                  // get coroutine ID
 u64  majorID(void) const noexcept;             // get worker thread ID
 void priority(croutine::priority) noexcept;    // set scheduling priority (engine, heavy, user)
 void isEngine(bool) noexcept;                  // mark as engine priority

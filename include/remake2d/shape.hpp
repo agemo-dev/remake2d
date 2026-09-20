@@ -63,7 +63,7 @@ public:
     void draw(const Drawable&) const noexcept override;
     void fill(const Fillable&) const noexcept override;
 
-private:
+public:
     virtual bool hasIntersected(const Geometry&) const noexcept = 0;
 
 public:

@@ -39,7 +39,7 @@
 
      So that when sol2 includes the file
 
-#include <remake2d/sol2/config.hpp>
+#include <sol/config.hpp>
 
      it gives you the configuration values you desire. Configuration values can be
 seen in the safety.rst of the doc/src, or at

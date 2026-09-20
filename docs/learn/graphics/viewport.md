@@ -106,5 +106,13 @@ The viewport's rendering is automatically called by the `present` method of the 
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Viewport | Yes | Yes | Trackable |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](shape.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](../texture/texture.md){ .md-button .md-button--primary }

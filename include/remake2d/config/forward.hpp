@@ -66,5 +66,8 @@ template<IsTrackable SafeType> using Tracker = UnsafeTracker<SafeType>;
 template<typename... Args> class Signal;
 template<typename... Args> class Croutine;
 
+class TimerManager;
+class EventManager;
+
 }//namespace rmk
 #endif

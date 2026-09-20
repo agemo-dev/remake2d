@@ -9,7 +9,7 @@ as a JSON file tied to a simple name, and reads it back on the next launch.
 
 `DataFile` is contained in the header **"remake2d/data.hpp"**. Each `DataFile` maps a given name to a single 
 JSON file stored under `SaveManager`'s root directory, exposed through the singleton `data`. It accepts both 
-a raw `Data` and any type implementing `ISavable` directly in its `save`/`load` overloads.
+a raw `Data` and any type implementing `Savable` directly in its `save`/`load` overloads.
 
 ---
 
@@ -17,9 +17,10 @@ a raw `Data` and any type implementing `ISavable` directly in its `save`/`load` 
 
 ```cpp
 void load(Data&);
+void load(Savable&);
+
 void save(const Data&);
-void load(ISavable&);
-void save(const ISavable&);
+void save(const Savable&);
 
 void        remove(void)          noexcept;     // remove file
 bool        exist(void)     const noexcept;     // check if file exist
@@ -33,7 +34,7 @@ std::string name(void)      const noexcept;     // get file name
 
 ### Creating a file
 
-No need to know the full path of a save file ahead of time; the constructor only needs a name, and the actual 
+No need to know the full path of a save file ahead of time; the constructor only needs a name, and the actual
 path resolves automatically against `SaveManager`'s root directory:
 
 ```cpp
@@ -41,12 +42,12 @@ DataFile(std::string_view name);
 ```
 
 ```cpp
-rmk::DataFile file("save1"); // resolves to <root>/save1.json
+rmk::DataFile file("save1"); // resolves to <root>/json/save1.json
 ```
 
 ### Saving and loading
 
-`save`/`load` accept either a raw `Data` or any type implementing `ISavable` directly, with no distinction at the call site:
+`save`/`load` accept either a raw `Data` or any type implementing `Savable` directly, with no distinction at the call site:
 
 ```cpp
 Player p;
@@ -86,16 +87,21 @@ std::string n = file.name(); // "save1"
 
 ### Save location
 
-Every `DataFile` resolves its path against `SaveManager`'s root directory, exposed through the singleton `data`, 
-which defaults to `"data/remake2d/json/"`, relative to the executable:
+Every `DataFile` resolves its path against `SaveManager`'s root directory, exposed through the singleton `data`,
+which defaults to `"data/remake2d/"`, relative to the executable:
 
 ```cpp
 rmk::data.root("saves"); // root = saves/
 
 std::string root = rmk::data.root();
+
+rmk::DataFile file("save1"); // saves/json/save1.json
 ```
 
 Changing the root only affects `DataFile` instances created afterwards.
+
+!!! info
+    `data.root()` is also used by the `Window::screenshot` method to save screenshot.
 
 ---
 

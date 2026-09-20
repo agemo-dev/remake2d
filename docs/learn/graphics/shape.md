@@ -226,11 +226,11 @@ class Circle    : public Ellipse;   // circle (w == h enforced)
 
 ## Property
 
-| Type | Copiable | Movable | Trait |
+| Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
 | Geometry | Yes | Yes | Followable, Drawable and Fillable |
-| Shape | Yes | Yes | None |
-| Shape derived | Yes | Yes | None |
+| Shape | Yes | Yes | Geometry |
+| Shape derived | Yes | Yes | Geometry |
 
 ---
 

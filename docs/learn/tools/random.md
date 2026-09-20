@@ -28,11 +28,11 @@ template<IsBasicType T = i32> T rand(const T&, const T&) noexcept; // random val
 template<typename T> T choice(const std::span<T>&) noexcept;       // random element from span
 
 Color mixColor(f32 saturation = 1.0f, f32 lightness = 0.5f) noexcept; // random vivid color (HSL)
-std::string choice(const std::span<std::string_view>&) noexcept;     // random string from span
+std::string choice(const std::span<std::string_view>&) noexcept;      // random string from span
 ```
 
 !!! info
-    `rand` is a template overloaded for `i32`, `f32`, `Vec2d`, `Dim2d` and `Color`. For `Color`, the range is interpolated 
+    `rand` is a template overloaded for `i32`, `f32`, `Vec2d`, `Dim2d` and `Color`. For `Color`, the range is interpolated
 	through HSL rather than RGB, to produce a coherent hue gradient instead of a meaningless component mix.
 
 ---
@@ -57,7 +57,7 @@ rmk::f32 f = rmk::random.rand(0.0f, 1.0f); // float in [0.0, 1.0]
 
 ### Random vectors and dimensions
 
-Spawning an object at a random position within an area, or giving it a variable size, uses the same `rand`, simply applied 
+Spawning an object at a random position within an area, or giving it a variable size, uses the same `rand`, simply applied
 to `Vec2d`/`Dim2d`:
 
 ```cpp
@@ -89,12 +89,12 @@ auto rolls = rmk::random.dice(3, 6); // roll 3 six-sided dice
 std::vector<int> nums = {1, 2, 3, 4, 5};
 int n = rmk::random.choice<int>(nums);
 
-std::vector<std::string_view> names = {"Alice", "Bob", "Carl"};
-std::string name = rmk::random.choice(names);
+std::vector<std::string> names = {"Alice", "Bob", "Carl"};
+std::string name = rmk::random.choice<std::string>(names);
 ```
 
 !!! info
-    `choice` returns a default-constructed value if the given span is empty.
+    `choice` returns `nil` if the given span is empty.
 
 ---
 

@@ -34,7 +34,7 @@
 
 // beginning of sol2/version.hpp
 
-#include <remake2d/sol2/config.hpp>
+#include <sol/config.hpp>
 
 #define SOL_VERSION_MAJOR 3
 #define SOL_VERSION_MINOR 5
