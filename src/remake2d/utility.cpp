@@ -1,6 +1,7 @@
 #include <remake2d/utility.hpp>
 #include <remake2d/all/types.hpp>
 #include <remake2d/physic.hpp>
+#include <remake2d/error.hpp>
 #include <remake2d/clock.hpp>
 #include <remake2d/math.hpp>
 
@@ -138,6 +139,16 @@ std::string jump(std::span<std::string_view> files) noexcept {
         }
     }
     return nil;
+}
+
+void createParentPath(std::string_view path) noexcept {
+    std::filesystem::path p(path);
+
+    if (p.has_parent_path()) {
+        std::error_code ec;
+        std::filesystem::create_directories(p.parent_path(), ec);
+        if (ec) rmk_dynamicAssert(DataError, std::string(error::data::directory_no_create) + " : " + ec.message());
+    }
 }
 } //namespace file
 

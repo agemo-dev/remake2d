@@ -10,7 +10,7 @@
 
 namespace rmk {
 
-class TileGrid : public Drawable {
+class TileGrid : public Printable {
 private:
     Grid2d              m_cut{0};
     Dim2d               m_size{0};
@@ -42,7 +42,8 @@ private:
     void _build(void)  noexcept;
 
 public:
-    void draw(const Drawable&) const noexcept override;
+    void draw(const Printable&) const noexcept override;
+    void fill(const Printable&) const noexcept override;
 
 private:
     friend class Window;

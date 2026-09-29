@@ -41,10 +41,11 @@ public:
         : center(c), size(s), cut(ct), clip_size(csize), clip_start(cstart), margin(marg) {}
 };
 
-class TileMap : public Fillable {
+class TileMap : public Printable {
 
 public:
-    static constexpr u32 NO_BODY_SLOT = ~0u;
+    static constexpr u32 NO_BODY_SLOT   = ~0u;
+    static constexpr u32 NO_SPRITE_SLOT = ~0u;
 
 public:
     using TileID       = u32;
@@ -66,8 +67,10 @@ private:
     TagMap             m_tags;
     i16                m_counter_start{0};
     bool               m_is_built{false};
-    mutable Sprite     m_tileset;
-    std::future<void>  m_build_future;
+    std::string        m_path;
+    std::vector<Sprite> m_tileset;
+    std::vector<u32>   m_sprite_slot;
+    mutable std::future<void> m_build_future;
 
 public:
     TileMap(std::string_view, TileMapData);
@@ -106,10 +109,14 @@ public:
 private:
     void _applyAttributes(void)      noexcept;
     void _buildClipPositions(void)   noexcept;
+    void _buildSprites(void);
+    Vec2d _tilePos(usize)      const noexcept;
+    void _waitBuild(void)      const noexcept;
     StaticBody* _bodyAt(usize) const noexcept;
 
 public:
-    void fill(const Fillable&) const noexcept override;
+    void draw(const Printable&) const noexcept override;
+    void fill(const Printable&) const noexcept override;
 
 public:
     ~TileMap(void) = default;

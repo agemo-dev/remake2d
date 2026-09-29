@@ -54,8 +54,8 @@ Area area(void)            const noexcept; // get viewport area
 const Camera& camera(void) const noexcept; // get const viewport camera
 
 void clear(Color = rmk::color::black) noexcept;   // clear viewport with solid color
-void draw(const Drawable&, i16 layer = 0) noexcept; // draw a drawable object on viewport
-void fill(const Fillable&, i16 layer = 0) noexcept; // draw filled a fillable object on viewport
+void draw(const Printable&)            noexcept; // draw a drawable object on viewport
+void fill(const Printable&)            noexcept; // draw filled a fillable object on viewport
 ```
 
 The `area` method automatically updates the dimensions and position of the viewport's internal camera, but the `camera` method doesn't.
@@ -115,4 +115,4 @@ The viewport's rendering is automatically called by the `present` method of the 
 ---
 
 [:octicons-arrow-left-24: Previous chapter](shape.md){ .md-button }
-[Next chapter :octicons-arrow-right-24:](../texture/texture.md){ .md-button .md-button--primary }
+[Next chapter :octicons-arrow-right-24:](draw.md){ .md-button .md-button--primary }

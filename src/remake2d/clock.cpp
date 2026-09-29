@@ -27,21 +27,21 @@ void Date::month(u8 m) noexcept { m_month = m;}
 void Date::year(i32 y) noexcept { m_year = y;}
 
 void Date::format(const std::string_view& fmt) {
-    char sep = _deduce_separator(fmt);
+    char sep = _deduceSeparator(fmt);
     if (sep == '\0')  rmk_dynamicAssert(rmk::DateError, error::date::invalid_separator);
     m_separator = sep;
     m_format    = std::string(fmt);
 }
 
 void Date::date(const std::string_view& str) {
-    char sep = _deduce_separator(str);
+    char sep = _deduceSeparator(str);
     if (sep == '\0')  rmk_dynamicAssert(rmk::DateError, error::date::invalid_separator);
     m_separator = sep;
 
     auto parts = _split(std::string(str), sep);
     if (parts.size() != 3)  rmk_dynamicAssert(rmk::DateError, error::date::invalid_date);
 
-    auto order = _parse_order(m_format, sep);
+    auto order = _parseOrder(m_format, sep);
     for (int i = 0; i < 3; i++) {
         const std::string& field = order[i];
         const std::string& token = parts[i];
@@ -59,7 +59,7 @@ void Date::date(const std::string_view& str) {
 }
 
 std::string Date::date(void) const {
-    auto order = _parse_order(m_format, m_separator);
+    auto order = _parseOrder(m_format, m_separator);
     std::ostringstream oss;
 
     for (int i = 0; i < 3; i++) {
@@ -81,7 +81,7 @@ bool Date::dayIs(const Date& other) const noexcept {
         && m_day   == other.m_day;
 }
 
-char Date::_deduce_separator(const std::string_view& str) noexcept {
+char Date::_deduceSeparator(const std::string_view& str) noexcept {
     for (char c : str) for (char sep : m_date_separators) if (c == sep) return c;
     return '\0';
 }
@@ -94,7 +94,7 @@ std::vector<std::string> Date::_split(const std::string& s, char sep) {
     return result;
 }
 
-std::vector<std::string>Date::_parse_order(const std::string& fmt, char sep) {
+std::vector<std::string>Date::_parseOrder(const std::string& fmt, char sep) {
     std::vector<std::string> order;
     std::istringstream iss(fmt);
     std::string token;
@@ -129,21 +129,21 @@ void Clock::minute(const u8& m) noexcept { m_minute = m;}
 void Clock::second(const u8& s) noexcept { m_second = s;}
 
 void Clock::format(const std::string_view& fmt) {
-    char sep = _deduce_separator(fmt);
+    char sep = _deduceSeparator(fmt);
     if (sep == '\0')  rmk_dynamicAssert(rmk::ClockError, error::clock::invalid_separator);
     m_separator = sep;
     m_format    = std::string(fmt);
 }
 
 void Clock::time(const std::string_view& str) {
-    char sep = _deduce_separator(str);
+    char sep = _deduceSeparator(str);
     if (sep == '\0')  rmk_dynamicAssert(rmk::ClockError, error::clock::invalid_separator);
     m_separator = sep;
 
     auto parts = _split(std::string(str), sep);
     if (parts.size() != 3)  rmk_dynamicAssert(rmk::ClockError, error::clock::invalid_time);
 
-    auto order = _parse_order(m_format, sep);
+    auto order = _parseOrder(m_format, sep);
     for (int i = 0; i < 3; i++) {
         const std::string& field = order[i];
         u8 val = (u8)std::stoi(parts[i]);
@@ -155,7 +155,7 @@ void Clock::time(const std::string_view& str) {
 }
 
 std::string Clock::time(void) const {
-    auto order = _parse_order(m_format, m_separator);
+    auto order = _parseOrder(m_format, m_separator);
     std::ostringstream oss;
 
     for (int i = 0; i < 3; i++) {
@@ -175,7 +175,7 @@ bool Clock::timeIs(const Clock& other) const noexcept {
         && m_second == other.m_second;
 }
 
-char Clock::_deduce_separator(const std::string_view& str) noexcept {
+char Clock::_deduceSeparator(const std::string_view& str) noexcept {
     for (char c : str) for (char sep : m_clock_separators) if (c == sep) return c;
     return '\0';
 }
@@ -189,7 +189,7 @@ std::vector<std::string> Clock::_split(const std::string& s, char sep) {
     return result;
 }
 
-std::vector<std::string> Clock::_parse_order(const std::string& fmt, char sep) {
+std::vector<std::string> Clock::_parseOrder(const std::string& fmt, char sep) {
     std::vector<std::string> order;
     std::istringstream iss(fmt);
     std::string token;

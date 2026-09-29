@@ -12,7 +12,6 @@ This page lists every **public class** and their methods in **RE:MAKE 2D**.
 ## Window
 
 ```cpp
-
 // class Window::Viewport
 Window::Viewport(void);
 explicit Window::Viewport(const Area& zone); // create a viewport
@@ -23,8 +22,8 @@ Area area(void)            const noexcept; // get viewport area
 const Camera& camera(void) const noexcept; // get const viewport camera
 
 void clear(Color = rmk::color::black) noexcept;   // clear viewport with solid color
-void draw(const Drawable&, i16 layer = 0) noexcept; // draw a drawable object on viewport
-void fill(const Fillable&, i16 layer = 0) noexcept; // draw filled a fillable object on viewport
+void draw(const Printable&) noexcept; // draw a drawable object on viewport
+void fill(const Printable&) noexcept; // draw filled a fillable object on viewport
 
 // class Window
 Window(std::string_view title, Vec2d pos, Dim2d size); // create a new window
@@ -52,11 +51,13 @@ void     present(void);                      // present current frame
 void     screenshot(std::string_view path);  // take a screenshot of current frame (.png)
 void     clear(Color = rmk::color::black) noexcept; // clear window with a solid color
 
-void     draw(const Drawable&, i16 layer = 0) noexcept; // draw a drawable object
-void     fill(const Fillable&, i16 layer = 0) noexcept; // draw filled a fillable object
+void     draw(const Printable&) noexcept; // draw a drawable object
+void     fill(const Printable&) noexcept; // draw filled a fillable object
 
 void     connectViewport(Viewport&)    noexcept;  // register viewport
 void     disconnectViewport(Viewport&) noexcept;  // unregister viewport
+
+// class Printable
 ```
 
 ---
@@ -115,10 +116,12 @@ auto operator<=>(const Color&) const noexcept = default; // full comparison supp
 
 ```cpp
 // Vec2d
-Vec2d(f32 X, f32 Y);   // construct from X and Y
-Vec2d(f32 XY);         // construct with same value for both axes
-operator Fact2d(void);          // implicit conversion (negative components clamped to 0)
-operator Grid2d(void);          // implicit conversion (cast to usize)
+Vec2d(f32 X, f32 Y);     // construct from X and Y
+Vec2d(f32 XY);           // construct with same value for both axes
+
+operator Fact2d(void);   // implicit conversion (negative components clamped to 0)
+operator Grid2d(void);   // implicit conversion (cast to usize)
+
 auto operator<=>(const Vec2d&) const noexcept = default; // full comparison
 Vec2d operator+(const Vec2d&, const Vec2d&) noexcept; // addition
 Vec2d operator-(const Vec2d&, const Vec2d&) noexcept; // subtraction
@@ -131,19 +134,22 @@ Vec2d operator%(const Vec2d&, const Vec2d&) noexcept; // modulo (fmod)
 // Dim2d
 Dim2d(f32 W, f32 H);   // construct from width and height
 Dim2d(f32 WH);         // construct with same value for both axes
+
 auto operator<=>(const Dim2d&) const noexcept = default; // full comparison
-Dim2d operator+(const Dim2d&, const Dim2d&) noexcept; // addition
-Dim2d operator-(const Dim2d&, const Dim2d&) noexcept; // subtraction
-Dim2d operator*(const Dim2d&, const Dim2d&) noexcept; // multiplication
-Dim2d operator/(const Dim2d&, const Dim2d&) noexcept; // division
-Dim2d operator%(const Dim2d&, const Dim2d&) noexcept; // modulo (fmod)
+Dim2d operator+(const Dim2d&, const Dim2d&) noexcept;    // addition
+Dim2d operator-(const Dim2d&, const Dim2d&) noexcept;    // subtraction
+Dim2d operator*(const Dim2d&, const Dim2d&) noexcept;    // multiplication
+Dim2d operator/(const Dim2d&, const Dim2d&) noexcept;    // division
+Dim2d operator%(const Dim2d&, const Dim2d&) noexcept;    // modulo (fmod)
 ```
 
 ```cpp
 // Fact2d — scaling factor, now f32-based (was u32)
 Fact2d(f32 X, f32 Y);  // construct from X and Y — negative values clamped to 0 at construction
-Fact2d(f32 XY);        // construct with same value for both axes — negative clamped to 0
-operator Vec2d(void);           // implicit conversion
+Fact2d(f32 XY);        // construct with same value for both axes , negative clamped to 0
+
+operator Vec2d(void);  // implicit conversion
+
 auto operator<=>(const Fact2d&) const noexcept = default; // full comparison
 Fact2d operator+(const Fact2d&, const Fact2d&) noexcept;  // addition
 Fact2d operator-(const Fact2d&, const Fact2d&) noexcept;  // subtraction
@@ -156,14 +162,15 @@ Fact2d operator%(const Fact2d&, const Fact2d&) noexcept;  // modulo
 // Grid2d — id/index roles (usize-based)
 Grid2d(usize X, usize Y); // construct from X and Y
 Grid2d(usize XY);         // construct with same value for both axes
-operator Vec2d(void);              // implicit conversion
-operator SDL_Point(void);          // implicit conversion
+
+operator Vec2d(void);     // implicit conversion
+
 auto operator<=>(const Grid2d&) const noexcept = default; // full comparison
-Grid2d operator+(const Grid2d&, const Grid2d&) noexcept; // addition
-Grid2d operator-(const Grid2d&, const Grid2d&) noexcept; // subtraction
-Grid2d operator*(const Grid2d&, const Grid2d&) noexcept; // multiplication
-Grid2d operator/(const Grid2d&, const Grid2d&) noexcept; // division
-Grid2d operator%(const Grid2d&, const Grid2d&) noexcept; // modulo
+Grid2d operator+(const Grid2d&, const Grid2d&) noexcept;  // addition
+Grid2d operator-(const Grid2d&, const Grid2d&) noexcept;  // subtraction
+Grid2d operator*(const Grid2d&, const Grid2d&) noexcept;  // multiplication
+Grid2d operator/(const Grid2d&, const Grid2d&) noexcept;  // division
+Grid2d operator%(const Grid2d&, const Grid2d&) noexcept;  // modulo
 ```
 
 !!! info
@@ -177,7 +184,11 @@ Grid2d operator%(const Grid2d&, const Grid2d&) noexcept; // modulo
 // Area
 Area(i32 x, i32 y, i32 w, i32 h); // construct from position and size
 Area(const Vec2d& pos, const Dim2d& size); // construct from position + dimension
+
+Vec2d pos(void)    const noexcept; // get area upper-left position
+Dim2d size(void)   const noexcept; // get area size
 Vec2d center(void) const noexcept; // get area center
+
 auto operator<=>(const Area&) const noexcept = default; // full comparison
 Area operator+(const Area&, const Area&) noexcept; // addition
 Area operator-(const Area&, const Area&) noexcept; // subtraction
@@ -606,28 +617,39 @@ explicit StaticBody(const Geometry& shape); // create and register a static phys
 explicit DynamicBody(const Geometry& shape); // create and register a dynamic physics body
 void mass(f32) noexcept;                    // set mass (kg)
 f32  mass(void) const noexcept;             // get mass (kg)
+
 void density(f32) noexcept;                 // set density (kg/m², independent of size)
 f32  density(void) const noexcept;          // get density (kg/m²)
+
 void bounce(f32) noexcept;                  // set restitution (0.0 – 1.0)
 f32  bounce(void) const noexcept;           // get restitution
+
 void bounceThreshold(f32) noexcept;         // set minimum velocity for bounce
 f32  bounceThreshold(void) const noexcept;  // get bounce threshold
+
 void infiniteBounce(bool) noexcept;         // enable or disable perfect bouncing
 bool infiniteBounce(void) const noexcept;   // check whether perfect bouncing is enabled
+
 void friction(f32) noexcept;                // set friction coefficient
 f32  friction(void) const noexcept;         // get friction coefficient
+
 void gravity(bool) noexcept;                // enable or disable gravity
 bool gravity(void) const noexcept;          // check whether gravity is enabled
+
 void isBullet(bool) noexcept;               // enable bullet (CCD) mode for fast objects
 bool isBullet(void) const noexcept;         // check whether bullet mode is enabled
+
 void warp(const Area&) noexcept;            // set screen-wrapping area
 Area warp(void) const noexcept;             // get screen-wrapping area
+
 void limit(const Area&) noexcept;           // set movement boundaries
 Area limit(void) const noexcept;            // get movement boundaries
-void jump(f32) noexcept;                    // apply an upward impulse
-void push(const Vec2d&) noexcept;           // apply a continuous force
+
 void velocity(const Vec2d&) noexcept;       // set linear velocity
 Vec2d velocity(void) const noexcept;        // get linear velocity
+
+void jump(f32) noexcept;                    // apply an upward impulse
+void push(const Vec2d&) noexcept;           // apply a continuous force
 
 // Parameter: DynamicBody* self
 _PhysicSignal<DynamicBody*> onMove;         // emitted while moving
@@ -643,8 +665,9 @@ _PhysicSignal<DynamicBody*> onMoveRight;    // emitted while moving right
 
 ```cpp
 // Sound (abstract base)
-i8       playFor(void) const noexcept;        // remaining loops
-u8       getVolume(void) const noexcept;      // current volume
+i8 playFor(void) const noexcept; // remaining loops
+u8 volume(void)  const noexcept; // current volume
+
 virtual void play(i8 = 0) = 0;                // start playback (0=once, -1=infinite, n=n times)
 virtual void stop(void) = 0;                  // stop playback
 virtual void pause(void) = 0;                 // pause playback
@@ -760,6 +783,7 @@ void load(std::string_view tag, std::string_view path, u8 size); // load a font 
 Animation(std::string_view path, const Rectangle& shape,
           u8 total_clips, Dim2d clip_size,
           Vec2d start_pos = {0,0}, u8 spacing = 0); // create sprite sheet animation
+
 void play(i8 loop = 0, u8 fps = 12); // start animation (0=once, -1=infinite, n=n times)
 void pause(void) noexcept;           // pause animation
 void resume(void) noexcept;          // resume animation
@@ -774,28 +798,34 @@ Signal<> onFinish; // emit when animation ended (in last remaining)
 ## Camera
 
 ```cpp
-Camera(void);                                                    // default camera
+Camera(void);  // default camera
 Camera(const Vec2d& center, const Dim2d& size, const Dim2d& limit = nil); // camera with bounds
-void  zoom(f32) noexcept;                                        // set zoom level
-void  move(const Vec2d&) noexcept;                               // move camera
-void  limit(const Dim2d&) noexcept;                              // set world boundaries
-void  resize(const Dim2d&) noexcept;                             // set viewport size
-void  smoothing(f32) noexcept;                                   // set smoothing factor (0.0–1.0)
-f32   zoom(void) const noexcept;                                 // get zoom
-Dim2d size(void) const noexcept;                                 // get viewport size
-Vec2d center(void) const noexcept;                               // get camera position
-Dim2d limit(void) const noexcept;                                // get world boundaries
-Vec2d offset(void) const noexcept;                               // get last frame offset
-Vec2d followedPoint(void) const noexcept;                        // get tracked point
-f32   smoothing(void) const noexcept;                            // get smoothing factor
-void  follow(const Followable&) noexcept;                        // track a followable object
-void  unfollow(void) noexcept;                                   // track a followable object
-Signal<> onMove;                                                 // emitted when camera moves
+
+void  zoom(f32)            noexcept;         // set zoom level
+void  move(const Vec2d&)   noexcept;         // move camera
+void  limit(const Dim2d&)  noexcept;         // set world boundaries
+void  resize(const Dim2d&) noexcept;         // set viewport size
+void  smoothing(f32)       noexcept;         // set smoothing factor (0.0 – 1.0)
+
+f32   zoom(void)      const noexcept;        // get zoom
+Dim2d size(void)      const noexcept;        // get viewport size
+Vec2d center(void)    const noexcept;        // get camera position
+Dim2d limit(void)     const noexcept;        // get world boundaries
+Vec2d offset(void)    const noexcept;        // get last frame offset
+f32   smoothing(void) const noexcept;        // get smoothing factor
+
+Vec2d followedPoint(void) const noexcept;    // get tracked point
+void  follow(const Followable&) noexcept;    // track a followable object
+void  unfollow(void)            noexcept;    // track a followable object
+
+Signal<> onMove;  // emitted when camera moves
 ```
 
 ### Followable
 
+```cpp
 virtual Vec2d center(void) const noexcept = 0;
+```
 
 ---
 
@@ -881,21 +911,32 @@ Vec2d center(void) const noexcept;     // get center
 
 ```cpp
 // Data (sum type)
-Data(byte); Data(rune); Data(imax); Data(fmax); Data(bool);
-Data(Vec2d); Data(Fact2d); Data(Grid2d); Data(Dim2d); Data(Color); Data(Area);
+Data(byte);
+Data(rune);
+Data(int);
+Data(imax);
+Data(fmax);
+Data(bool);
+Data(Vec2d);
+Data(Fact2d);
+Data(Grid2d);
+Data(Dim2d);
+Data(Color);
+Data(Area);
 Data(std::string_view);
 Data(std::vector<Data>);
 Data(std::map<std::string, Data>);
+
 static Data map(std::span<std::pair<const std::string, Data>>); // create map
 static Data list(std::span<Data>);                              // create list
 
-const Data& operator[](std::string_view key) const;  // access map field by key
-const Data& operator[](usize idx) const;              // access list element by index
+const Data& operator[](std::string_view key) const;     // access map field by key
+const Data& operator[](usize idx) const;                // access list element by index
 template<typename T> T get(std::string_view key) const; // typed field access
-template<typename T> operator T(void) const;             // implicit conversion
+template<typename T> operator T(void) const;            // implicit conversion
 
-// ISavable (interface)
-virtual Data sdata(void) const = 0;   // serialize to Data
+// Savable
+virtual Data sdata(void) const  = 0;  // serialize to Data
 virtual void ldata(const Data&) = 0;  // load from Data
 
 // DataFile
@@ -904,40 +945,20 @@ void save(const Data&);                    // save raw Data
 void load(Data&);                          // load raw Data
 void save(const ISavable&);                // save a savable object
 void load(ISavable&);                      // load into a savable object
+
+void        remove(void)      noexcept;    // delete the file
+bool        exist(void) const noexcept;    // check if file exists
+std::string path(void)  const noexcept;    // get full file path
+std::string name(void)  const noexcept;    // get file name
+
 template<IsSavable T> friend DataFile& operator<<(DataFile&, const T&); // stream-save a savable object
 template<IsSavable T> friend DataFile& operator>>(DataFile&, T&);       // stream-load a savable object
-void        remove(void) noexcept;         // delete the file
-bool        exist(void) const noexcept;    // check if file exists
-std::string path(void) const noexcept;     // get full file path
-std::string name(void) const noexcept;     // get file name
 
 // SaveManager (singleton data)
-std::string root(void) const noexcept;        // get root directory
-void        root(std::string_view) noexcept;  // set root directory
+std::string root(void) const noexcept;          // get root directory
+void        root(std::string_view) noexcept;    // set root directory
 bool        isInitialized(void) const noexcept; // check if initialized
 ```
-
----
-
-## Script
-
-```cpp
-// SolState (singleton script)
-template<typename T, typename... Ctors>
-void registerType(std::string_view name, std::function<void(SolState::Type&)> init = nullptr); // register C++ type to Lua
-template<typename T> void loadVar(std::string_view id, T& data) noexcept; // expose C++ variable to Lua
-std::string loadedTypes(void) const noexcept;      // list all registered type names
-bool        isLoadedType(std::string_view) const noexcept; // check if a type is registered
-
-// Script
-Script(std::string_view lua_file);            // load a Lua script
-template<typename T> T get(std::string_view); // get a Lua variable by name
-void update(void);                            // run the script
-Signal<> onFileChanged;                       // emitted when script file changes on disk
-```
-
-!!! info
-    Lua script execution requires the `remakeScript` add-on to be built and linked (`COMPONENTS Script`). See [Installation](../learn/install/install.md#components) for details.
 
 ---
 
@@ -947,8 +968,8 @@ Signal<> onFileChanged;                       // emitted when script file change
 // Actor
 virtual void update(void) = 0;     // update logic (override in derived)
 
-void addChild(Actor&)           noexcept;  // add child
-void removeChild(Actor&)        noexcept;  // remove child
+void addChild(Actor&)      noexcept;  // add child
+void removeChild(Actor&)   noexcept;  // remove child
 
 UnsafeTracker<Actor>& parent(void)             noexcept; // get current parent (mutable)
 const UnsafeTracker<Actor>& parent(void) const noexcept; // get current parent (constant)
@@ -997,7 +1018,7 @@ Scene* scene(std::string_view) const;                                  // get sc
 
 ```cpp
 // Croutine<Args...> and Croutine<>
-template<typename F> void load(F&& function); // attach a coroutine function
+template<typename F> void load(F&& function);  // attach a coroutine function
 void run(Args... args);                        // start with arguments
 void run(void);                                // start without arguments (Croutine<> only)
 void resume(void) noexcept;                    // resume after pause
@@ -1054,18 +1075,23 @@ bool isRunning(void) const noexcept;                    // check if loop is acti
 ```cpp
 u32  seed(void) noexcept;                   // get current seed
 void seed(u32) noexcept;                    // set seed
+
 u32  randSeed(void) noexcept;               // generate a hardware random seed
 void rollSeed(void) noexcept;               // generate and apply a new random seed
-template<IsBasicType T = i32> T rand(const T& min, const T& max) noexcept; // random integer/float
-template<> Vec2d  rand<Vec2d>(const Vec2d& min, const Vec2d& max) noexcept;   // random vector
-template<> Fact2d rand<Fact2d>(const Fact2d& min, const Fact2d& max) noexcept;   // random vector
-template<> Grid2d rand<Grid2d>(const Grid2d& min, const Grid2d& max) noexcept;   // random vector
-template<> Dim2d  rand<Dim2d>(const Dim2d& min, const Dim2d& max) noexcept;   // random dimensions
-template<> Color  rand<Color>(const Color& min, const Color& max) noexcept;   // random color in HSL range
-Color mixColor(f32 saturation = 1.0f, f32 lightness = 0.5f) noexcept;        // random vivid color (HSL)
-template<typename T> T choice(const std::span<T>&) noexcept;                 // random element from span
-std::string choice(const std::span<std::string_view>&) noexcept;             // random string from span
-std::vector<u8> dice(u8 n, u8 faces) noexcept; // roll n dice with given face count
+
+template<IsBasicType T = i32> T rand(const T& min, const T& max) noexcept;      // random integer/float
+template<> Vec2d  rand<Vec2d>(const Vec2d& min, const Vec2d& max) noexcept;     // random vector
+template<> Fact2d rand<Fact2d>(const Fact2d& min, const Fact2d& max) noexcept;  // random vector
+template<> Grid2d rand<Grid2d>(const Grid2d& min, const Grid2d& max) noexcept;  // random vector
+template<> Dim2d  rand<Dim2d>(const Dim2d& min, const Dim2d& max) noexcept;     // random dimensions
+template<> Color  rand<Color>(const Color& min, const Color& max) noexcept;     // random color in HSL range
+
+Color mixColor(f32 saturation = 1.0f, f32 lightness = 0.5f) noexcept;   // random vivid color (HSL)
+
+template<typename T> T choice(const std::span<T>&) noexcept;            // random element from span
+std::string choice(const std::span<std::string_view>&) noexcept;        // random string from span
+
+std::vector<u8> dice(u8 n, u8 faces) noexcept;  // roll n dice with given face count
 bool chance(f32 probability) noexcept;          // true with given probability (0.0–1.0)
 ```
 
@@ -1108,6 +1134,7 @@ namespace level {
 namespace angle {
     fmax degToRad(fmax degrees) noexcept;
     fmax radToDeg(fmax radians) noexcept;
+
     namespace literal {
         fmax operator""_deg(fmax) noexcept; // degrees to radians literal
         fmax operator""_rad(fmax) noexcept; // radians to degrees literal
@@ -1142,3 +1169,30 @@ inline constexpr bool on      = true,  off     = false;
 inline constexpr bool isTrue  = true,  isFalse = false;
 inline constexpr u8   success = 0,     fail    = 1;
 ```
+
+---
+
+## Script
+
+```cpp
+// SolState (singleton script)
+template<typename T, typename... Ctors>
+void registerType(std::string_view name, std::function<void(SolState::Type&)> init = nullptr); // register C++ type to Lua
+
+template<typename T> void loadVar(std::string_view id, T& data) noexcept; // expose C++ variable to Lua
+
+std::string loadedTypes(void) const noexcept;              // list all registered type names
+bool        isLoadedType(std::string_view) const noexcept; // check if a type is registered
+
+// Script
+Script(std::string_view lua_file);            // load a Lua script
+template<typename T> T get(std::string_view); // get a Lua variable by name
+void update(void);                            // run the script
+
+Signal<> onFileChanged;                       // emitted when script file changes on disk
+```
+
+!!! info
+    Lua script execution requires the `remakeScript` add-on to be built and linked (`COMPONENTS Script`). See [Installation](../learn/install/install.md#components) for details.
+
+---

@@ -11,15 +11,16 @@
 
 namespace rmk {
 
-class Followable : public Trackable<Followable> {
+class Followable : public Trackable {
+
 public:
 	virtual Vec2d center(void) const noexcept = 0;
 
 public:
-    rmk_heritableBaseClass(Followable);
+    rmk_heritableBaseClassTrackable(Followable);
 };
 
-class Camera : public Trackable<Camera> {
+class Camera : public Trackable {
 private:
     Tracker<Followable>        m_tracker;
     Vec2d                      m_center;
@@ -38,7 +39,7 @@ public:
     Camera(void);
     Camera(const Vec2d&, const Dim2d&, const Dim2d& = nil);
 
-    Camera(Camera&&)                 = default;
+    Camera(Camera&&);
     Camera(const Camera&)            = default;
     Camera& operator=(Camera&&)      = default;
     Camera& operator=(const Camera&) = default;

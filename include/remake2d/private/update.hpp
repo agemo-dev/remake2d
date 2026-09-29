@@ -6,7 +6,7 @@
 
 namespace rmk {
 
-class Updatable : public Trackable<Updatable> {
+class Updatable : public Trackable {
 public:
     virtual void update(void) = 0;
 

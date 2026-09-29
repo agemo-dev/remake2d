@@ -66,7 +66,7 @@ PhysicBody& PhysicBody::operator=(const PhysicBody& other) {
 }
 
 PhysicBody::PhysicBody(PhysicBody&& other) noexcept
-    : Trackable<PhysicBody>(std::move(other))
+    : Trackable(std::move(other))
     , m_body(other.m_body)
     , m_shape_id(other.m_shape_id)
     , m_type_id(other.m_type_id)
@@ -99,7 +99,7 @@ PhysicBody& PhysicBody::operator=(PhysicBody&& other) noexcept {
     if (this != &other) {
         _detachFromWorld();
 
-        Trackable<PhysicBody>::operator=(std::move(other));
+        Trackable::operator=(std::move(other));
 
         m_type_id         = other.m_type_id;
         m_body            = other.m_body;
@@ -307,40 +307,159 @@ void PhysicBody::_calculateVertices(void) noexcept {
     is_fill_dirty    = true;
 }
 
-void PhysicBody::draw(const Drawable& main) const noexcept {
-    if (!is_draw_dirty) return;
+void PhysicBody::draw(const Printable& main) const noexcept {
+    bool toRoot = (&main == static_cast<const Printable*>(this));
 
-    if (&main != static_cast<const Drawable*>(this)) {
-        main.is_draw_dirty = false;
-        main.drawn        = true;
-        _color(main.color());
+    if (!is_draw_dirty && !toRoot && _draw_id_ >= 0 && _main_id_ == main._mainId()) {
+        main._draw_deep_ += _last_point_count_;
+        return;
+    }
+    if (!is_draw_dirty && toRoot) {
+        main._draw_deep_ += _last_point_count_;
+        return;
     }
 
-    main._draw_cache_.push_back(DrawPack{ color(), m_cached_contour });
-    is_draw_dirty = false;
+    auto& cache     = _draw_cache_;
+    auto& mainCache = main._draw_cache_;
+
+    u32  deep        = main._draw_deep_;
+    bool isFirstTime = _draw_id_ < 0 || _main_id_ != main._mainId();
+
+    if (!toRoot) {
+        main.drawn = true;
+        _inheritData(main.color(), main.layer());
+
+        if (_main_id_ != main._mainId()) {
+            _main_id_          = main._mainId();
+            _draw_id_          = -1;
+            _last_point_count_ = 0;
+        }
+
+        if (!isFirstTime && deep < (u32)_draw_id_) {
+            mainCache.erase(mainCache.begin() + deep, mainCache.begin() + _draw_id_);
+        }
+    }
+
+    if (is_draw_dirty) {
+        cache.clear();
+        cache.push_back(DrawPack{ color(), m_cached_contour });
+        is_draw_dirty = false;
+    }
+
+    _current_point_count_ = (u32)cache.size();
+
+    if (!toRoot) {
+        if (isFirstTime) {
+            mainCache.insert(mainCache.begin() + deep, cache.begin(), cache.end());
+        } else {
+            u32 overlap = std::min(_last_point_count_, _current_point_count_);
+            std::copy(
+                cache.begin(), cache.begin() + overlap,
+                mainCache.begin() + deep
+            );
+
+            if (_last_point_count_ < _current_point_count_) {
+                mainCache.insert(
+                    mainCache.begin() + deep + _last_point_count_,
+                    cache.begin() + _last_point_count_, cache.end()
+                );
+            } else if (_last_point_count_ > _current_point_count_) {
+                mainCache.erase(
+                    mainCache.begin() + deep + _current_point_count_,
+                    mainCache.begin() + deep + _last_point_count_
+                );
+            }
+        }
+
+        _draw_id_ = (i32)deep;
+    }
+
+    _last_point_count_ = _current_point_count_;
+    main._draw_deep_   = (toRoot ? 0 : deep) + _current_point_count_;
+
     drawn = true;
 }
 
-void PhysicBody::fill(const Fillable& main) const noexcept {
-    if (!is_fill_dirty) return;
+void PhysicBody::fill(const Printable& main) const noexcept {
+    bool toRoot = (&main == static_cast<const Printable*>(this));
 
-    if (&main != static_cast<const Fillable*>(this)) {
-        main.is_fill_dirty = false;
-        main.filled        = true;
-        _color(main.color());
+    if (!is_fill_dirty && !toRoot && _fill_id_ >= 0 && _main_fill_id_ == main._mainId()) {
+        main._fill_deep_ += _last_vertex_count_;
+        return;
+    }
+    if (!is_fill_dirty && toRoot) {
+        main._fill_deep_ += _last_vertex_count_;
+        return;
     }
 
-    VertexBatch batch;
-    batch.texture = nullptr;
-    batch.vertices.reserve(m_cached_vertices.size());
+    auto& cache     = _fill_cache_;
+    auto& mainCache = main._fill_cache_;
 
-    for (const auto& v : m_cached_vertices) {
-        batch.vertices.push_back(Vertex{ v.position.x, v.position.y, color(), v.tex_coord.x, v.tex_coord.y });
+    u32  deep        = main._fill_deep_;
+    bool isFirstTime = _fill_id_ < 0 || _main_fill_id_ != main._mainId();
+
+    if (!toRoot) {
+        main.filled = true;
+        _inheritData(main.color(), main.layer());
+
+        if (_main_fill_id_ != main._mainId()) {
+            _main_fill_id_      = main._mainId();
+            _fill_id_           = -1;
+            _last_vertex_count_ = 0;
+        }
+
+        if (!isFirstTime && deep < (u32)_fill_id_) {
+            mainCache.erase(mainCache.begin() + deep, mainCache.begin() + _fill_id_);
+        }
     }
 
-    main._fill_cache_.push_back(batch);
-    is_fill_dirty = false;
-    filled        = true;
+    if (is_fill_dirty) {
+        cache.clear();
+
+        VertexBatch batch;
+        batch.texture = nullptr;
+        batch.vertices.reserve(m_cached_vertices.size());
+
+        for (const auto& v : m_cached_vertices) {
+            batch.vertices.push_back(Vertex{ v.position.x, v.position.y, color(), v.tex_coord.x, v.tex_coord.y });
+        }
+
+        cache.push_back(std::move(batch));
+        is_fill_dirty = false;
+    }
+
+    _current_vertex_count_ = (u32)cache.size();
+
+    if (!toRoot) {
+        if (isFirstTime) {
+            mainCache.insert(mainCache.begin() + deep, cache.begin(), cache.end());
+        } else {
+            u32 overlap = std::min(_last_vertex_count_, _current_vertex_count_);
+            std::copy(
+                cache.begin(), cache.begin() + overlap,
+                mainCache.begin() + deep
+            );
+
+            if (_last_vertex_count_ < _current_vertex_count_) {
+                mainCache.insert(
+                    mainCache.begin() + deep + _last_vertex_count_,
+                    cache.begin() + _last_vertex_count_, cache.end()
+                );
+            } else if (_last_vertex_count_ > _current_vertex_count_) {
+                mainCache.erase(
+                    mainCache.begin() + deep + _current_vertex_count_,
+                    mainCache.begin() + deep + _last_vertex_count_
+                );
+            }
+        }
+
+        _fill_id_ = (i32)deep;
+    }
+
+    _last_vertex_count_ = _current_vertex_count_;
+    main._fill_deep_    = (toRoot ? 0 : deep) + _current_vertex_count_;
+
+    filled = true;
 }
 
 void PhysicBody::_sync(void) {

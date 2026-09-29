@@ -7,7 +7,7 @@ namespace rmk {
 
 void Actor::addChild(Actor& child) noexcept {
     if (child.m_parent) child.m_parent->removeChild(child);
-    child.m_parent = this->tracker();
+    child.m_parent = tracker();
     m_children.push_back(child.tracker());
 }
 

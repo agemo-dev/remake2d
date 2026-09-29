@@ -50,20 +50,20 @@ void Window::Viewport::clear(Color color) noexcept {
     Window::_restoreViewport(win->m_renderer, stack);
 }
 
-void Window::Viewport::draw(const Drawable& obj, i16 layer) noexcept {
+void Window::Viewport::draw(const Printable& obj) noexcept {
     Window* win = m_window.locate();
     if (!win) return;
-    Window::_testLayer(layer, m_used_layers, m_active_layers);
+    Window::_testLayer(obj.layer(), m_used_layers, m_active_layers);
     xwindow._setLastDrawnWindow(win);
-    Window::_pushDraw(obj._draw_(), layer, m_camera, m_zone.size(), m_draw_layers);
+    Window::_pushDraw(obj._draw_(), obj.layer(), m_camera, m_zone.size(), m_draw_layers);
 }
 
-void Window::Viewport::fill(const Fillable& obj, i16 layer) noexcept {
+void Window::Viewport::fill(const Printable& obj) noexcept {
     Window* win = m_window.locate();
     if (!win) return;
-    Window::_testLayer(layer, m_used_layers, m_active_layers);
+    Window::_testLayer(obj.layer(), m_used_layers, m_active_layers);
     xwindow._setLastDrawnWindow(win);
-    Window::_pushFill(obj._fill_(), layer, m_camera, m_zone.size(), m_fill_layers);
+    Window::_pushFill(obj._fill_(), obj.layer(), m_camera, m_zone.size(), m_fill_layers);
 }
 
 void Window::Viewport::_present(SDL_Renderer* renderer) noexcept {
@@ -85,6 +85,7 @@ Window::Window(std::string_view name, Vec2d pos, Dim2d size)
     int x, y;
 
     rmk::system._init();
+    xwindow._init();
 
     switch((i32)pos.x) {
         case -1: pos = { SDL_WINDOWPOS_CENTERED };  break;
@@ -109,7 +110,7 @@ Window::Window(std::string_view name, Vec2d pos, Dim2d size)
 }
 
 Window::Window(Window&& other) noexcept
-    : Trackable<Window>(std::move(other))
+    : Trackable(std::move(other))
     , m_window_id(other.m_window_id)
     , m_window(other.m_window)
     , m_renderer(other.m_renderer)
@@ -136,7 +137,7 @@ Window& Window::operator=(Window&& other) noexcept {
     if (this != &other) {
         close();
 
-        Trackable<Window>::operator=(std::move(other));
+        Trackable::operator=(std::move(other));
 
         m_window_id         = other.m_window_id;
         m_window            = other.m_window;
@@ -274,16 +275,16 @@ const Camera& Window::camera(void) const noexcept {
     return m_camera;
 }
 
-void Window::draw(const Drawable& obj, i16 layer) noexcept {
-    _testLayer(layer, m_used_layers, m_active_layers);
+void Window::draw(const Printable& obj) noexcept {
+    _testLayer(obj.layer(), m_used_layers, m_active_layers);
     xwindow._setLastDrawnWindow(this);
-    _pushDraw(obj._draw_(), layer, m_camera, m_size, m_draw_layers);
+    _pushDraw(obj._draw_(), obj.layer(), m_camera, m_size, m_draw_layers);
 }
 
-void Window::fill(const Fillable& obj, i16 layer) noexcept {
-    _testLayer(layer, m_used_layers, m_active_layers);
+void Window::fill(const Printable& obj) noexcept {
+    _testLayer(obj.layer(), m_used_layers, m_active_layers);
     xwindow._setLastDrawnWindow(this);
-    _pushFill(obj._fill_(), layer, m_camera, m_size, m_fill_layers);
+    _pushFill(obj._fill_(), obj.layer(), m_camera, m_size, m_fill_layers);
 }
 
 bool Window::_isUI(i16 layer) noexcept {
@@ -426,11 +427,7 @@ void Window::screenshot(std::string_view path) noexcept {
     std::filesystem::path p = data.root() + "/screenshot";
     p /= std::string(path) + ".png";
 
-    if (p.has_parent_path()) {
-        std::error_code ec;
-        std::filesystem::create_directories(p.parent_path(), ec);
-        if (ec) return;
-    }
+    file::createParentPath(p.string());
 
     SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_RGBA32);
     if (!surf) return;
@@ -473,7 +470,7 @@ Window::~Window(void) {
 }
 
 void Window::connectViewport(Viewport& v) noexcept {
-    v.m_window = this->tracker();
+    v.m_window = tracker();
     auto track = v.tracker();
     for (auto& t : m_viewports) if (t == track) return;
     m_viewports.push_back(track);
@@ -519,8 +516,33 @@ void Window::clear(Color color) noexcept {
     SDL_RenderClear(m_renderer);
 }
 
-XWindow::XWindow(void) {
-    event.onWindowClose.joinPriority([this] (u32 id) {
+XWindow& XWindow::getInstance(void) noexcept {
+    static XWindow instance;
+    return instance;
+ }
+
+void XWindow::_registerWindow(Window* win) noexcept {
+    for (auto& t : m_windows) if (t.locate() == win) return;
+    auto track = win->tracker();
+    m_windows.push_back(track);
+}
+
+void XWindow::_unregisterWindow(Window* win) noexcept {
+    auto it = std::find_if(m_windows.begin(), m_windows.end(),
+        [win](Tracker<Window>& t) { return t.locate() == win; });
+    if (it != m_windows.end()) m_windows.erase(it);
+    if (m_last_drawn_window.locate() == win) m_last_drawn_window = nil;
+}
+
+void XWindow::_setLastDrawnWindow(Window* win) noexcept {
+    m_last_drawn_window = win->tracker();
+}
+
+void XWindow::_init(void) noexcept {
+
+    if (m_is_init) return;
+
+    event.onWindowClose.joinPriority([&] (u32 id) {
         for (auto& t : m_windows) {
             Window* w = t.locate();
             if (w && w->m_window_id == id) { w->close(); return; }
@@ -547,28 +569,8 @@ XWindow::XWindow(void) {
             }
         }
     });
-}
 
-XWindow& XWindow::getInstance(void) noexcept {
-    static XWindow instance;
-    return instance;
- }
-
-void XWindow::_registerWindow(Window* win) noexcept {
-    for (auto& t : m_windows) if (t.locate() == win) return;
-    auto track = win->tracker();
-    m_windows.push_back(track);
-}
-
-void XWindow::_unregisterWindow(Window* win) noexcept {
-    auto it = std::find_if(m_windows.begin(), m_windows.end(),
-        [win](Tracker<Window>& t) { return t.locate() == win; });
-    if (it != m_windows.end()) m_windows.erase(it);
-    if (m_last_drawn_window.locate() == win) m_last_drawn_window = nil;
-}
-
-void XWindow::_setLastDrawnWindow(Window* win) noexcept {
-    m_last_drawn_window = win->tracker();
+    m_is_init = true;
 }
 
 const Tracker<Window>& XWindow::lastDrawnWindow(void) const noexcept {

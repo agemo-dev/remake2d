@@ -23,7 +23,7 @@ public:
     constexpr auto operator<=>(const Triangulation&) const noexcept = default;
 };
 
-struct Area : public Drawable, public Fillable {
+struct Area : public Printable {
     i32 x{0}, y{0}, w{0}, h{0};
 
 public:
@@ -55,8 +55,8 @@ public:
     std::array<Triangulation, 2> toTriangulation(void) const noexcept;
 
 public:
-    void draw(const Drawable&) const noexcept override;
-    void fill(const Fillable&) const noexcept override;
+    void draw(const Printable&) const noexcept override;
+    void fill(const Printable&) const noexcept override;
 };
 
 } // namespace rmk

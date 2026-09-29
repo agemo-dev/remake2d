@@ -13,7 +13,7 @@
 
 namespace rmk {
 
-class Scene : public Trackable<Scene> {
+class Scene : public Trackable {
 
 public:
     using Frame = std::function<void(void)>;

@@ -26,7 +26,7 @@ namespace rmk {
 class Window;
 
 
-class TextureBase : public Drawable, public Fillable {
+class TextureBase : public Printable, public Trackable {
 public:
     TextureBase(void)                            = default;
     TextureBase(TextureBase&&)                   = default;
@@ -60,8 +60,8 @@ public:
     virtual std::vector<Vertex> vertices(void)    const noexcept = 0;
 
 public:
-    void draw(const Drawable&) const noexcept override;
-    void fill(const Fillable&) const noexcept override;
+    void draw(const Printable&) const noexcept override;
+    void fill(const Printable&) const noexcept override;
 
 public:
     virtual ~TextureBase(void) = default;
@@ -146,6 +146,7 @@ public:
 
 
 struct GlyphAtlas {
+
 public:
     struct AtlasData {
         SDL_Texture* texture{nullptr};
@@ -153,7 +154,7 @@ public:
 
 public:
     std::map<SDL_Renderer*, AtlasData>    textures;
-    std::map<char, Area>              glyphs;
+    std::map<char, Area>                  glyphs;
     i32                                   glyph_height{0};
     i32                                   baseline{0};
 
@@ -169,6 +170,7 @@ public:
 };
 
 class FontManager {
+
 private:
     struct FontEntry {
         TTF_Font*   font{nullptr};
@@ -261,10 +263,12 @@ private:
 public:
     virtual ~Text(void) = default;
 
+private:
     friend class Window;
 };
 
-class Animation : public Sprite, public Trackable<Animation> {
+class Animation : public Sprite {
+
 private:
     i8        m_current_clip{0};
     u8        m_loops_remaining{0};
@@ -310,6 +314,7 @@ private:
 
 
 class AnimationManager : public Updatable {
+
 private:
     std::vector<Tracker<Animation>> m_animations;
 

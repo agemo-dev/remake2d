@@ -11,7 +11,7 @@
 
 namespace rmk {
 
-class Sound : public Trackable<Sound> {
+class Sound : public Trackable {
 
 protected:
     u8      m_volume;
@@ -54,7 +54,7 @@ private:
     MUS    m_music;
 
 private:
-    inline static Tracker<Sound> m_current_music;
+    inline static Tracker<Music> m_current_music;
 
 public:
     Music(std::string_view, u8 = 64);
@@ -85,8 +85,8 @@ private:
     u32       m_channel{0};
 
 private:
-    inline static std::queue<u32>                                 m_free_channels;
-    inline static std::array<Tracker<Sound>, (usize)channel::max> m_channel_owners;
+    inline static std::queue<u32>                               m_free_channels;
+    inline static std::array<Tracker<SFX>, (usize)channel::max> m_channel_owners;
 
 public:
     SFX(std::string_view, u8 = 64);

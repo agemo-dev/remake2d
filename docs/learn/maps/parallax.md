@@ -99,7 +99,7 @@ without ever having to reposition anything manually.
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| Parallax | Yes | Yes | Fillable and Trackable |
+| Parallax | Yes | Yes | Printable and Trackable |
 
 ---
 

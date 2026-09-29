@@ -35,6 +35,7 @@ void Music::volume(u8 volume) noexcept {
 
 void Music::play(i8 loop) {
     if(m_current_music && m_current_music != tracker()) m_current_music->stop();
+
     m_current_music = tracker();
     Mix_HaltMusic();
     Mix_PlayMusic(m_music.data, loop < -1 ? -1 : loop);

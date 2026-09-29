@@ -12,7 +12,7 @@ namespace rmk {
 
 Parallax::Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Sprite>& sprites, const std::vector<u8>& quotients)
     : m_size(size), m_center(center) {
-    
+
     m_speed_quotients = std::vector<u8>(quotients.begin(), quotients.end());
     u32 sprite_count  = sprites.size();
 
@@ -26,11 +26,11 @@ Parallax::Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Spr
         }
         m_speed_quotients = std::move(temp);
     }
-	
+
 	if (m_speed_quotients.empty()) m_speed_quotients.push_back(0);
     m_parse = sprite_count / m_speed_quotients.size();
     m_sprite_list = sprites;
-    
+
     _moveAndResize(center, size);
     parallax._registerParallax(this);
 }
@@ -66,7 +66,6 @@ void Parallax::linkCamera(const Camera& cam) noexcept {
 void Parallax::_tile(Layer& layer) const noexcept {
     Dim2d size = layer.sprite_a.size();
 
-    
     if (layer.sprite_a.center().x < -size.w) {
         layer.sprite_a.move({
             layer.sprite_b.center().x + size.w,
@@ -74,7 +73,6 @@ void Parallax::_tile(Layer& layer) const noexcept {
         });
     }
 
-    
     if (layer.sprite_b.center().x < -size.w) {
         layer.sprite_b.move({
             layer.sprite_a.center().x + size.w,
@@ -110,16 +108,12 @@ void Parallax::update(void) noexcept {
     }
 
     is_fill_dirty = true;
+    is_draw_dirty = true;
 }
 
-void Parallax::fill(const Fillable& main) const noexcept {
-    if (!is_fill_dirty) return;
+void Parallax::fill(const Printable& main) const noexcept {
 
-    if (&main != static_cast<const Fillable*>(this)) {
-        main.is_fill_dirty = false;
-        main.filled        = true;
-        _color(main.color());
-    }
+    from(main);
 
     for (auto& layer : m_layers) {
         layer.sprite_a.fill(main);
@@ -128,6 +122,19 @@ void Parallax::fill(const Fillable& main) const noexcept {
 
     is_fill_dirty = false;
     filled        = true;
+}
+
+void Parallax::draw(const Printable& main) const noexcept {
+
+    from(main);
+
+    for (auto& layer : m_layers) {
+        layer.sprite_a.draw(main);
+        layer.sprite_b.draw(main);
+    }
+
+    is_draw_dirty = false;
+    drawn         = true;
 }
 
 void Parallax::_moveAndResize(const Vec2d& center, const Dim2d& size) noexcept {

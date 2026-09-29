@@ -52,8 +52,8 @@ void     present(void);                      // present current frame
 void     screenshot(std::string_view path);  // take a screenshot of current frame
 void     clear(Color = rmk::color::black) noexcept; // clear window with a solid color
 
-void     draw(const Drawable&, i16 layer = 0) noexcept; // draw a drawable object
-void     fill(const Fillable&, i16 layer = 0) noexcept; // draw filled a fillable object
+void     draw(const Printable&) noexcept; // draw a drawable object
+void     fill(const Printable&) noexcept; // draw filled a fillable object
 
 void     connectViewport(Viewport&)    noexcept;  // register viewport
 void     disconnectViewport(Viewport&) noexcept;  // unregister viewport

@@ -12,6 +12,7 @@
 namespace rmk {
 
 class Date {
+
 private:
     u8              m_day{1};
     u8              m_month{1};
@@ -48,7 +49,6 @@ private:
 
 public:
     Date(u8, u8,i32);
-    
     Date(void)                      = default;
     Date(Date&&)                    = default;
     Date(const Date&)               = default;
@@ -72,14 +72,15 @@ public:
     bool dayIs(const Date& other) const noexcept;
 
 private:
-    static char _deduce_separator(const std::string_view& str) noexcept;
+    static char _deduceSeparator(const std::string_view& str) noexcept;
     static std::vector<std::string> _split(const std::string&, char);
-    static std::vector<std::string> _parse_order(const std::string&, char);
+    static std::vector<std::string> _parseOrder(const std::string&, char);
     static u8 _parse_month(std::string token);
 };
 
 
 class Clock {
+
 private:
     u8              m_hour{0};
     u8              m_minute{0};
@@ -91,7 +92,6 @@ private:
 
 public:
     Clock(u8, u8, u8);
-    
     Clock(void)                     = default;
     Clock(Clock&&)                  = default;
     Clock& operator=(Clock&&)       = default;
@@ -107,7 +107,7 @@ public:
     void hour(const u8&)   noexcept;
     void minute(const u8&) noexcept;
     void second(const u8&) noexcept;
-    
+
     void time(const std::string_view&);
     void format(const std::string_view&);
 
@@ -115,9 +115,9 @@ public:
     bool timeIs(const Clock& other) const noexcept;
 
 private:
-    static char _deduce_separator(const std::string_view&) noexcept;
+    static char _deduceSeparator(const std::string_view&) noexcept;
     static std::vector<std::string> _split(const std::string&, char);
-    static std::vector<std::string> _parse_order(const std::string&, char);
+    static std::vector<std::string> _parseOrder(const std::string&, char);
 };
 
 } // namespace rmk

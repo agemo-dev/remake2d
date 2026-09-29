@@ -2,6 +2,7 @@
 #include <remake2d/utility.hpp>
 
 #include <SDL2/SDL.h>
+#include <algorithm>
 
 namespace rmk {
 
@@ -11,43 +12,161 @@ Geometry::Geometry(const Vec2d& center, const Dim2d& size)
 		m_size.h = m_size.h == 0 ? 1 : m_size.h;
 	}
 
-void Geometry::fill(const Fillable& main) const noexcept {
-    if (!is_fill_dirty) return;
+void Geometry::fill(const Printable& main) const noexcept {
+    bool toRoot = (&main == static_cast<const Printable*>(this));
 
-    if (&main != static_cast<const Fillable*>(this)) {
-        main.is_fill_dirty = false;
-        main.filled        = true;
-        _color(main.color());
+    if (!is_fill_dirty && !toRoot && _fill_id_ >= 0 && _main_fill_id_ == main._mainId()) {
+        main._fill_deep_ += _last_vertex_count_;
+        return;
+    }
+    if (!is_fill_dirty && toRoot) {
+        main._fill_deep_ += _last_vertex_count_;
+        return;
     }
 
-    VertexBatch batch;
-    batch.texture = nullptr;
+    auto& cache     = _fill_cache_;
+    auto& mainCache = main._fill_cache_;
 
-    auto raw = _verticesImpl();
-    batch.vertices.reserve(raw.size());
-    for (auto v : raw) {
-        v.color = color();
-        batch.vertices.push_back(v);
+    u32  deep        = main._fill_deep_;
+    bool isFirstTime = _fill_id_ < 0 || _main_fill_id_ != main._mainId();
+
+    if (!toRoot) {
+        main.filled = true;
+        _inheritData(main.color(), main.layer());
+
+        if (_main_fill_id_ != main._mainId()) {
+            _main_fill_id_      = main._mainId();
+            _fill_id_           = -1;
+            _last_vertex_count_ = 0;
+        }
+
+        if (!isFirstTime && deep < (u32)_fill_id_) {
+            mainCache.erase(mainCache.begin() + deep, mainCache.begin() + _fill_id_);
+        }
     }
 
-    main._fill_cache_.push_back(batch);
-    is_fill_dirty   = false;
-    filled          = true;
+    if (is_fill_dirty) {
+        cache.clear();
 
+        VertexBatch batch;
+        batch.texture = nullptr;
+
+        auto raw = _verticesImpl();
+        batch.vertices.reserve(raw.size());
+        for (auto v : raw) {
+            v.color = color();
+            batch.vertices.push_back(v);
+        }
+
+        cache.push_back(std::move(batch));
+        is_fill_dirty = false;
+    }
+
+    _current_vertex_count_ = (u32)cache.size();
+
+    if (!toRoot) {
+        if (isFirstTime) {
+            mainCache.insert(mainCache.begin() + deep, cache.begin(), cache.end());
+        } else {
+            u32 overlap = std::min(_last_vertex_count_, _current_vertex_count_);
+            std::copy(
+                cache.begin(), cache.begin() + overlap,
+                mainCache.begin() + deep
+            );
+
+            if (_last_vertex_count_ < _current_vertex_count_) {
+                mainCache.insert(
+                    mainCache.begin() + deep + _last_vertex_count_,
+                    cache.begin() + _last_vertex_count_, cache.end()
+                );
+            } else if (_last_vertex_count_ > _current_vertex_count_) {
+                mainCache.erase(
+                    mainCache.begin() + deep + _current_vertex_count_,
+                    mainCache.begin() + deep + _last_vertex_count_
+                );
+            }
+        }
+
+        _fill_id_ = (i32)deep;
+    }
+
+    _last_vertex_count_ = _current_vertex_count_;
+    main._fill_deep_    = (toRoot ? 0 : deep) + _current_vertex_count_;
+
+    filled = true;
 }
 
-void Geometry::draw(const Drawable& main) const noexcept {
-    if (!is_draw_dirty) return;
+void Geometry::draw(const Printable& main) const noexcept {
+    bool toRoot = (&main == static_cast<const Printable*>(this));
 
-    if (&main != static_cast<const Drawable*>(this)) {
-        main.is_draw_dirty = false;
-        main.drawn        = true;
-        _color(main.color());
+    if (!is_draw_dirty && !toRoot && _draw_id_ >= 0 && _main_id_ == main._mainId()) {
+        main._draw_deep_ += _last_point_count_;
+        return;
+    }
+    if (!is_draw_dirty && toRoot) {
+        main._draw_deep_ += _last_point_count_;
+        return;
     }
 
-    main._draw_cache_.push_back(DrawPack{ color(), _contourImpl() });
-    is_draw_dirty    = false;
-    drawn            = true;
+    auto& cache     = _draw_cache_;
+    auto& mainCache = main._draw_cache_;
+
+    u32  deep        = main._draw_deep_;
+    bool isFirstTime = _draw_id_ < 0 || _main_id_ != main._mainId();
+
+    if (!toRoot) {
+        main.drawn = true;
+        _inheritData(main.color(), main.layer());
+
+        if (_main_id_ != main._mainId()) {
+            _main_id_          = main._mainId();
+            _draw_id_          = -1;
+            _last_point_count_ = 0;
+        }
+
+        if (!isFirstTime && deep < (u32)_draw_id_) {
+            mainCache.erase(mainCache.begin() + deep, mainCache.begin() + _draw_id_);
+        }
+    }
+
+    if (is_draw_dirty) {
+        cache.clear();
+        cache.push_back(DrawPack{ color(), _contourImpl() });
+        is_draw_dirty = false;
+    }
+
+    _current_point_count_ = (u32)cache.size();
+
+    if (!toRoot) {
+        if (isFirstTime) {
+            mainCache.insert(mainCache.begin() + deep, cache.begin(), cache.end());
+        } else {
+            u32 overlap = std::min(_last_point_count_, _current_point_count_);
+            std::copy(
+                cache.begin(), cache.begin() + overlap,
+                mainCache.begin() + deep
+            );
+
+            if (_last_point_count_ < _current_point_count_) {
+                mainCache.insert(
+                    mainCache.begin() + deep + _last_point_count_,
+                    cache.begin() + _last_point_count_, cache.end()
+                );
+            } else if (_last_point_count_ > _current_point_count_) {
+                mainCache.erase(
+                    mainCache.begin() + deep + _current_point_count_,
+                    mainCache.begin() + deep + _last_point_count_
+                );
+            }
+        }
+
+        _draw_id_ = (i32)deep;
+    }
+
+    _last_point_count_ = _current_point_count_;
+    main._draw_deep_   = (toRoot ? 0 : deep) + _current_point_count_;
+
+    drawn = true;
 }
 
 template<> Circle Geometry::as(void) const noexcept {

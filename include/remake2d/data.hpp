@@ -24,7 +24,7 @@
 
 namespace rmk {
 
-inline static constexpr const char *DATA_DEFAULT_ROOT = "data/remake2d";
+inline static constexpr const char *DATA_DEFAULT_ROOT = "data/remake2d/";
 
 struct Data {
     using Value = std::variant<

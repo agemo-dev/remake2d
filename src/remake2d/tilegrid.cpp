@@ -1,8 +1,6 @@
 #include <remake2d/tilegrid.hpp>
 #include <remake2d/window.hpp>
 
-#include <SDL2/SDL.h>
-
 namespace rmk {
 
 TileGrid::TileGrid(const Vec2d& center, const Dim2d& size, const Grid2d& cut)
@@ -67,21 +65,27 @@ void TileGrid::_build(void) noexcept {
     }
 
     is_draw_dirty = true;
+    is_fill_dirty = true;
 }
 
-void TileGrid::draw(const Drawable& main) const noexcept {
-    if (!is_draw_dirty) return;
+void TileGrid::draw(const Printable& main) const noexcept {
 
-    if (&main != static_cast<const Drawable*>(this)) {
-        main.is_draw_dirty = false;
-        main.drawn         = true;
-        _color(main.color());
-    }
+    from(main);
 
     for (const auto& cell : m_cells) cell.draw(main);
 
     is_draw_dirty = false;
     drawn         = true;
+}
+
+void TileGrid::fill(const Printable& main) const noexcept {
+
+    from(main);
+
+    for (const auto& cell : m_cells) cell.fill(main);
+
+    is_fill_dirty = false;
+    filled        = true;
 }
 
 } //namespace rmk

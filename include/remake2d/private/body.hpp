@@ -30,7 +30,7 @@ enum class id : u8 {
 };
 } // namespace physic
 
-class PhysicBody : public Trackable<PhysicBody>, public Drawable, public Fillable {
+class PhysicBody : public Trackable, public Printable {
 public:
     using AnimMap      = std::map<std::string,  Animation>;
     using ContourCache = IVector<Vec2d, (usize)point::max>;
@@ -103,8 +103,8 @@ protected:
     void         _detachFromWorld(void) noexcept;
 
 public:
-    void draw(const Drawable&) const noexcept override;
-    void fill(const Fillable&) const noexcept override;
+    void draw(const Printable&) const noexcept override;
+    void fill(const Printable&) const noexcept override;
 
 protected:
 	b2Circle  _makeB2Circle(const PhysicBody::ShapeCache&);

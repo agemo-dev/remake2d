@@ -68,10 +68,10 @@ cam.smoothing(0.1f);
 
 ### Following
 
-`follow` only accepts a type that derives from `Followable`:
+`follow` only accepts a type that derives from `Followable` trait:
 
 ```cpp
-class Followable : public Trackable<Followable> {
+class Followable : public Trackable {
 public:
 	virtual Vec2d center(void) const noexcept = 0;
 };
@@ -118,6 +118,9 @@ instead of the last known position:
 Vec2d whereTheCameraIsLooking = cam.followedPoint();
 ```
 
+!!! info
+    Objects located in a layer greater than or equal to `layer::ui` will not be affected by camera transformations.
+
 ### World limits
 
 The `limit` passed to the constructor (or set later) keeps the camera from scrolling past the edges of the world, even if the followed
@@ -139,9 +142,10 @@ cam.limit(rmk::nil);
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
+| Followable | Yes | Yes | Trackable |
 | Camera | Yes | Yes | Trackable |
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](viewport.md){ .md-button }
+[:octicons-arrow-left-24: Previous chapter](draw.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](../texture/texture.md){ .md-button .md-button--primary }

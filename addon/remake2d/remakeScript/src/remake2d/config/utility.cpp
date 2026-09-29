@@ -42,6 +42,7 @@ void initLuaUtility(sol::table& rmk) noexcept {
     rmk["file"]["jump"] = [](std::vector<std::string_view> views) -> std::string {
     	return file::jump(views);
 	};
+    rmk["file"]["createParentPath"] = &file::createParentPath;
 }
 
 } // namespace solstat

@@ -2,7 +2,7 @@
 #define REMAKE2D_CONCEPT_
 
 #include <concepts>
-#include <remake2d/private/struct.hpp>
+#include <remake2d/tracker.hpp>
 
 namespace rmk {
 
@@ -25,19 +25,10 @@ template<typename S>
 concept IsSavable = std::derived_from<S, class Savable>;
 
 template<typename T>
-concept IsDrawable = std::derived_from<T, class Drawable>;
-
-template<typename T>
-concept IsFillable = std::derived_from<T, class Fillable>;
+concept IsPrintable = std::derived_from<T, class Printable>;
 
 template<typename F>
 concept IsFollowable = std::derived_from<F, class Followable>;
-
-template<typename T>
-concept IsTracker = std::is_base_of_v<class TrackerBaseID, T>;
-
-template<typename T>
-concept IsTrackable = std::is_base_of_v<class TrackableBaseID, T>;
 
 template<typename T>
 concept IsBasicType = std::same_as<T, struct Vec2d>          ||
@@ -50,10 +41,5 @@ concept IsBasicType = std::same_as<T, struct Vec2d>          ||
                       std::same_as<T, struct HSL>            ||
                       std::is_arithmetic_v<T>;
 
-template<typename U, typename T>
-concept IsRelatedTo = std::same_as<U, T>        ||
-                      std::derived_from<T, U>   ||
-                      std::derived_from<U, T>   ||
-                      std::same_as<U, void>;
 } // namespace rmk
 #endif

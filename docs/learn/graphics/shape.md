@@ -77,7 +77,7 @@ Now we can display our triangle on screen thanks to the `draw` method of the
 void  Geometry::color(Color color) noexcept; // set color
 Color Geometry::color(void)  const noexcept; // get current color
 
-void Window::draw(const Drawable& object, i16 layer = 0) noexcept;
+void Window::draw(const Printable& object, i16 layer = 0) noexcept;
 ```
 
 - color     : draw color
@@ -85,12 +85,12 @@ void Window::draw(const Drawable& object, i16 layer = 0) noexcept;
 - layer     : drawing layer
 
 Your question is probably this:
-> The `object` parameter is of type `Drawable`, but my figure is of type `Triangle`!
+> The `object` parameter is of type `Printable`, but my figure is of type `Triangle`!
 > Furthermore, Geometry does not have any `color` methods!
 
 This is perfectly normal, and the answer is simply that the `geometry` class inherits
-from the `Drawable` trait class, which makes it drawable on the screen.
-Note that the `color` method actually belongs to the `Drawable` class, but this will
+from the `Printable` trait class, which makes it drawable on the screen.
+Note that the `color` method actually belongs to the `Printable` class, but this will
 be covered in another lesson.
 
 Let's place ourselves in the game loop and write:
@@ -125,10 +125,10 @@ int main(void) {
 It is also possible to **fill** the shape with the `fill` method, similar to `draw`:
 
 ```cpp
-void fill(const Fillable& shape, i16 layer = 0) noexcept;
+void fill(const Printable& shape, i16 layer = 0) noexcept;
 ```
 
-Once again, the `Geometry` class also derives from the `Fillable` trait class!
+Once again, the `Geometry` class also derives from the `Printable` trait class!
 
 ```cpp
 win.fill(triangle);
@@ -228,7 +228,7 @@ class Circle    : public Ellipse;   // circle (w == h enforced)
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| Geometry | Yes | Yes | Followable, Drawable and Fillable |
+| Geometry | Yes | Yes | Followable, Printable and Printable |
 | Shape | Yes | Yes | Geometry |
 | Shape derived | Yes | Yes | Geometry |
 

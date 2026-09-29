@@ -6,8 +6,6 @@
 #include <vector>
 #include <initializer_list>
 
-// IVector = Inline Vector
-
 namespace rmk {
 
 template <typename T, usize C> class IVector {
@@ -26,8 +24,9 @@ private:
 
 public:
     class iterator {
+
     private:
-        pointer m_ptr;
+        T* m_ptr{nullptr};
 
     public:
         using iterator_category = std::random_access_iterator_tag;
@@ -36,8 +35,13 @@ public:
         using pointer           = T*;
         using reference         = T&;
 
-        explicit iterator(pointer p);
+    public:
+        iterator(void) = default;
+        explicit iterator(pointer);
 
+        friend iterator operator+(difference_type n, const iterator& it) noexcept { return it + n; }
+
+    public:
         reference operator*(void)             const;
         pointer   operator->(void)            const;
         reference operator[](difference_type) const;
@@ -50,17 +54,17 @@ public:
         iterator& operator+=(difference_type) noexcept;
         iterator& operator-=(difference_type) noexcept;
 
-        template <typename U, usize V> friend iterator operator+(iterator, difference_type);
-        template <typename U, usize V> friend iterator operator+(difference_type, iterator);
-        template <typename U, usize V> friend iterator operator-(iterator, difference_type);
-        template <typename U, usize V> friend difference_type operator-(const iterator&, const iterator&);
+        iterator  operator+(difference_type) const noexcept;
+        iterator  operator-(difference_type) const noexcept;
+        difference_type operator-(const iterator&) const noexcept;
 
         auto operator<=>(const iterator&) const noexcept = default;
     };
 
     class const_iterator {
+
     private:
-        const_pointer m_ptr;
+        const_pointer m_ptr{nullptr};
 
     public:
         using iterator_category = std::random_access_iterator_tag;
@@ -69,8 +73,13 @@ public:
         using pointer           = const T*;
         using reference         = const T&;
 
-        explicit const_iterator(const_pointer p);
+    public:
+        const_iterator(void) = default;
+        explicit const_iterator(const_pointer);
 
+        friend const_iterator operator+(difference_type n, const const_iterator& it) noexcept { return it + n; }
+
+    public:
         reference operator*(void)             const;
         pointer   operator->(void)            const;
         reference operator[](difference_type) const;
@@ -83,18 +92,17 @@ public:
         const_iterator& operator+=(difference_type) noexcept;
         const_iterator& operator-=(difference_type) noexcept;
 
-        template <typename U, usize V> friend const_iterator operator+(const_iterator, difference_type);
-        template <typename U, usize V> friend const_iterator operator+(difference_type, const_iterator);
-        template <typename U, usize V> friend const_iterator operator-(const_iterator, difference_type);
-        template <typename U, usize V> friend difference_type operator-(const const_iterator&, const const_iterator&);
+        const_iterator  operator+(difference_type) const noexcept;
+        const_iterator  operator-(difference_type) const noexcept;
+        difference_type operator-(const const_iterator&) const noexcept;
 
         auto operator<=>(const const_iterator&) const noexcept = default;
     };
 
 public:
+    IVector(IVector&&);
+    IVector(const IVector&);
     IVector(void)                       = default;
-    IVector(IVector&&)                  = default;
-    IVector(const IVector&)             = default;
     IVector& operator=(IVector&&)       = default;
     IVector& operator=(const IVector&)  = default;
 
@@ -110,8 +118,8 @@ public:
 
 public:
     template <typename InputIt> void assign(InputIt first, InputIt last);
-    void reserve(size_type)        noexcept; // no-op: capacity is fixed at C, kept for API compatibility
-    bool push_back(const T&)       noexcept; // alias of push(), standard-library-style name
+    void reserve(size_type)        noexcept;
+    bool push_back(const T&)       noexcept;
     bool push_back(T&&)            noexcept;
 
 public:

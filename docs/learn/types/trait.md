@@ -48,8 +48,7 @@ public:
 
 **RE:MAKE 2D** offers several traits, namely:
 
-- [Drawable](../graphics/draw.md)
-- [Fillable](../graphics/draw.md)
+- [Printable](../graphics/draw.md)
 - [Followable](..)
 - [Updatable](..)
 - [Trackable](..)

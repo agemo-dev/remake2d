@@ -99,7 +99,7 @@ grid.resize({1000, 700});
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| TileGrid | Yes | Yes | Drawable and Fillable |
+| TileGrid | Yes | Yes | Printable and Printable |
 
 ---
 

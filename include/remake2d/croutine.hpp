@@ -38,6 +38,7 @@ class CroutinePool;
 class CroutineBase;
 
 struct Task {
+
 public:
     struct promise_type {
         void unhandled_exception(void);
@@ -50,10 +51,21 @@ public:
 
 public:
     std::coroutine_handle<promise_type> handle;
-    explicit Task(std::coroutine_handle<promise_type>) noexcept;
+
+public:
     Task(Task&&) noexcept;
-    Task(const Task&) = delete;
+    explicit Task(std::coroutine_handle<promise_type>) noexcept;
+
+public:
+    Task(const Task&)            = delete;
     Task& operator=(const Task&) = delete;
+
+public:
+    bool await_ready(void)                          const noexcept;
+    void await_resume(void)                         const noexcept;
+    bool await_suspend(std::coroutine_handle<>)           noexcept;
+
+public:
     ~Task(void);
 };
 
@@ -82,10 +94,11 @@ public:
 CroutineBase* self(void) noexcept;
 
 class ThreadWorker {
+
 private:
-	// m_thread must remain the last member declared here. 
-	// Members are destroyed in the reverse order of their declaration: 
-	// by placing it last, it is destroyed first, which guarantees 
+	// m_thread must remain the last member declared here.
+	// Members are destroyed in the reverse order of their declaration:
+	// by placing it last, it is destroyed first, which guarantees
 	// that the thread is stopped/joined before m_mtx/m_cv/m_queue are destroyed.
     std::queue<_CroutineEntry>   m_queue;
     std::mutex                   m_mtx;

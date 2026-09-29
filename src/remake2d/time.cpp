@@ -11,14 +11,39 @@
 #include <signal.h>
 #include <algorithm>
 
+
 namespace rmk {
+
+Task _timerCounter(void) noexcept {
+    std::mutex mut;
+
+    while (timer.m_running.load()) {
+        dlink.on_count.store(true);
+        for (auto& t : timer.m_timers) {
+
+            if (!t->m_active.load() || t->m_elapsed.load()) continue;
+            t->m_current_time.fetch_add(delta.tick());
+
+            if (t->m_current_time.load() >= t->m_limit.load()) {
+                t->m_elapsed.store(true);
+                t->m_active.store(false);
+
+                std::lock_guard<std::mutex> lock(mut);
+                t->_evaluate();
+                if(t->m_repeat) t->start();
+            }
+        }
+        dlink.on_count.store(false);
+        rmk_pause();
+    }
+}
 
 namespace time {
 void delay(time::Second delay) noexcept {
     std::this_thread::sleep_for(delay);
 }
 } //namespace time
-    
+
 void Chronometer::_calculatePauseTime(void) noexcept {
     auto temp = m_resume_point - m_pause_point;
     fmax time = static_cast<fmax>(
@@ -121,11 +146,11 @@ void DeltaTime::update(void) {
     auto wtimer = count<time::Microsecond>();
     m_frame_time.store(wtimer / 1'000'000.0L);
     m_start_point = std::chrono::steady_clock::now();
-    
+
     std::this_thread::sleep_until(
         m_start_point + time::Millisecond(umax((1.0 / m_max_fps) * 1'000.0))
     );
-    
+
     dlink.resumeCroutines();
 }
 
@@ -135,7 +160,11 @@ DeltaTime& DeltaTime::getInstance(void) {
 }
 
 Timer::Timer(void) {
+    rmk::system._init();
     timer._registerTimer(this);
+    if(timer.m_routine_started.load()) return;
+    timer.m_routine.run();
+    timer.m_routine_started.store(true);
 }
 
 Timer::Timer(fmax l) : m_limit(l < 0 ? 0 : l) {
@@ -226,16 +255,20 @@ void Timer::repeat(bool stat) noexcept {
     m_repeat.store(stat);
 }
 
-bool Timer::isActive(void) const noexcept {
+bool Timer::active(void) const noexcept {
     return m_active.load();
 }
 
-bool Timer::isElapsed(void) const noexcept {
+bool Timer::elapsed(void) const noexcept {
     return m_elapsed.load();
 }
 
 fmax Timer::elapsedTime(void) const noexcept {
     return m_current_time.load();
+}
+
+void Timer::_evaluate (void) noexcept {
+    onTimeout._evaluate();
 }
 
 Timer::~Timer(void) {
@@ -244,46 +277,19 @@ Timer::~Timer(void) {
 }
 
 TimerManager::TimerManager(void) {
-    m_routine.load([this]() -> rmk::Task {
-        this->_timerCounter();
-        co_return;
-    });
+    m_routine.load(_timerCounter);
 }
 
 void TimerManager::_registerTimer(Timer* t) noexcept {
     auto& vec = m_timers;
-    auto it   = std::find(vec.begin(), vec.end(), t);
-    if(it == m_timers.end()) m_timers.push_back(t);
+    auto it   = std::find(vec.begin(), vec.end(), t.tracker());
+    if(it == m_timers.end()) m_timers.push_back(t.tracker());
 }
 
 void TimerManager::_unregisterTimer(Timer* t) noexcept {
     auto& vec = m_timers;
-    auto it   = std::find(vec.begin(), vec.end(), t);
+    auto it   = std::find(vec.begin(), vec.end(), t.tracker());
     if(it != vec.end()) vec.erase(it);
-}
-
-rmk::Task TimerManager::_timerCounter(void) noexcept {
-    std::mutex mut;
-
-    while (m_running.load()) {
-        dlink.on_count.store(true);
-        for (auto& t : m_timers) {
-
-            if (!t->m_active.load() || t->m_elapsed.load()) continue;
-            t->m_current_time.fetch_add(delta.tick());
-
-            if (t->m_current_time.load() >= t->m_limit.load()) {
-                t->m_elapsed.store(true);
-                t->m_active.store(false);
-
-                std::lock_guard<std::mutex> lock(mut);
-                t->onTimeout._evaluate();
-                if(t->m_repeat) t->start();
-            }
-        }
-        dlink.on_count.store(false);
-        rmk_pause();
-    }
 }
 
 TimerManager& TimerManager::getInstance(void) noexcept {

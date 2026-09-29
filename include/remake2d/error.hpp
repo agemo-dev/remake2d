@@ -119,12 +119,6 @@ class SignalError : public OutOfRangeError {
     using OutOfRangeError::OutOfRangeError;
 };
 
-class TrackerError : public RunTimeError {
-    using RunTimeError::RunTimeError;
-};
-
-
-
 namespace error {
 
 namespace window {
@@ -193,11 +187,12 @@ inline static constexpr const char *invalid_slot     = "Invalid slot passed to c
 } //namespace signal
 
 namespace data {
-inline static constexpr const char *file_not_found  = "DataFile not found — please call DataFile::write() before DataFile::read()";
-inline static constexpr const char *invalid_field   = "field does not exist in DataFile";
-inline static constexpr const char *invalid_type    = "field type mismatch in DataFile";
-inline static constexpr const char *root_not_init   = "SaveManager not initialized — call data._init() first";
-inline static constexpr const char *type_unsavable  = "type must implement rmk::ISavable (sdata/ldata)";
+inline static constexpr const char *file_not_found       = "DataFile not found — please call DataFile::write() before DataFile::read()";
+inline static constexpr const char *invalid_field        = "field does not exist in DataFile";
+inline static constexpr const char *invalid_type         = "field type mismatch in DataFile";
+inline static constexpr const char *root_not_init        = "SaveManager not initialized — call data._init() first";
+inline static constexpr const char *type_unsavable       = "type must implement rmk::ISavable (sdata/ldata)";
+inline static constexpr const char *directory_no_create  = "directory no create";
 } //namespace data
 
 namespace date {
@@ -211,10 +206,6 @@ namespace clock {
 inline static constexpr const char *invalid_format    = "invalid format — use hour/minute/second keywords";
 inline static constexpr const char *invalid_time      = "invalid time string — cannot parse";
 inline static constexpr const char *invalid_separator = "invalid separator — use ':', '-' or '*'";
-}
-
-namespace tracker {
-inline static constexpr const char *null_ptr_deref = "dereferencement of a null pointeur";
 }
 
 } // namespace error

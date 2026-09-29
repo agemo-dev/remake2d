@@ -84,6 +84,9 @@ DataFile::DataFile(std::string_view name) : m_name(name) {
     if (!data.isInitialized()) data._init();
     std::filesystem::path p = data.root() + "/json";
     p /= std::string(name) + ".json";
+
+    file::createParentPath(p.string());
+
     m_path = p.string();
 }
 
@@ -157,7 +160,10 @@ void DataFile::load(Savable& obj) {
 }
 
 void SaveManager::_init(void) {
-    std::filesystem::create_directories(m_root);
+    std::error_code ec;
+    std::filesystem::create_directories(m_root, ec);
+
+    if (ec) rmk_dynamicAssert(DataError, std::string(error::data::directory_no_create) + " : " + ec.message());
     m_initialized = true;
 }
 

@@ -48,7 +48,8 @@ enum class blendmode : u8 {
 
 } //namespace window
 
-class Window : public Trackable<Window> {
+class Window : public Trackable {
+
 private:
     using UsedLayers   = std::bitset<(usize)layer::count>;
     using ActiveLayers = IVector<i16, (usize)layer::count>;
@@ -56,7 +57,8 @@ private:
     using FillLayers   = std::array<std::vector<VertexBatch>, (usize)layer::count>;
 
 public:
-    class Viewport : public Trackable<Viewport> {
+    class Viewport : public Trackable {
+
     private:
         UsedLayers   m_used_layers;
         ActiveLayers m_active_layers;
@@ -86,8 +88,8 @@ public:
 
     public:
         void clear(Color = color::black)    noexcept;
-        void draw(const Drawable&, i16 = 0) noexcept;
-        void fill(const Fillable&, i16 = 0) noexcept;
+        void draw(const Printable&)         noexcept;
+        void fill(const Printable&)         noexcept;
 
     private:
         void _present(SDL_Renderer*) noexcept;
@@ -163,9 +165,10 @@ public:
     bool resizable(void)        const noexcept;
     void blendMode(window::blendmode) noexcept;
 
+public:
     void clear(Color = rmk::color::black)    noexcept;
-    void draw(const Drawable&, i16 = 0)      noexcept;
-    void fill(const Fillable&, i16 = 0)      noexcept;
+    void draw(const Printable&)               noexcept;
+    void fill(const Printable&)               noexcept;
 
 private:
     void _newCenter(void) noexcept;
@@ -175,7 +178,7 @@ private:
     static void _restoreViewport(SDL_Renderer*, std::stack<Area>&)            noexcept;
 
 private:
-    bool  _isUI(i16)                                                 const noexcept;
+    static bool  _isUI(i16)                                                noexcept;
     static usize _normalise(i16)                                           noexcept; // transform layer (i16) to -> usize
     static void  _flushLayer(SDL_Renderer*, i16, DrawLayers&, FillLayers&) noexcept; // draw a layer
     static void  _testLayer(i16, UsedLayers&, ActiveLayers&);
@@ -197,17 +200,19 @@ private:
 
 class XWindow {
 private:
-    std::vector<Tracker<Window>>  m_windows;
+    bool                          m_is_init{false};
+    std::vector<Tracker<Window>>  m_windows{};
     Tracker<Window>               m_last_drawn_window{};
 
 private:
-    XWindow(void);
+    XWindow(void)                      = default;
     XWindow(XWindow&&)                 = default;
     XWindow(const XWindow&)            = delete;
     XWindow& operator=(XWindow&&)      = default;
     XWindow& operator=(const XWindow&) = delete;
 
 private:
+    void _init(void)                  noexcept;
     void _registerWindow(Window*)     noexcept;
     void _unregisterWindow(Window*)   noexcept;
     void _setLastDrawnWindow(Window*) noexcept;

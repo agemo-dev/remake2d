@@ -8,11 +8,11 @@ destroyed, and the pointer silently turns into a landmine. `Tracker` gives you a
 ## Overview
 
 `Tracker`, `Slot` and `Trackable` are contained in the header **"remake2d/tracker.hpp"**. Together they let any class opt into
-being followed safely: `Trackable<Derived>` is a base to inherit from, `Tracker<Derived>` is the handle you keep around, and
+being followed safely: `Trackable` is a base to inherit from, `Tracker<Derived>` is the handle you keep around, and
 `Slot<Derived>` is the small piece of shared state that connects the two. `Camera::follow` is the main place this shows up in
 the engine, but nothing ties `Tracker` to cameras specifically , any class can use it.
 
-`Tracker<T>` is in fact an alias for `UnsafeTracker<T>` constrained by `IsTrackable<T>`; some parts of the public API (like
+`Tracker<T>` is in fact an alias for `UnsafeTracker<T>` constrained by `IsTrackable`; some parts of the public API (like
 `Actor::parent()`) hand out `UnsafeTracker` directly rather than `Tracker`, on the idea that at that point it's little more
 than a plain pointer, and it's up to you to decide whether to re-wrap it as a `Tracker` for that compile-time guarantee back.
 
@@ -52,19 +52,19 @@ UnsafeTracker<Derived> tracker(void) noexcept;   // hand out a reference to this
 void relocate(void) noexcept;                    // rebind after a move
 ```
 
-`tracker()` is declared to return `UnsafeTracker<Derived>` rather than `Tracker<Derived>`: inside `Trackable<Derived>`'s own
-generic implementation, there's no way to guarantee `Derived` already satisfies `IsTrackable<Derived>` at that point, since
-`Derived` is still being defined when it inherits from `Trackable<Derived>`. Writing `Tracker<Derived>` at the call site
+`tracker()` is declared to return `UnsafeTracker<Derived>` rather than `Tracker<Derived>`: inside `Trackable`'s own
+generic implementation, there's no way to guarantee `Derived` already satisfies `IsTrackable` at that point, since
+`Derived` is still being defined when it inherits from `Trackable`. Writing `Tracker<Derived>` at the call site
 works fine once `Derived` is complete, since `Tracker<T>` is just `UnsafeTracker<T>` with that check attached.
 
 ### Usage
 
 #### Making a class followable
 
-Inherit from `Trackable<Derived>`, using the class itself as the template argument (the [CRTP](https://en.cppreference.com/w/cpp/language/crtp) pattern):
+Inherit from `Trackable`, using the class itself as the template argument (the [CRTP](https://en.cppreference.com/w/cpp/language/crtp) pattern):
 
 ```cpp
-class Player : public rmk::Trackable<Player> {
+class Player : public rmk::Trackable {
 public:
     Vec2d center(void) const noexcept { return m_center; }
 private:
@@ -99,15 +99,15 @@ to the new address on its own. Every move constructor and move-assignment operat
 call `relocate()` as its last step:
 
 ```cpp
-class Player : public rmk::Trackable<Player> {
+class Player : public rmk::Trackable {
 public:
     Player(Player&& other) noexcept
-        : rmk::Trackable<Player>(std::move(other)), m_center(other.m_center) {
+        : rmk::Trackable(std::move(other)), m_center(other.m_center) {
         relocate();
     }
 
     Player& operator=(Player&& other) noexcept {
-        rmk::Trackable<Player>::operator=(std::move(other));
+        rmk::Trackable::operator=(std::move(other));
         m_center = other.m_center;
         relocate();
         return *this;

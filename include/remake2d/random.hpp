@@ -42,12 +42,12 @@ public:
     std::vector<u8> dice(u8, u8) noexcept;
 
 public:
-    template<typename T> T choice(std::span<T>)        		  noexcept;
+    template<typename T> T choice(std::span<T>)               noexcept;
     template<IsBasicType T  = i32> T rand(const T&, const T&) noexcept;
 
 public:
-    Color mixColor(f32 = 1.0f, f32 = 0.5f) 			noexcept;
-    std::string choice(std::span<std::string_view>) noexcept;
+    Color mixColor(f32 = 1.0f, f32 = 0.5f)             noexcept;
+    std::string choice(std::span<std::string_view>)    noexcept;
 
 public:
     static Random& getInstance(void) noexcept;

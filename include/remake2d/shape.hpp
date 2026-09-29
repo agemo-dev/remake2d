@@ -17,7 +17,7 @@
 
 namespace rmk {
 
-class Geometry : public Followable, public Drawable, public Fillable {
+class Geometry : public Followable, public Printable, public Trackable {
 
 protected:
     Vec2d             m_center{0.0f};
@@ -60,8 +60,8 @@ public:
     virtual Vec2d center(void)              const noexcept override = 0;
 
 public:
-    void draw(const Drawable&) const noexcept override;
-    void fill(const Fillable&) const noexcept override;
+    void draw(const Printable&) const noexcept override;
+    void fill(const Printable&) const noexcept override;
 
 public:
     virtual bool hasIntersected(const Geometry&) const noexcept = 0;

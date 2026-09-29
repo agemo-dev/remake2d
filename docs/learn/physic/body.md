@@ -208,7 +208,7 @@ if you want a simple sprite, you can use animation too . just don't play it .
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| PhysicBody | Yes | Yes | Trackable, Fillable and Drawable |
+| PhysicBody | Yes | Yes | Trackable, Printable and Printable |
 | StaticBody | Yes | Yes | PhysicBody |
 | DynamicBody | Yes | Yes | PhysicBody |
 

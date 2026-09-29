@@ -77,7 +77,7 @@ int main(void) {
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| Area | Yes | Yes | Drawable and Fillable |
+| Area | Yes | Yes | Printable and Printable |
 
 ---
 

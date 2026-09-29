@@ -40,6 +40,7 @@ Dim2d meterToPixel(const Dim2d&);
 } // namespace physic
 
 namespace file {
+    void createParentPath(std::string_view)       noexcept;
     std::string jump(std::span<std::string_view>) noexcept;
 } // namespace file
 

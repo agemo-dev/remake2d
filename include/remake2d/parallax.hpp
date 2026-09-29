@@ -8,13 +8,14 @@
 #include <remake2d/private/draw.hpp>
 #include <remake2d/private/update.hpp>
 #include <remake2d/config/forward.hpp>
+
 #include <vector>
 
 
 namespace rmk {
 
 
-class Parallax : public Fillable, public Trackable<Parallax> {
+class Parallax : public Printable, public Trackable {
 private:
     struct Layer {
         Sprite sprite_a;
@@ -57,7 +58,8 @@ private:
     void _moveAndResize(const Vec2d&, const Dim2d&) noexcept;
 
 public:
-    void fill(const Fillable&) const noexcept override;
+    void draw(const Printable&) const noexcept override;
+    void fill(const Printable&) const noexcept override;
 
 public:
     ~Parallax(void);

@@ -92,26 +92,6 @@ void initLuaEntity(void) noexcept {
         "onMoveLeft"  , &DynamicBody::onMoveLeft,
         "onMoveRight" , &DynamicBody::onMoveRight
     );
-
-    script._registerEngineType<Actor>("Actor", [](SolState::Type& ut) {
-        ut["update"]        = &Actor::update;
-        ut["addChild"]      = &Actor::addChild;
-        ut["removeChild"]   = &Actor::removeChild;
-        ut["parent"]        = [](Actor& self) -> UnsafeTracker<Actor>               { return self.parent();   };
-        ut["children"]      = [](Actor& self) -> std::vector<UnsafeTracker<Actor>>& { return self.children(); };
-        ut["active"]        = sol::overload(
-            [](Actor& self)         { return self.active(); },
-            [](Actor& self, bool a) { self.active(a);       }
-        );
-    });
-
-    script._registerEngineType<StaticActor, StaticActor(const Geometry&)>("StaticActor", nullptr, type::base<Actor>,
-        "body", &StaticActor::body
-    );
-
-    script._registerEngineType<DynamicActor, DynamicActor(const Geometry&)>("DynamicActor", nullptr, type::base<Actor>,
-        "body", &DynamicActor::body
-    );
 }
 
 } // namespace solstat

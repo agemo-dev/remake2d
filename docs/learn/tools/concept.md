@@ -37,10 +37,7 @@ template<typename S>
 concept IsSavable = std::derived_from<S, class Savable>;
 
 template<typename T>
-concept IsDrawable = std::derived_from<T, class Drawable>;
-
-template<typename T>
-concept IsFillable = std::derived_from<T, class Fillable>;
+concept IsPrintable = std::derived_from<T, class Printable>;
 
 template<typename F>
 concept IsFollowable = std::derived_from<F, class Followable>;
@@ -60,8 +57,7 @@ concept IsTrackable = std::is_base_of_v<class TrackableBaseID, T>;
 - `IsActor`      : constrains a type to implement `Actor`.
 - `IsSavable`    : constrains a type to implement `Savable`.
 - `IsTrackable`  : constrains a type to implement `Trackable`.
-- `IsDrawable`   : constrains a type to implement `Drawable`.
-- `IsFillable`   : constrains a type to implement `Fillable`.
+- `IsPrintable`  : constrains a type to implement `Printable`.
 - `IsFollowable` : constrains a type to implement `Followable`.
 
 These show up throughout the engine whenever a function or class needs to stay generic while still rejecting arbitrary types:
@@ -89,7 +85,7 @@ concept IsBasicType = std::same_as<T, struct Vec2d>         ||
                       std::same_as<T, struct Triangulation> ||
                       std::same_as<T, struct Color>         ||
                       std::same_as<T, struct HSL>           ||
-					  std::is_arithmetic_v<T>;
+                      std::is_arithmetic_v<T>;
 ```
 
 This concept is what lets any base value stream directly into a `Text` with `<<`, without overloading the operator for each type one by one:

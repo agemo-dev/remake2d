@@ -11,7 +11,7 @@
 
 namespace rmk {
 
-class Actor : public Trackable<Actor> {
+class Actor : public Trackable {
 
 protected:
     std::vector<UnsafeTracker<Actor>> m_children;

@@ -96,6 +96,7 @@ void init (void) noexcept {
 
 
 namespace sound {
+
 void initQueue(void) noexcept {
     static bool isInit = false;
 
@@ -106,6 +107,7 @@ void initQueue(void) noexcept {
     }
     isInit = true;
 }
+
 } //namespace sound
 
 } //namespace config

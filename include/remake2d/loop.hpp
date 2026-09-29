@@ -10,6 +10,7 @@
 namespace rmk {
 
 class MainRenderLoop {
+
 private:
     bool                            m_is_running{false};
     std::function<void(void)>       m_execute{nullptr};

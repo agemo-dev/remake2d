@@ -186,7 +186,7 @@ Includes every header of the general-purpose modules that act as a sort of
 
 ### Traits
 
-Includes every trait module of the engine, such as: Drawable, Followable, or
+Includes every trait module of the engine, such as: Printable, Followable, or
 Updatable. For this interface, the headers involved won't be listed here,
 since this interface **cheats** by including the engine's private headers
 directly to avoid pulling in unnecessary content; though the more curious
