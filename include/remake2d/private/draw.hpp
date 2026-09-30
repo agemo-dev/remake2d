@@ -61,7 +61,7 @@ public:
     i16   layer(void) const noexcept;
 
 public:
-    from(const Printable&);
+    void from(const Printable&) const noexcept;
 
 protected:
     void _inheritData(Color, i16) const noexcept;

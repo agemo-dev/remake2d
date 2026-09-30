@@ -1,4 +1,5 @@
 #include <remake2d/all/everything.hpp>
+#include <remake2d/config/otracker.hpp>
 
 namespace rmk {
 namespace config {
@@ -6,7 +7,7 @@ namespace solstat {
 
 void initLuaSignal(void) noexcept {
 
-    script._registerEngineType<_EventSignal<>>                         ("_EventSignal", [](SolState::Type& ut) {
+    script._registerEngineType<_EventSignal<>>                         ("_EventSignal::void", [](SolState::Type& ut) {
         ut["isActive"] = &_EventSignal<>::isActive;
     });
     script._registerEngineType<_EventSignal<Vec2d>>                    ("_EventSignal::Vec2d", [](SolState::Type& ut) {
@@ -32,9 +33,9 @@ void initLuaSignal(void) noexcept {
         ut["isActive"] = &_EventSignal<u32, Vec2d>::isActive;
     });
 
-    script._registerEngineType<_PhysicSignal<>>                        ("_PhysicSignal::");
-    script._registerEngineType<_PhysicSignal<DynamicBody*>>            ("_PhysicSignal::DynamicBody");
-    script._registerEngineType<_PhysicSignal<PhysicBody*, PhysicBody*>>("_PhysicSignal::PhysicBody_PhysicBody");
+    script._registerEngineType<_PhysicSignal<>>                                        ("_PhysicSignal::void");
+    script._registerEngineType<_PhysicSignal<Tracker<DynamicBody>>>                    ("_PhysicSignal::DynamicBody");
+    script._registerEngineType<_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>>>("_PhysicSignal::PhysicBody_PhysicBody");
 
     script._registerEngineType<_TimerSignal<>>                         ("_TimerSignal");
 }

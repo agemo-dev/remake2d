@@ -17,7 +17,7 @@
 
 namespace rmk {
 
-class Geometry : public Followable, public Printable, public Trackable {
+class Geometry : public Followable, public Printable {
 
 protected:
     Vec2d             m_center{0.0f};

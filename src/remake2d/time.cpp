@@ -282,13 +282,13 @@ TimerManager::TimerManager(void) {
 
 void TimerManager::_registerTimer(Timer* t) noexcept {
     auto& vec = m_timers;
-    auto it   = std::find(vec.begin(), vec.end(), t.tracker());
-    if(it == m_timers.end()) m_timers.push_back(t.tracker());
+    auto it   = std::find(vec.begin(), vec.end(), t->tracker());
+    if(it == m_timers.end()) m_timers.push_back(t->tracker());
 }
 
 void TimerManager::_unregisterTimer(Timer* t) noexcept {
     auto& vec = m_timers;
-    auto it   = std::find(vec.begin(), vec.end(), t.tracker());
+    auto it   = std::find(vec.begin(), vec.end(), t->tracker());
     if(it != vec.end()) vec.erase(it);
 }
 

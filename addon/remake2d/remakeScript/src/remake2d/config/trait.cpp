@@ -7,22 +7,22 @@ namespace solstat {
 
 void initLuaTrait(void) noexcept {
 
-    script._registerEngineType<Trackable>      ("Trackable", [](SolStat::Type& ut) {
+    script._registerEngineType<Trackable>      ("Trackable", [](SolState::Type& ut) {
         ut["tracker"] = &Trackable::tracker;
     });
 
-    script._registerEngineType<Followable>     ("Followable", [](SolStat::Type& ut) {
+    script._registerEngineType<Followable>     ("Followable", [](SolState::Type& ut) {
         ut["center"] = &Followable::center;
     }, rmk::type::base<Trackable>);
 
-    script._registerEngineType<Updatable>      ("Updatable", [](SolStat::Type& ut) {
+    script._registerEngineType<Updatable>      ("Updatable", [](SolState::Type& ut) {
         ut["update"] = &Updatable::update;
-    });
+    }, rmk::type::base<Trackable>);
 
-    script._registerEngineType<Savable>        ("Savable", [](SolStat::Type& ut) {
+    script._registerEngineType<Savable>        ("Savable", [](SolState::Type& ut) {
         ut["sdata"] = &Savable::sdata;
         ut["ldata"] = &Savable::ldata;
-    }, rmk::type::base<Trackable>);
+    });
 
     script._registerEngineType<Printable>      ("Printable", nullptr, rmk::type::base<>,
 

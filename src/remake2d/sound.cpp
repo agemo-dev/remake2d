@@ -26,6 +26,10 @@ Music::Music(std::string_view path, u8 vol) {
     if(!m_music.data) rmk_dynamicAssert(rmk::SoundError, (std::string(error::sound::sound_no_load) + " : " + Mix_GetError()));
     m_is_playing = false;
     volume(vol);
+
+    onFinish.joinPriority([&](){
+        rmk::Music::m_current_music = nil;
+    });
 }
 
 void Music::volume(u8 volume) noexcept {
@@ -87,6 +91,12 @@ void SFX::play(i8 loop) {
     Mix_Volume(m_channel, m_volume);
     Mix_PlayChannel(m_channel, m_sfx.data, loop < -1 ? -1 : loop);
     m_is_playing = true;
+
+
+    onFinish.joinPriority([&](){
+        rmk::SFX::m_free_channels.push(m_channel);
+        rmk::SFX::m_channel_owners[m_channel] = nil;
+    });
 }
 
 void SFX::stop(void) {

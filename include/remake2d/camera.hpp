@@ -17,7 +17,7 @@ public:
 	virtual Vec2d center(void) const noexcept = 0;
 
 public:
-    rmk_heritableBaseClassTrackable(Followable);
+    rmk_heritableBaseClass(Followable);
 };
 
 class Camera : public Trackable {
@@ -39,7 +39,7 @@ public:
     Camera(void);
     Camera(const Vec2d&, const Dim2d&, const Dim2d& = nil);
 
-    Camera(Camera&&);
+    Camera(Camera&&)                 = default;
     Camera(const Camera&)            = default;
     Camera& operator=(Camera&&)      = default;
     Camera& operator=(const Camera&) = default;

@@ -54,7 +54,7 @@ private:
     MUS    m_music;
 
 private:
-    inline static Tracker<Music> m_current_music;
+    inline static UnsafeTracker<Music> m_current_music;
 
 public:
     Music(std::string_view, u8 = 64);
@@ -86,7 +86,7 @@ private:
 
 private:
     inline static std::queue<u32>                               m_free_channels;
-    inline static std::array<Tracker<SFX>, (usize)channel::max> m_channel_owners;
+    inline static std::array<UnsafeTracker<SFX>, (usize)channel::max> m_channel_owners;
 
 public:
     SFX(std::string_view, u8 = 64);

@@ -19,8 +19,8 @@ Texture<S>::Texture(std::string_view path, const S& shape)
         m_textures[e->m_renderer] = td;
     }
     m_use_clip = false;
-	m_verts_dirty = true;
-	_calculateVertices();
+    _dirty(true);
+    _calculateVertices();
 }
 
 template<IsShape S>
@@ -35,44 +35,44 @@ Texture<S>& Texture<S>::operator=(const Texture<S>& other) {
 }
 
 template<IsShape S>
-void Texture<S>::move(const Vec2d& center) noexcept { 
-	m_shape.move(center);
-	m_verts_dirty = true;
-	_calculateVertices();
+void Texture<S>::move(const Vec2d& center) noexcept {
+    m_shape.move(center);
+    _dirty(true);
+    _calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::rotate(f32 angle) noexcept {
-	m_shape.rotate(angle);
-	m_verts_dirty = true;
-	_calculateVertices();
+    m_shape.rotate(angle);
+    _dirty(true);
+    _calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::scale(const Fact2d& scaling) noexcept {
-	m_shape.scale(scaling);
-	m_verts_dirty = true;
-	_calculateVertices();
+    m_shape.scale(scaling);
+    _dirty(true);
+    _calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::resize(const Dim2d& size) noexcept {
-	m_shape.resize(size);
-	m_verts_dirty = true;
-	_calculateVertices();
+    m_shape.resize(size);
+    _dirty(true);
+    _calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::transform(const Vec2d& center, f32 angle, const Fact2d& scaling) noexcept {
-	m_shape.transform(center, angle, scaling);
-	m_verts_dirty = true;
-	_calculateVertices();
+    m_shape.transform(center, angle, scaling);
+    _dirty(true);
+    _calculateVertices();
 }
 
 
 template<IsShape S>
-const Geometry& Texture<S>::shape(void) const noexcept { 
-	return m_shape;
+const Geometry& Texture<S>::shape(void) const noexcept {
+    return m_shape;
 }
 
 template<IsShape S>
@@ -81,18 +81,18 @@ std::vector<Vertex> Texture<S>::vertices(void) const noexcept {
 }
 
 template<IsShape S>
-Vec2d Texture<S>::center(void) const noexcept { 
-	return m_shape.center();
+Vec2d Texture<S>::center(void) const noexcept {
+    return m_shape.center();
 }
 
 template<IsShape S>
-Dim2d Texture<S>::size(void)   const noexcept { 
-	return m_shape.size();
+Dim2d Texture<S>::size(void)   const noexcept {
+    return m_shape.size();
 }
 
 template<IsShape S>
-Dim2d Texture<S>::realSize(void) const noexcept { 
-	return m_real_size;
+Dim2d Texture<S>::realSize(void) const noexcept {
+    return m_real_size;
 }
 
 template<IsShape S>
@@ -109,7 +109,7 @@ template<IsShape S>
 void Texture<S>::clip(const Vec2d& clip_pos, const Dim2d& clip_size) noexcept {
     m_clip_pos = clip_pos;
     m_clip_size = clip_size;
-    
+
     if (clip_size.w > 0 && clip_size.h > 0) {
         Area rect(clip_pos, clip_size);
         m_srcrect = rect;
@@ -118,7 +118,7 @@ void Texture<S>::clip(const Vec2d& clip_pos, const Dim2d& clip_size) noexcept {
         m_use_clip = false;
     }
 
-	m_verts_dirty = true;
+    _dirty(true);
     _calculateVertices();
 }
 
@@ -128,7 +128,7 @@ void Texture<S>::unclip(void) noexcept {
     m_clip_size = {0, 0};
     m_use_clip = false;
 
-	m_verts_dirty = true;
+    _dirty(true);
     _calculateVertices();
 }
 
@@ -153,14 +153,13 @@ void Texture<S>::_copy(const Texture<S>& other) noexcept {
         td.current_color = rmk::color::white;
         this->m_textures[renderer] = td;
     }
-    this->m_verts_dirty = true;
+    this->_dirty(true);
     this->_calculateVertices();
 }
 
 template<IsShape S>
 void Texture<S>::_calculateVertices(void) noexcept {
     if (!m_verts_dirty) return;
-    m_verts_dirty = false;
     m_shape._triangulate();
 
     auto verts = m_shape._verticesImpl();
@@ -178,11 +177,11 @@ void Texture<S>::_calculateVertices(void) noexcept {
 
     f32 w = maxX - minX;
     f32 h = maxY - minY;
-	
+
     if (w == 0.0f || h == 0.0f) {
-		m_vertices.clear();
-		return;
-	}
+        m_vertices.clear();
+        return;
+    }
 
     f32 uMin = 0.0f, uRange = m_real_size.w;
     f32 vMin = 0.0f, vRange = m_real_size.h;
@@ -203,6 +202,7 @@ void Texture<S>::_calculateVertices(void) noexcept {
     }
 
     m_vertices = std::move(verts);
+    m_verts_dirty = false;
 }
 
 
@@ -211,12 +211,12 @@ SDL_Texture* Texture<S>::_ownerTexture(SDL_Renderer* renderer) const noexcept {
     auto it = m_textures.find(renderer);
     if (it != m_textures.end()) return it->second.texture;
 
-	TextureData td;
-	td.texture = sdl.createTextureFromSurface(renderer, m_surface.data);
-	if (!td.texture) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + sdl.getError()));
-	m_textures[renderer] = td;
+    TextureData td;
+    td.texture = sdl.createTextureFromSurface(renderer, m_surface.data);
+    if (!td.texture) rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + sdl.getError()));
+    m_textures[renderer] = td;
 
-	return td.texture;
+    return td.texture;
 }
 
 
@@ -233,5 +233,5 @@ const Area* Texture<S>::getClipRect(void) const noexcept {
     return m_use_clip ? &m_srcrect : nullptr;
 }
 
-} //namespace rmk
+} // namespace rmk
 #endif

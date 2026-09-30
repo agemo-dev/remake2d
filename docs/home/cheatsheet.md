@@ -807,12 +807,13 @@ void  limit(const Dim2d&)  noexcept;         // set world boundaries
 void  resize(const Dim2d&) noexcept;         // set viewport size
 void  smoothing(f32)       noexcept;         // set smoothing factor (0.0 – 1.0)
 
-f32   zoom(void)      const noexcept;        // get zoom
-Dim2d size(void)      const noexcept;        // get viewport size
-Vec2d center(void)    const noexcept;        // get camera position
-Dim2d limit(void)     const noexcept;        // get world boundaries
-Vec2d offset(void)    const noexcept;        // get last frame offset
-f32   smoothing(void) const noexcept;        // get smoothing factor
+f32   zoom(void)       const noexcept;       // get zoom
+Dim2d size(void)       const noexcept;       // get viewport size
+Vec2d center(void)     const noexcept;       // get camera position
+Vec2d viewCenter(void) const noexcept;       // get offset between followed point and camera (affected by smoothing)
+Dim2d limit(void)      const noexcept;       // get world boundaries
+Vec2d offset(void)     const noexcept;       // get last frame offset
+f32   smoothing(void)  const noexcept;       // get smoothing factor
 
 Vec2d followedPoint(void) const noexcept;    // get tracked point
 void  follow(const Followable&) noexcept;    // track a followable object

@@ -27,6 +27,11 @@ class Window;
 
 
 class TextureBase : public Printable, public Trackable {
+
+protected:
+    mutable bool   m_use_clip{false};
+    mutable bool   m_verts_dirty{true};
+
 public:
     TextureBase(void)                            = default;
     TextureBase(TextureBase&&)                   = default;
@@ -63,6 +68,9 @@ public:
     void draw(const Printable&) const noexcept override;
     void fill(const Printable&) const noexcept override;
 
+protected:
+    void _dirty(bool) const noexcept;
+
 public:
     virtual ~TextureBase(void) = default;
 
@@ -82,13 +90,11 @@ protected:
 protected:
     S                                               m_shape;
     Area                                            m_srcrect{0,0,0,0};
-    bool                                            m_use_clip{false};
-    bool                                            m_verts_dirty{true};
     Vec2d                                           m_clip_pos{0};
     Dim2d                                           m_clip_size{0};
     Dim2d                                           m_real_size{0};
     std::vector<Vertex>                             m_vertices;
-    Surface                                          m_surface;
+    Surface                                         m_surface;
     mutable std::map<SDL_Renderer*, TextureData>    m_textures;
 
 protected:

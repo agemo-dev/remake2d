@@ -34,6 +34,7 @@ class PhysicBody : public Trackable, public Printable {
 public:
     using AnimMap      = std::map<std::string,  Animation>;
     using ContourCache = IVector<Vec2d, (usize)point::max>;
+    using Slot         = std::unique_ptr<UnsafeTracker<PhysicBody>>;
 
 protected:
     struct ShapeCache {
@@ -59,11 +60,12 @@ protected:
     u64                     m_id{0};
     Vec2d                   m_cached_velocity{0};
     f32                     m_current_angle{0.0f};
+    Slot                    m_tracker{nullptr};
 
 public:
-    _PhysicSignal<PhysicBody*, PhysicBody*> onContact;
-    _PhysicSignal<PhysicBody*, PhysicBody*> onContactEnd;
-    _PhysicSignal<PhysicBody*, PhysicBody*> onContactStart;
+    _PhysicSignal<UnsafeTracker<PhysicBody>, UnsafeTracker<PhysicBody>> onContact;
+    _PhysicSignal<UnsafeTracker<PhysicBody>, UnsafeTracker<PhysicBody>> onContactEnd;
+    _PhysicSignal<UnsafeTracker<PhysicBody>, UnsafeTracker<PhysicBody>> onContactStart;
 
 public:
     PhysicBody(const Geometry&);
@@ -158,11 +160,11 @@ protected:
     Area m_personal_limit{0, 0, 0, 0};
 
 public:
-    _PhysicSignal<DynamicBody*> onMove;
-    _PhysicSignal<DynamicBody*> onMoveUp;
-    _PhysicSignal<DynamicBody*> onMoveDown;
-    _PhysicSignal<DynamicBody*> onMoveLeft;
-    _PhysicSignal<DynamicBody*> onMoveRight;
+    _PhysicSignal<UnsafeTracker<DynamicBody>> onMove;
+    _PhysicSignal<UnsafeTracker<DynamicBody>> onMoveUp;
+    _PhysicSignal<UnsafeTracker<DynamicBody>> onMoveDown;
+    _PhysicSignal<UnsafeTracker<DynamicBody>> onMoveLeft;
+    _PhysicSignal<UnsafeTracker<DynamicBody>> onMoveRight;
 
 public:
     explicit DynamicBody(const Geometry&);

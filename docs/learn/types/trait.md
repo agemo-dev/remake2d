@@ -9,7 +9,7 @@ If you are reading the documentation in order (which is strongly
 recommended), you have probably already noticed this kind of section at
 the end of the next pages:
 
-| Type | Copyable | Movable | Traits |
+| Type | Copyable | Movable | Bases and Traits |
 |---|---|---|---|
 | Window | No | Yes | Trackable |
 

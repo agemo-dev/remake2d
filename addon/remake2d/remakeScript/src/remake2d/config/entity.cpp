@@ -29,7 +29,7 @@ void initLuaEntity(void) noexcept {
             [](PhysicBody& self)                     { return self.animation();  },
             [](PhysicBody& self, std::string_view t) { return self.animation(t); }
         );
-    }, type::base<>,
+    }, type::base<Trackable>,
         "onContact"       , &PhysicBody::onContact,
         "onContactEnd"    , &PhysicBody::onContactEnd,
         "onContactStart"  , &PhysicBody::onContactStart

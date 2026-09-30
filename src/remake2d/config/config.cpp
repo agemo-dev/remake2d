@@ -11,7 +11,7 @@ namespace rmk {
 void _hookMusicFinished(void) {
     if(!rmk::Music::m_current_music) return;
 
-    auto* mus = rmk::Music::m_current_music.locate<Music>();
+    auto& mus = rmk::Music::m_current_music;
 
     if(!mus) return;
     if(mus->m_loops_remaining < 0) {
@@ -22,14 +22,13 @@ void _hookMusicFinished(void) {
     } else {
         mus->stop();
         mus->onFinish.emit();
-        rmk::Music::m_current_music = nil;
     }
 }
 
  void _channelFinished(int channel) {
     if(channel >= (int)system.info.channelCount()) return;
 
-    rmk::SFX* sfx = rmk::SFX::m_channel_owners[channel].locate<SFX>();
+    auto& sfx = rmk::SFX::m_channel_owners[channel];
 
     if(!sfx) return;
     if(sfx->m_loops_remaining < 0) {
@@ -38,8 +37,6 @@ void _hookMusicFinished(void) {
         sfx->m_loops_remaining -= 1;
 		sfx->onRepeat.emit();
     } else {
-        rmk::SFX::m_free_channels.push(channel);
-        rmk::SFX::m_channel_owners[channel] = nil;
         sfx->m_is_playing = false;
         sfx->onFinish.emit();
     }

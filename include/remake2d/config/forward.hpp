@@ -55,14 +55,6 @@ class TileGrid;
 class Parallax;
 struct TileMapData;
 
-class Savable;
-class Followable;
-template<typename T> class Trackable;
-
-template<typename T>       struct Slot;
-template<typename T>       class UnsafeTracker;
-template<IsTrackable SafeType> using Tracker = UnsafeTracker<SafeType>;
-
 template<typename... Args> class Signal;
 template<typename... Args> class Croutine;
 

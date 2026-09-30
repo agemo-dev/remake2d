@@ -31,6 +31,8 @@ PhysicBody::PhysicBody(const Geometry& shape)
         m_shape_cache.points.assign(pts, pts + n);
     }
 
+    m_tracker = std::make_unique<UnsafeTracker<PhysicBody>>(tracker());
+
     _calculateVertices();
 }
 
@@ -46,6 +48,7 @@ PhysicBody::PhysicBody(const PhysicBody& other)
     , m_current_angle(other.m_current_angle)
 {
     _calculateVertices();
+    if (!m_tracker) m_tracker = std::make_unique<UnsafeTracker<PhysicBody>>(tracker());
 }
 
 PhysicBody& PhysicBody::operator=(const PhysicBody& other) {
@@ -60,6 +63,7 @@ PhysicBody& PhysicBody::operator=(const PhysicBody& other) {
         m_needs_sync   = true;
         m_vertices_dirty = true;
         m_current_angle = other.m_current_angle;
+        if (!m_tracker) m_tracker = std::make_unique<UnsafeTracker<PhysicBody>>(tracker());
         _calculateVertices();
     }
     return *this;
@@ -82,6 +86,7 @@ PhysicBody::PhysicBody(PhysicBody&& other) noexcept
     , m_id(other.m_id)
     , m_cached_velocity(other.m_cached_velocity)
     , m_current_angle(other.m_current_angle)
+    , m_tracker(std::move(other.m_tracker))
 {
     onContact      = std::move(other.onContact);
     onContactEnd   = std::move(other.onContactEnd);
@@ -91,8 +96,6 @@ PhysicBody::PhysicBody(PhysicBody&& other) noexcept
     other.m_shape_id  = b2_nullShapeId;
     other.m_id        = 0;
     other.m_current_angle = 0.0f;
-
-    relocate();
 }
 
 PhysicBody& PhysicBody::operator=(PhysicBody&& other) noexcept {
@@ -116,6 +119,7 @@ PhysicBody& PhysicBody::operator=(PhysicBody&& other) noexcept {
         m_id              = other.m_id;
         m_cached_velocity = other.m_cached_velocity;
         m_current_angle   = other.m_current_angle;
+        m_tracker         = std::move(other.m_tracker);
 
         onContact      = std::move(other.onContact);
         onContactEnd   = std::move(other.onContactEnd);
@@ -125,17 +129,16 @@ PhysicBody& PhysicBody::operator=(PhysicBody&& other) noexcept {
         other.m_shape_id = b2_nullShapeId;
         other.m_id       = 0;
         other.m_current_angle = 0.0f;
-
-        relocate();
     }
     return *this;
 }
 
-void PhysicBody::tag(std::string_view t)  noexcept { m_tag = std::string(t); }
+void PhysicBody::tag(std::string_view t)        noexcept { m_tag = std::string(t); }
 std::string PhysicBody::tag(void)         const noexcept { return m_tag; }
 u64 PhysicBody::ID(void)                  const noexcept { return m_id; }
 Vec2d PhysicBody::center(void)            const noexcept { return m_shape_cache.center; }
-Dim2d PhysicBody::size(void)              const noexcept {
+
+Dim2d PhysicBody::size(void) const noexcept {
     if (m_shape_cache.is_circle)
         return { m_shape_cache.radius * 2.0f, m_shape_cache.radius * 2.0f };
     if (m_shape_cache.points.empty()) return {0, 0};
@@ -506,7 +509,7 @@ void PhysicBody::_initBody(b2WorldId world, b2BodyType type,
     bodyDef.position     = {pm.x, pm.y};
 
     tracker();
-    bodyDef.userData     = reinterpret_cast<void*>(m_slot.get());
+    bodyDef.userData     = reinterpret_cast<void*>(m_tracker.get());
 
     m_body               = b2CreateBody(world, &bodyDef);
 
@@ -523,7 +526,7 @@ void PhysicBody::_initBody(b2WorldId world, b2BodyType type,
     }
 
     if (b2Shape_IsValid(m_shape_id)) {
-        b2Shape_SetUserData(m_shape_id, reinterpret_cast<void*>(m_slot.get()));
+        b2Shape_SetUserData(m_shape_id, reinterpret_cast<void*>(m_tracker.get()));
         b2Shape_SetFriction(m_shape_id, friction);
         b2Shape_SetRestitution(m_shape_id, bounce);
         b2Shape_EnableSensorEvents(m_shape_id, !m_solid);
@@ -556,7 +559,7 @@ void PhysicBody::_rebuildShape(void) {
     }
 
     if (b2Shape_IsValid(m_shape_id)) {
-        b2Shape_SetUserData(m_shape_id, reinterpret_cast<void*>(m_slot.get()));
+        b2Shape_SetUserData(m_shape_id, reinterpret_cast<void*>(m_tracker.get()));
         b2Shape_SetFriction(m_shape_id, friction);
         b2Shape_SetRestitution(m_shape_id, restitution);
         b2Shape_EnableSensorEvents(m_shape_id, !m_solid);
@@ -922,12 +925,12 @@ void DynamicBody::_syncAndUpdate(void) {
 
     if (m_cached_velocity.y < -0.01f || m_cached_velocity.y >  0.01f ||
         m_cached_velocity.x < -0.01f || m_cached_velocity.x >  0.01f
-    ) onMove._evaluate(this);
+    ) onMove._evaluate(tracker());
 
-    if (m_cached_velocity.y < -0.01f) onMoveUp._evaluate(this);
-    if (m_cached_velocity.y >  0.01f) onMoveDown._evaluate(this);
-    if (m_cached_velocity.x < -0.01f) onMoveLeft._evaluate(this);
-    if (m_cached_velocity.x >  0.01f) onMoveRight._evaluate(this);
+    if (m_cached_velocity.y < -0.01f) onMoveUp._evaluate(tracker());
+    if (m_cached_velocity.y >  0.01f) onMoveDown._evaluate(tracker());
+    if (m_cached_velocity.x < -0.01f) onMoveLeft._evaluate(tracker());
+    if (m_cached_velocity.x >  0.01f) onMoveRight._evaluate(tracker());
 }
 
 void DynamicBody::_build(b2WorldId world) {

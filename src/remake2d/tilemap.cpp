@@ -150,7 +150,7 @@ void TileMap::draw(const Printable& main) const noexcept {
     from(main);
 
     for (const auto& tile : m_tileset) {
-        tile.draw(main)
+        tile.draw(main);
     }
 
     is_draw_dirty = false;

@@ -10,8 +10,8 @@ class PhysicManager : public Updatable {
 private:
     b2WorldId                                    m_world{b2_nullWorldId};
     std::vector<Tracker<PhysicBody>>             m_bodies;
-    std::vector<Tracker<PhysicBody>>             m_statics;
-    std::vector<Tracker<PhysicBody>>             m_dynamics;
+    std::vector<Tracker<StaticBody>>             m_statics;
+    std::vector<Tracker<DynamicBody>>            m_dynamics;
     std::unordered_map<u64, Tracker<PhysicBody>> m_body_map;
     f32                                          m_gravity{9.8f};
     f32                                          m_ptm{32.0f};
@@ -40,9 +40,9 @@ public:
     void fixedStep(f32)                    noexcept;
     f32  fixedStep(void)             const noexcept;
 
-    std::vector<Tracker<PhysicBody>>  bodies(void)    noexcept;
-    std::vector<Tracker<PhysicBody>>  statics(void)   noexcept;
-    std::vector<Tracker<PhysicBody>>  dynamics(void)  noexcept;
+    std::vector<Tracker<PhysicBody>>    bodies(void)    noexcept;
+    std::vector<Tracker<StaticBody>>    statics(void)   noexcept;
+    std::vector<Tracker<DynamicBody>>   dynamics(void)  noexcept;
 
     void update(void) override;
 
@@ -51,14 +51,17 @@ private:
     PhysicManager(const PhysicManager&)            = delete;
     PhysicManager& operator=(const PhysicManager&) = delete;
 
+private:
     void _rebuildBoundary(void);
-    bool _isValidBody(PhysicBody*)    const;
+    bool _isValidBody(Tracker<PhysicBody>&) const;
+
+private:
     void _registerBody(PhysicBody*)   noexcept;
     void _unregisterBody(PhysicBody*) noexcept;
+    void _stepAndDispatch(f32, i32)   noexcept;
 
-    void _stepAndDispatch(f32, i32) noexcept;
-
-    static PhysicBody* _ownerOf(void*) noexcept;
+    static Tracker<PhysicBody>& _ownerOf(void*) noexcept;
+    template<physic::id ID> void eraseFrom(PhysicBody&);
 
 public:
     ~PhysicManager(void);

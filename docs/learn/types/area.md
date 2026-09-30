@@ -23,7 +23,7 @@ It is composed of four integers:
 
 ##Method
 
-The `Area` type own just one method:
+The `Area` type own three methods:
 
 ```cpp
 Vec2d pos(void)    noexcept; // get Area upper-left position
@@ -35,7 +35,7 @@ Vec2d center(void) noexcept; // get Area center
 
 ## Usage
 
-Its constructor is as follows:
+Its constructors is as follows:
 
 ```cpp
 constexpr Area(void);
@@ -77,7 +77,7 @@ int main(void) {
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| Area | Yes | Yes | Printable and Printable |
+| Area | Yes | Yes | Printable |
 
 ---
 

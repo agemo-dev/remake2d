@@ -138,7 +138,7 @@ void initLuaClass(void) noexcept {
             [](const TextureBase& self, const Geometry& g)    -> bool { return self.hasIntersected(g); },
             [](const TextureBase& self, const TextureBase& o) -> bool { return self.hasIntersected(o); }
         );
-    }, type::base<Printable, Printable>);
+    }, type::base<Printable>);
 
     script._registerEngineType<Sprite, Sprite(std::string_view, Rectangle)>("Sprite", nullptr, type::base<TextureBase>);
 
@@ -323,7 +323,7 @@ void initLuaClass(void) noexcept {
             [](Sound& self, u8 v) { self.volume(v);       }
         );
         ut["playFor"]  = &Sound::playFor;
-    }, type::base<>,
+    }, type::base<Trackable>,
         "onFinish" , &SFX::onFinish,
         "onRepeat" , &SFX::onRepeat
     );
@@ -400,7 +400,7 @@ void initLuaClass(void) noexcept {
         ut["active"]      = &Timer::active;
         ut["elapsed"]     = &Timer::elapsed;
         ut["elapsedTime"] = &Timer::elapsedTime;
-    }, rmk::type::base<>,
+    }, rmk::type::base<Trackable>,
         "onTimeout" , &Timer::onTimeout
     );
 }

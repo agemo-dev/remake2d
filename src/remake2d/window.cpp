@@ -18,7 +18,7 @@
 
 namespace rmk {
 
-Window::Viewport::Viewport(const Area& z) : m_zone(z), m_camera(z.pos(), z.size()) {}
+Window::Viewport::Viewport(const Area& z) : m_zone(z), m_camera(Vec2d(0), z.size()) {}
 
 Camera& Window::Viewport::camera(void) noexcept {
     return m_camera;
@@ -26,7 +26,6 @@ Camera& Window::Viewport::camera(void) noexcept {
 
 void Window::Viewport::area(const Area& area) noexcept {
     m_zone = area;
-    m_camera.move(area.pos());
     m_camera.resize(area.size());
 }
 

@@ -77,14 +77,14 @@ Now we can display our triangle on screen thanks to the `draw` method of the
 void  Geometry::color(Color color) noexcept; // set color
 Color Geometry::color(void)  const noexcept; // get current color
 
-void Window::draw(const Printable& object, i16 layer = 0) noexcept;
+void Window::draw(const Printable& object) noexcept;
 ```
 
 - color     : draw color
 - object    : drawable object
-- layer     : drawing layer
 
 Your question is probably this:
+
 > The `object` parameter is of type `Printable`, but my figure is of type `Triangle`!
 > Furthermore, Geometry does not have any `color` methods!
 
@@ -125,10 +125,8 @@ int main(void) {
 It is also possible to **fill** the shape with the `fill` method, similar to `draw`:
 
 ```cpp
-void fill(const Printable& shape, i16 layer = 0) noexcept;
+void fill(const Printable& object) noexcept;
 ```
-
-Once again, the `Geometry` class also derives from the `Printable` trait class!
 
 ```cpp
 win.fill(triangle);
@@ -228,7 +226,7 @@ class Circle    : public Ellipse;   // circle (w == h enforced)
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| Geometry | Yes | Yes | Followable, Printable and Printable |
+| Geometry | Yes | Yes | Followable and Printable |
 | Shape | Yes | Yes | Geometry |
 | Shape derived | Yes | Yes | Geometry |
 

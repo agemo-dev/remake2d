@@ -8,11 +8,27 @@
 
 namespace rmk {
 
-constexpr usize  RESERVED_STATICS  = 100;
-constexpr usize  RESERVED_DYNAMICS = 100;
+constexpr usize  RESERVED_STATICS  = 128;
+constexpr usize  RESERVED_DYNAMICS = 128;
 constexpr usize  RESERVED_BODIES   = RESERVED_DYNAMICS + RESERVED_STATICS;
 
 constexpr u16 MAX_SUB_STEPS_PER_FRAME = 5;
+
+template<physic::id ID> void PhysicManager::eraseFrom(PhysicBody& body) {
+
+    if constexpr (ID == physic::id::statics) {
+        auto found = std::find_if(m_statics.begin(), m_statics.end(),
+            [&body](Tracker<StaticBody>& t) { return t.locate() == &body; });
+        if (found != m_statics.end()) m_statics.erase(found);
+    }
+
+    else if constexpr (ID == physic::id::statics) {
+        auto found = std::find_if(m_dynamics.begin(), m_dynamics.end(),
+            [&body](Tracker<DynamicBody>& t) { return t.locate() == &body; });
+        if (found != m_dynamics.end()) m_dynamics.erase(found);
+    }
+}
+
 
 PhysicManager::PhysicManager(void) {
     b2WorldDef worldDef  = b2DefaultWorldDef();
@@ -33,9 +49,8 @@ PhysicManager& PhysicManager::getInstance(void) {
     return instance;
 }
 
-PhysicBody* PhysicManager::_ownerOf(void* shapeUserData) noexcept {
-    if (!shapeUserData) return nullptr;
-    return const_cast<PhysicBody*>(reinterpret_cast<Slot<PhysicBody>*>(shapeUserData)->ptr);
+Tracker<PhysicBody>& PhysicManager::_ownerOf(void* shapeUserData) noexcept {
+    return *reinterpret_cast<Tracker<PhysicBody>*>(shapeUserData);
 }
 
 void PhysicManager::remove(PhysicBody& body) {
@@ -49,14 +64,8 @@ void PhysicManager::remove(PhysicBody& body) {
     body._detachFromWorld();
     m_bodies.erase(it);
 
-    auto eraseFrom = [&body](std::vector<Tracker<PhysicBody>>& vec) {
-        auto found = std::find_if(vec.begin(), vec.end(),
-            [&body](Tracker<PhysicBody>& t) { return t.locate() == &body; });
-        if (found != vec.end()) vec.erase(found);
-    };
-
-         if (body.m_type_id == physic::id::statics)  eraseFrom(m_statics);
-    else if (body.m_type_id == physic::id::dynamics) eraseFrom(m_dynamics);
+         if (body.m_type_id == physic::id::statics)  eraseFrom<physic::id::statics>(body);
+    else if (body.m_type_id == physic::id::dynamics) eraseFrom<physic::id::dynamics>(body);
 }
 
 Area PhysicManager::world(void) const noexcept { return m_world_size; }
@@ -78,9 +87,9 @@ bool PhysicManager::useFixedStep(void)   const noexcept { return m_use_fixed_ste
 void PhysicManager::fixedStep(f32 s) noexcept { m_fixed_step = s > 0.0f ? s : 1.0f / 60.0f; }
 f32  PhysicManager::fixedStep(void)  const noexcept { return m_fixed_step; }
 
-std::vector<Tracker<PhysicBody>>  PhysicManager::bodies(void)    noexcept { return m_bodies;   }
-std::vector<Tracker<PhysicBody>>  PhysicManager::statics(void)   noexcept { return m_statics;  }
-std::vector<Tracker<PhysicBody>>  PhysicManager::dynamics(void)  noexcept { return m_dynamics; }
+std::vector<Tracker<PhysicBody>>   PhysicManager::bodies(void)    noexcept { return m_bodies;   }
+std::vector<Tracker<StaticBody>>   PhysicManager::statics(void)   noexcept { return m_statics;  }
+std::vector<Tracker<DynamicBody>>  PhysicManager::dynamics(void)  noexcept { return m_dynamics; }
 
 void PhysicManager::world(const Area& area) noexcept {
     if (m_world_size.x == area.x && m_world_size.y == area.y &&
@@ -134,10 +143,10 @@ void PhysicManager::_registerBody(PhysicBody *body) noexcept {
 
     body->_build(m_world);
     Tracker<PhysicBody> t = body->tracker();
-    m_bodies.push_back(t);
+    m_bodies.emplace_back(t);
 
-    if (dynamic_cast<StaticBody*>(body))       m_statics.push_back(t);
-    else if (dynamic_cast<DynamicBody*>(body)) m_dynamics.push_back(t);
+         if (body->m_type_id == physic::id::statics)   m_statics.emplace_back(t);
+    else if (body->m_type_id == physic::id::dynamics)  m_dynamics.emplace_back(t);
 
     m_body_map[body->m_id] = t;
 }
@@ -145,20 +154,17 @@ void PhysicManager::_registerBody(PhysicBody *body) noexcept {
 void PhysicManager::_unregisterBody(PhysicBody *body) noexcept {
     m_body_map.erase(body->m_id);
 
-    auto eraseFrom = [body](std::vector<Tracker<PhysicBody>>& vec) {
-        vec.erase(std::remove_if(vec.begin(), vec.end(),
-            [body](Tracker<PhysicBody>& t) { return t.locate() == body; }), vec.end());
-    };
+        m_bodies.erase(std::remove_if(m_bodies.begin(), m_bodies.end(),
+            [body](Tracker<PhysicBody>& t) { return t.locate() == body; }), m_bodies.end());
 
-    eraseFrom(m_bodies);
-         if (body->m_type_id == physic::id::statics)  eraseFrom(m_statics);
-    else if (body->m_type_id == physic::id::dynamics) eraseFrom(m_dynamics);
+         if (body->m_type_id == physic::id::statics)  eraseFrom<physic::id::statics>(*body);
+    else if (body->m_type_id == physic::id::dynamics) eraseFrom<physic::id::dynamics>(*body);
 }
 
-bool PhysicManager::_isValidBody(PhysicBody *body) const {
+bool PhysicManager::_isValidBody(Tracker<PhysicBody>& body) const {
     if (!body) return false;
     auto it = m_body_map.find(body->m_id);
-    return it != m_body_map.end() && it->second.locate() == body;
+    return it != m_body_map.end() && it->second == body;
 }
 
 void PhysicManager::_stepAndDispatch(f32 step, i32 sub_steps) noexcept {
@@ -167,8 +173,8 @@ void PhysicManager::_stepAndDispatch(f32 step, i32 sub_steps) noexcept {
     b2ContactEvents events = b2World_GetContactEvents(m_world);
 
     for (int i = 0; i < events.beginCount; ++i) {
-        auto* a = _ownerOf(b2Shape_GetUserData(events.beginEvents[i].shapeIdA));
-        auto* b = _ownerOf(b2Shape_GetUserData(events.beginEvents[i].shapeIdB));
+        auto& a = _ownerOf(b2Shape_GetUserData(events.beginEvents[i].shapeIdA));
+        auto& b = _ownerOf(b2Shape_GetUserData(events.beginEvents[i].shapeIdB));
         if (a && b && _isValidBody(a) && _isValidBody(b)) {
             a->onContactStart._evaluate(a, b);
             b->onContactStart._evaluate(b, a);
@@ -176,8 +182,8 @@ void PhysicManager::_stepAndDispatch(f32 step, i32 sub_steps) noexcept {
     }
 
     for (int i = 0; i < events.hitCount; ++i) {
-        auto* a = _ownerOf(b2Shape_GetUserData(events.hitEvents[i].shapeIdA));
-        auto* b = _ownerOf(b2Shape_GetUserData(events.hitEvents[i].shapeIdB));
+        auto& a = _ownerOf(b2Shape_GetUserData(events.hitEvents[i].shapeIdA));
+        auto& b = _ownerOf(b2Shape_GetUserData(events.hitEvents[i].shapeIdB));
         if (a && b && _isValidBody(a) && _isValidBody(b)) {
             a->onContact._evaluate(a, b);
             b->onContact._evaluate(b, a);
@@ -185,8 +191,8 @@ void PhysicManager::_stepAndDispatch(f32 step, i32 sub_steps) noexcept {
     }
 
     for (int i = 0; i < events.endCount; ++i) {
-        auto* a = _ownerOf(b2Shape_GetUserData(events.endEvents[i].shapeIdA));
-        auto* b = _ownerOf(b2Shape_GetUserData(events.endEvents[i].shapeIdB));
+        auto& a = _ownerOf(b2Shape_GetUserData(events.endEvents[i].shapeIdA));
+        auto& b = _ownerOf(b2Shape_GetUserData(events.endEvents[i].shapeIdB));
         if (a && b && _isValidBody(a) && _isValidBody(b)) {
             a->onContactEnd._evaluate(a, b);
             b->onContactEnd._evaluate(b, a);

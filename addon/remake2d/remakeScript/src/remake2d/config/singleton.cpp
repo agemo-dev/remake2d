@@ -11,10 +11,10 @@ void initLuaSingleton(sol::table& rmk) noexcept {
         ut["tick"]   = &DeltaTime::tick;
         ut["FPS"]    = &DeltaTime::FPS;
         ut["maxFPS"] = sol::overload(
-            [](DeltaTime& self) { return self.maxFPS(); },
+            [](DeltaTime& self)   { return self.maxFPS(); },
             [](DeltaTime& self, fmax v) { self.maxFPS(v); }
         );
-    });
+    }, rmk::type::base<Updatable>);
     rmk["delta"] = &delta;
 
     script._registerEngineType<PhysicManager>("PhysicManager", [](SolState::Type& ut) {
@@ -42,7 +42,7 @@ void initLuaSingleton(sol::table& rmk) noexcept {
             [](PhysicManager& self) { return self.fixedStep(); },
             [](PhysicManager& self, f32 s) { self.fixedStep(s); }
         );
-    });
+    }, rmk::type::base<Updatable>);
     rmk["physics"] = &physics;
 
     script._registerEngineType<Random>("Random", [](SolState::Type& ut) {

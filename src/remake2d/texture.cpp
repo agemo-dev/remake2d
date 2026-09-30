@@ -184,13 +184,19 @@ void TextureBase::fill(const Printable& main) const noexcept {
     filled = true;
 }
 
+void TextureBase::_dirty(bool stat) const noexcept {
+    m_verts_dirty = stat;
+    is_fill_dirty = stat;
+    is_draw_dirty = stat;
+}
+
 Sprite::Sprite(std::string_view path, const Rectangle& shape)
     : Texture<Rectangle>(path, shape) {}
 
 GlyphAtlas::~GlyphAtlas(void) {
-	for (auto& [renderer, data] : textures) {
-		if (data.texture) sdl.destroyTexture(data.texture);
-	}
+    for (auto& [renderer, data] : textures) {
+        if (data.texture) sdl.destroyTexture(data.texture);
+    }
 }
 
 void FontManager::load(std::string_view tag, std::string_view path, u8 size) {
@@ -329,7 +335,7 @@ void Text::write(std::string_view text) {
     m_current_text  = txt;
 
     m_surface = Surface(sdl.renderUTF8BlendedWrapped(m_font, txt, color::white, (u32)m_max_lengh));
-	if (!m_surface.data) {
+    if (!m_surface.data) {
         rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + sdl.getFontError()));
     }
 
@@ -356,6 +362,7 @@ void Text::write(std::string_view text) {
     for (auto& [renderer, data] : m_textures) {
         if (data.texture) sdl.destroyTexture(data.texture);
     }
+
     m_textures.clear();
 
     for (auto& win : xwindow.m_windows) {
@@ -367,35 +374,36 @@ void Text::write(std::string_view text) {
         }
     }
     m_use_clip = false;
-	m_erase    = false;
-	m_verts_dirty = true;
+    m_erase    = false;
+
+    _dirty(true);
     _calculateVertices();
 }
 
 void Text::append(fmt txt) {
-	switch (txt) {
+    switch (txt) {
 
-		case fmt::nl :
-			append("\n");
-			break;
+        case fmt::nl :
+            append("\n");
+            break;
 
-		case fmt::tab :
-			append("    ");
-			break;
+        case fmt::tab :
+            append("    ");
+            break;
 
-		case fmt::endl :
-			m_erase = true;
-			break;
+        case fmt::endl :
+            m_erase = true;
+            break;
 
-		case fmt::flush :
-			clear();
-			break;
-	}
+        case fmt::flush :
+            clear();
+            break;
+    }
 }
 
 void Text::append(std::string_view text) {
     if (!m_erase) write(m_current_text + std::string(text));
-	else 		  write(text);
+    else          write(text);
 }
 
 void Text::clear(void) {
@@ -403,11 +411,11 @@ void Text::clear(void) {
 }
 
 void Text::maxLengh(u16 l) noexcept {
-	m_max_lengh = l;
+    m_max_lengh = l;
 }
 
 u16 Text::maxLengh(void) const noexcept {
-	return m_max_lengh;
+    return m_max_lengh;
 }
 
 Text::Text(const Text& other) : Texture<Rectangle>(other) {
@@ -423,12 +431,12 @@ Text& Text::operator=(const Text& other) {
 }
 
 void Text::_textCopy(const Text& other) {
-    m_font_name		= other.m_font_name;
-    m_current_text	= other.m_current_text;
-    m_anchor_pos	= other.m_anchor_pos;
-    m_anchor_x		= other.m_anchor_x;
-    m_anchor_y		= other.m_anchor_y;
-    m_font			= other.m_font;
+    m_font_name        = other.m_font_name;
+    m_current_text    = other.m_current_text;
+    m_anchor_pos    = other.m_anchor_pos;
+    m_anchor_x        = other.m_anchor_x;
+    m_anchor_y        = other.m_anchor_y;
+    m_font            = other.m_font;
 }
 
 void Text::_updateWidth(const GlyphAtlas& atlas) noexcept {
@@ -448,17 +456,17 @@ Animation& Animation::operator=(const Animation& other) {
 }
 
 void Animation::_animationCopy(const Animation& other) noexcept {
-    m_spacing 			= other.m_spacing;
-    m_total_clips 		= other.m_total_clips;
-    m_clip_size 		= other.m_clip_size;
-    m_start_pos 		= other.m_start_pos;
-    m_current_clip 		= other.m_current_clip;
-    m_loops_remaining	= other.m_loops_remaining;
-    m_is_playing 		= other.m_is_playing;
-    m_is_paused 		= other.m_is_paused;
-    m_timer 			= other.m_timer;
-    m_clip_duration 	= other.m_clip_duration;
-	relocate();
+    m_spacing             = other.m_spacing;
+    m_total_clips         = other.m_total_clips;
+    m_clip_size         = other.m_clip_size;
+    m_start_pos         = other.m_start_pos;
+    m_current_clip         = other.m_current_clip;
+    m_loops_remaining    = other.m_loops_remaining;
+    m_is_playing         = other.m_is_playing;
+    m_is_paused         = other.m_is_paused;
+    m_timer             = other.m_timer;
+    m_clip_duration     = other.m_clip_duration;
+    relocate();
 }
 
 Animation::Animation(std::string_view path, const Rectangle& shape, u8 total_clips, Dim2d clip_size, Vec2d start_pos, u8 spacing)
@@ -487,8 +495,8 @@ void Animation::_advance(void) {
     m_timer += delta.tick();
 
     if (m_timer >= m_clip_duration) {
-        m_timer 	 = 0.0;
-        i8 next 	 = m_current_clip + 1;
+        m_timer      = 0.0;
+        i8 next      = m_current_clip + 1;
         i8 remaining = m_loops_remaining;
 
         if (next >= m_total_clips) {
@@ -496,10 +504,10 @@ void Animation::_advance(void) {
             if (remaining > 0) m_loops_remaining--;
             else if (remaining == 0) {
                 m_is_playing = false;
-				onFinish.emit();
+                onFinish.emit();
                 return;
             }
-			if (!next) onRepeat.emit();
+            if (!next) onRepeat.emit();
         }
         m_current_clip = next;
     }
@@ -520,7 +528,7 @@ void Animation::stop(void) noexcept {
     m_is_playing   = false;
     m_is_paused    = false;
     m_current_clip = 0;
-    m_timer 	   = 0.0;
+    m_timer        = 0.0;
     clip(m_start_pos, m_clip_size);
     animation._unregisterAnimation(this);
 }

@@ -15,7 +15,7 @@ void Printable::layer(i16 l) noexcept {
     _inheritData(m_color, l);
 }
 
-void Printable::from(const Printable& main) noexcept {
+void Printable::from(const Printable& main) const noexcept {
     if (&main == this) return;
     _inheritData(main.color(), main.layer());
 }
