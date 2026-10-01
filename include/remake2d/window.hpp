@@ -15,6 +15,7 @@
 #include <remake2d/config/forward.hpp>
 
 #include <algorithm>
+#include <bitset>
 #include <string>
 #include <vector>
 #include <stack>

@@ -26,7 +26,11 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O2 -DNDEBUG")
-string(APPEND CMAKE_CXX_FLAGS_DEBUG  " -Wall -Wextra -Werror")
+if(MSVC)
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " /W4")
+else()
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " -Wall -Wextra -Werror")
+endif()
 
 option(USE_NATIVE_OPT      "Enable -march=native optimizations" OFF)
 option(BUILD_SHARED_LIBS   "Build shared libraries"              ON)
@@ -265,10 +269,10 @@ target_compile_definitions(
 target_link_libraries(
     remake2d
     PRIVATE
-        SDL2::SDL2
-        SDL2_ttf::SDL2_ttf
-        SDL2_image::SDL2_image
-        SDL2_mixer::SDL2_mixer
+        $<BUILD_INTERFACE:SDL2::SDL2>
+        $<BUILD_INTERFACE:SDL2_ttf::SDL2_ttf>
+        $<BUILD_INTERFACE:SDL2_image::SDL2_image>
+        $<BUILD_INTERFACE:SDL2_mixer::SDL2_mixer>
         $<$<CXX_COMPILER_ID:GNU>:atomic>
         ${CMAKE_DL_LIBS}
 )

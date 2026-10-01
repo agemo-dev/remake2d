@@ -49,7 +49,7 @@ rmk::Animation walk("player_walk.png", {{400, 300}, {32, 48}}, 6, {32, 48});
 
 ### Playing an animation
 
-Play must be called every frame for the animation to advance; it takes a loop count and a playback speed in frames per second:
+Play must be called once for the animation to advance; it takes a loop count and a playback speed in frames per second:
 
 ```cpp
 // In render loop
@@ -94,14 +94,13 @@ int main () {
             "texture3.png",                 // path to animation sheet
             {win.center(), {320, 360}},     // Printing rectangle
             4,                              // 4 clips
-            {32, 36},                       // clip size
-            {0, 0}                          // clip position
+            {32, 36}                        // clip size
     );
 
     anim.play(-1, 8);                       // infinity loop + 8 fps speed
 
     rmk::loop.execute(win, [&] (){
-        win.clear(rmk::color::green);     // clear screen on green
+        win.clear(rmk::color::green);       // clear screen on green
         win.fill(anim);                     // fill current clip
     });
 

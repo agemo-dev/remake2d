@@ -17,7 +17,12 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O2 -DNDEBUG")
-string(APPEND CMAKE_CXX_FLAGS_DEBUG   " -Wall -Wextra -Werror")
+
+if(MSVC)
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " /W4")
+else()
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " -Wall -Wextra -Werror")
+endif()
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)

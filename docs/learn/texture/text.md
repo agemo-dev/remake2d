@@ -37,13 +37,17 @@ u16  maxLengh(void) const noexcept; // get max wrap length
 Before a `Text` can be created, its font must be loaded once through the singleton `font`:
 
 ```cpp
+void load(std::string_view tag, std::string_view path, u8 font_size);
+```
+
+```cpp
 rmk::font.load("arial", "arial.ttf", 24);
 ```
 
 ### Creating text
 
 ```cpp
-Text(std::string_view font, Vec2d pos);
+Text(std::string_view font_tag, Vec2d pos);
 ```
 
 ```cpp
@@ -73,10 +77,10 @@ Append also accepts an `fmt` token instead of a string, for control characters t
 
 ```cpp
 enum fmt : u8 {
-	nl,     // insert a newline
-	tab,    // insert a tab
-	endl,   // mark the next append as a fresh write, erasing current content first
-	flush   // clear the text immediately
+    nl,     // insert a newline
+    tab,    // insert a tab
+    endl,   // mark the next append as a fresh write, erasing current content first
+    flush   // clear the text immediately
 };
 ```
 
