@@ -851,14 +851,14 @@ TileMap(std::string_view tileset_path, TileMapData data); // create tile map
 using TileID       = i16;                          // tile identifier type
 using TileTemplate = std::vector<TileID>;          // tile layout type
 
-Vec2d  center(void) const noexcept;                // get map position
-Dim2d  size(void) const noexcept;                  // get map size
-Dim2d  clip(void) const noexcept;                  // get tile clip size
-Grid2d cut(void) const noexcept;                   // get grid dimensions
+Vec2d  center(void)    const noexcept;             // get map position
+Dim2d  size(void)      const noexcept;             // get map size
+Dim2d  clip(void)      const noexcept;             // get tile clip size
+Grid2d cut(void)       const noexcept;             // get grid dimensions
 TileMapData data(void) const noexcept;             // get all grid data
 
-void   move(Vec2d) noexcept;                       // move map
-void   resize(Dim2d) noexcept;                     // resize map
+void   move(Vec2d)       noexcept;                 // move map
+void   resize(Dim2d)     noexcept;                 // resize map
 void   counterStart(i16) noexcept;                 // set starting tile ID offset
 void   tag(std::string_view, TileID);              // assign a tag to a tile ID
 
@@ -880,16 +880,16 @@ u32         tileCount(TileID) const noexcept;      // count of a specific tile t
 
 ```cpp
 TileGrid(const Vec2d& center, const Dim2d& size, const Grid2d& cut); // create a grid
-void move(const Vec2d&) noexcept;     // move grid center
-void cut(const Grid2d&) noexcept;     // change grid divisions
+void move(const Vec2d&)   noexcept;   // move grid center
+void cut(const Grid2d&)   noexcept;   // change grid divisions
 void resize(const Dim2d&) noexcept;   // resize grid
 
-usize         count(void) const noexcept;           // total number of cells
-Dim2d         size(void) const noexcept;            // grid size
-Grid2d        cut(void) const noexcept;             // current grid divisions
-Vec2d         center(void) const noexcept;          // grid center
+usize         count(void)         const noexcept;   // total number of cells
+Dim2d         size(void)          const noexcept;   // grid size
+Grid2d        cut(void)           const noexcept;   // current grid divisions
+Vec2d         center(void)        const noexcept;   // grid center
 Area          cell(const Grid2d&) const noexcept;   // get a specific cell area by (col, row)
-std::vector<Area> cells(void) const noexcept;       // get all cell areas
+std::vector<Area> cells(void)     const noexcept;   // get all cell areas
 ```
 
 ---
@@ -898,12 +898,12 @@ std::vector<Area> cells(void) const noexcept;       // get all cell areas
 
 ```cpp
 Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Sprite>& sprites, const std::vector<u8>& quotients); // create parallax background
-void  move(const Vec2d&) noexcept;     // move background
-void  resize(const Dim2d&) noexcept;   // resize background
-void  velocity(const Vec2d&) noexcept; // set scroll speed
-Vec2d velocity(void) const noexcept;   // get scroll speed
-Dim2d size(void) const noexcept;       // get size
-Vec2d center(void) const noexcept;     // get center
+void  move(const Vec2d&)     noexcept;  // move background
+void  resize(const Dim2d&)   noexcept;  // resize background
+void  velocity(const Vec2d&) noexcept;  // set scroll speed
+Vec2d velocity(void)   const noexcept;  // get scroll speed
+Dim2d size(void)       const noexcept;  // get size
+Vec2d center(void)     const noexcept;  // get center
 ```
 
 ---
@@ -928,13 +928,14 @@ Data(std::string_view);
 Data(std::vector<Data>);
 Data(std::map<std::string, Data>);
 
-static Data map(std::span<std::pair<const std::string, Data>>); // create map
 static Data list(std::span<Data>);                              // create list
+static Data map(std::span<std::pair<const std::string, Data>>); // create map
 
-const Data& operator[](std::string_view key) const;     // access map field by key
 const Data& operator[](usize idx) const;                // access list element by index
-template<typename T> T get(std::string_view key) const; // typed field access
+const Data& operator[](std::string_view key) const;     // access map field by key
+
 template<typename T> operator T(void) const;            // implicit conversion
+template<typename T> T get(std::string_view key) const; // typed field access
 
 // Savable
 virtual Data sdata(void) const  = 0;  // serialize to Data
@@ -956,8 +957,9 @@ template<IsSavable T> friend DataFile& operator<<(DataFile&, const T&); // strea
 template<IsSavable T> friend DataFile& operator>>(DataFile&, T&);       // stream-load a savable object
 
 // SaveManager (singleton data)
-std::string root(void) const noexcept;          // get root directory
+std::string root(void)       const noexcept;    // get root directory
 void        root(std::string_view) noexcept;    // set root directory
+
 bool        isInitialized(void) const noexcept; // check if initialized
 ```
 
@@ -1075,7 +1077,7 @@ bool isRunning(void) const noexcept;                    // check if loop is acti
 
 ```cpp
 u32  seed(void) noexcept;                   // get current seed
-void seed(u32) noexcept;                    // set seed
+void seed(u32)  noexcept;                   // set seed
 
 u32  randSeed(void) noexcept;               // generate a hardware random seed
 void rollSeed(void) noexcept;               // generate and apply a new random seed
@@ -1195,5 +1197,3 @@ Signal<> onFileChanged;                       // emitted when script file change
 
 !!! info
     Lua script execution requires the `remakeScript` add-on to be built and linked (`COMPONENTS Script`). See [Installation](../learn/install/install.md#components) for details.
-
----

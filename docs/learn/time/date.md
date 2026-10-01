@@ -78,5 +78,13 @@ if (release.dayIs(today)) { /* releases today */ }
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Date | Yes | Yes | None |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](chrono.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](clock.md){ .md-button .md-button--primary }

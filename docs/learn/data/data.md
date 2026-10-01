@@ -106,6 +106,14 @@ rmk::Data first = inv[0];
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Data | Yes | Yes | None |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](../tools/scene.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](datafile.md){ .md-button .md-button--primary }
 

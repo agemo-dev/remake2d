@@ -105,5 +105,13 @@ Changing the root only affects `DataFile` instances created afterwards.
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| DataFile | Yes | Yes | None |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](data.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](isavable.md){ .md-button .md-button--primary }

@@ -105,5 +105,13 @@ game.update();
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Script | No | Yes | None |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](isavable.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](loadtype.md){ .md-button .md-button--primary }

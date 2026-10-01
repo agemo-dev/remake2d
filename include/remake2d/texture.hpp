@@ -188,7 +188,9 @@ private:
 
 private:
     FontManager(void)                             = default;
+    FontManager(FontManager&&)                    = default;
     FontManager(const FontManager&)               = delete;
+    FontManager& operator=(FontManager&&)         = default;
     FontManager& operator=(const FontManager&)    = delete;
 
 public:

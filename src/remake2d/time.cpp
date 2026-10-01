@@ -1,3 +1,4 @@
+#include <atomic>
 #include <remake2d/time.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/system.hpp>
@@ -17,23 +18,23 @@ namespace rmk {
 Task _timerCounter(void) noexcept {
     std::mutex mut;
 
-    while (timer.m_running.load()) {
-        dlink.on_count.store(true);
+    while (timer.m_running.load(std::memory_order_relaxed)) {
+        dlink.on_count.store(true, std::memory_order_release);
         for (auto& t : timer.m_timers) {
 
-            if (!t->m_active.load() || t->m_elapsed.load()) continue;
-            t->m_current_time.fetch_add(delta.tick());
+            if (!t->m_active.load(std::memory_order_acquire) || t->m_elapsed.load(std::memory_order_relaxed)) continue;
+            t->m_current_time.fetch_add(delta.tick(), std::memory_order_relaxed);
 
-            if (t->m_current_time.load() >= t->m_limit.load()) {
-                t->m_elapsed.store(true);
-                t->m_active.store(false);
+            if (t->m_current_time.load(std::memory_order_relaxed) >= t->m_limit.load(std::memory_order_relaxed)) {
+                t->m_elapsed.store(true, std::memory_order_release);
+                t->m_active.store(false, std::memory_order_relaxed);
 
                 std::lock_guard<std::mutex> lock(mut);
                 t->_evaluate();
-                if(t->m_repeat) t->start();
+                if(t->m_repeat.load(std::memory_order_relaxed)) t->start();
             }
         }
-        dlink.on_count.store(false);
+        dlink.on_count.store(false, std::memory_order_release);
         rmk_pause();
     }
 }
@@ -117,11 +118,11 @@ DeltaTime::DeltaTime(void) {
 }
 
 fmax DeltaTime::tick(void) const noexcept {
-    return m_frame_time.load();
+    return m_frame_time.load(std::memory_order_relaxed);
 }
 
 fmax DeltaTime::FPS(void) const noexcept {
-    fmax t = m_frame_time.load();
+    fmax t = m_frame_time.load(std::memory_order_relaxed);
     if(!t) return 0.0;
     return 1.0 / t;
 }
@@ -138,13 +139,13 @@ void DeltaTime::update(void) {
     signalManager.dispatch();
 
     std::unique_lock<std::shared_mutex> lock(dlink.mtx);
-    if (dlink.on_count.load()) dlink.cv.wait(lock, []() {
-        return dlink.count_ended.load();
+    if (dlink.on_count.load(std::memory_order_acquire)) dlink.cv.wait(lock, []() {
+        return dlink.count_ended.load(std::memory_order_acquire);
     });
 
     m_end_point = std::chrono::steady_clock::now();
     auto wtimer = count<time::Microsecond>();
-    m_frame_time.store(wtimer / 1'000'000.0L);
+    m_frame_time.store(wtimer / 1'000'000.0L, std::memory_order_relaxed);
     m_start_point = std::chrono::steady_clock::now();
 
     std::this_thread::sleep_until(
@@ -162,36 +163,36 @@ DeltaTime& DeltaTime::getInstance(void) {
 Timer::Timer(void) {
     rmk::system._init();
     timer._registerTimer(this);
-    if(timer.m_routine_started.load()) return;
+    if(timer.m_routine_started.load(std::memory_order_acquire)) return;
     timer.m_routine.run();
-    timer.m_routine_started.store(true);
+    timer.m_routine_started.store(true, std::memory_order_release);
 }
 
 Timer::Timer(fmax l) : m_limit(l < 0 ? 0 : l) {
     rmk::system._init();
     timer._registerTimer(this);
-    if(timer.m_routine_started.load()) return;
+    if(timer.m_routine_started.load(std::memory_order_acquire)) return;
     timer.m_routine.run();
-    timer.m_routine_started.store(true);
+    timer.m_routine_started.store(true, std::memory_order_release);
 }
 
 Timer::Timer(time::Second l) : Timer(l.count()) {}
 
 Timer::Timer(Timer&& other)
-    : m_limit(other.m_limit.load())
-    , m_active(other.m_active.load())
-    , m_elapsed(other.m_elapsed.load())
-    , m_current_time(other.m_current_time.load())
+    : m_limit(other.m_limit.load(std::memory_order_relaxed))
+    , m_active(other.m_active.load(std::memory_order_relaxed))
+    , m_elapsed(other.m_elapsed.load(std::memory_order_relaxed))
+    , m_current_time(other.m_current_time.load(std::memory_order_relaxed))
     , onTimeout(other.onTimeout)
 {
     timer._registerTimer(this);
 }
 
 Timer::Timer(const Timer& other)
-    : m_limit(other.m_limit.load())
-    , m_active(other.m_active.load())
-    , m_elapsed(other.m_elapsed.load())
-    , m_current_time(other.m_current_time.load())
+    : m_limit(other.m_limit.load(std::memory_order_relaxed))
+    , m_active(other.m_active.load(std::memory_order_relaxed))
+    , m_elapsed(other.m_elapsed.load(std::memory_order_relaxed))
+    , m_current_time(other.m_current_time.load(std::memory_order_relaxed))
     , onTimeout(other.onTimeout)
 {
     timer._registerTimer(this);
@@ -199,10 +200,10 @@ Timer::Timer(const Timer& other)
 
 Timer& Timer::operator=(Timer&& other) {
     if (this != &other) {
-        m_limit.store(other.m_limit.load());
-        m_active.store(other.m_active.load());
-        m_elapsed.store(other.m_elapsed.load());
-        m_current_time.store(other.m_current_time.load());
+        m_limit.store(other.m_limit.load(std::memory_order_relaxed), std::memory_order_relaxed);
+        m_active.store(other.m_active.load(std::memory_order_relaxed), std::memory_order_relaxed);
+        m_elapsed.store(other.m_elapsed.load(std::memory_order_relaxed), std::memory_order_relaxed);
+        m_current_time.store(other.m_current_time.load(std::memory_order_relaxed), std::memory_order_relaxed);
     }
     timer._registerTimer(this);
     return *this;
@@ -210,61 +211,61 @@ Timer& Timer::operator=(Timer&& other) {
 
 Timer& Timer::operator=(const Timer& other) {
     if (this != &other) {
-        m_limit.store(other.m_limit.load());
-        m_active.store(other.m_active.load());
-        m_elapsed.store(other.m_elapsed.load());
-        m_current_time.store(other.m_current_time.load());
+        m_limit.store(other.m_limit.load(std::memory_order_relaxed), std::memory_order_relaxed);
+        m_active.store(other.m_active.load(std::memory_order_relaxed), std::memory_order_relaxed);
+        m_elapsed.store(other.m_elapsed.load(std::memory_order_relaxed), std::memory_order_relaxed);
+        m_current_time.store(other.m_current_time.load(std::memory_order_relaxed), std::memory_order_relaxed);
     }
     timer._registerTimer(this);
     return *this;
 }
 
 fmax Timer::limit(void) const noexcept {
-    return m_limit.load();
+    return m_limit.load(std::memory_order_relaxed);
 }
 
 void Timer::limit(fmax l) noexcept {
-    m_limit.store(l < 0 ? 0 : l);
+    m_limit.store(l < 0 ? 0 : l, std::memory_order_relaxed);
 }
 
 void Timer::limit(time::Second l) noexcept {
     fmax c = l.count();
-    m_limit.store(c < 0 ? 0 : c);
+    m_limit.store(c < 0 ? 0 : c, std::memory_order_relaxed);
 }
 
 void Timer::start(void) noexcept {
-    m_current_time.store(0.0);
-    m_active.store(true);
-    m_elapsed.store(false);
+    m_current_time.store(0.0, std::memory_order_relaxed);
+    m_elapsed.store(false, std::memory_order_relaxed);
+    m_active.store(true, std::memory_order_release);
 }
 
 void Timer::stop(void) noexcept {
-    m_current_time.store(0.0);
-    m_active.store(false);
+    m_current_time.store(0.0, std::memory_order_relaxed);
+    m_active.store(false, std::memory_order_relaxed);
 }
 
 void Timer::pause(void) noexcept {
-    m_active.store(false);
+    m_active.store(false, std::memory_order_relaxed);
 }
 
 void Timer::resume(void) noexcept {
-    m_active.store(true);
+    m_active.store(true, std::memory_order_relaxed);
 }
 
 void Timer::repeat(bool stat) noexcept {
-    m_repeat.store(stat);
+    m_repeat.store(stat, std::memory_order_relaxed);
 }
 
 bool Timer::active(void) const noexcept {
-    return m_active.load();
+    return m_active.load(std::memory_order_relaxed);
 }
 
 bool Timer::elapsed(void) const noexcept {
-    return m_elapsed.load();
+    return m_elapsed.load(std::memory_order_acquire);
 }
 
 fmax Timer::elapsedTime(void) const noexcept {
-    return m_current_time.load();
+    return m_current_time.load(std::memory_order_relaxed);
 }
 
 void Timer::_evaluate (void) noexcept {
@@ -298,7 +299,7 @@ TimerManager& TimerManager::getInstance(void) noexcept {
 }
 
 TimerManager::~TimerManager(void) {
-    m_running.store(false);
+    m_running.store(false, std::memory_order_relaxed);
     m_routine.stop();
 }
 

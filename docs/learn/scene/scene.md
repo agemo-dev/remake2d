@@ -165,5 +165,14 @@ if (menu) menu->disable();
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Scene | No | Yes | Trackable |
+| Act | No | Yes | Trackable |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](actor.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](headers.md){ .md-button .md-button--primary }

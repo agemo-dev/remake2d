@@ -85,7 +85,7 @@ nav:
     - Data & Script:
         - Save & load data:    learn/data/data.md
         - Data file:           learn/data/datafile.md
-        - Custom savable type: learn/data/isavable.md
+        - Custom savable type: learn/data/savable.md
         - lua hot-loading:     learn/data/script.md
         - Load custom type:    learn/data/loadtype.md
         - Coding in Lua:       learn/data/lua.md

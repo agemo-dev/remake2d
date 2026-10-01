@@ -202,7 +202,7 @@ to avoid duplicating logic ;)
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| TileMap | No | Yes | Printable and Printable |
+| TileMap | No | Yes | Printable |
 | TileMapData | Yes | Yes | None |
 
 ---

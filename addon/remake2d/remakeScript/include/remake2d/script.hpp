@@ -55,7 +55,9 @@ private:
 
 private:
     SolState(void);
+    SolState(SolState&&)                    = default;
     SolState(const SolState&)               = delete;
+    SolState& operator=(SolState&&)         = default;
     SolState& operator=(const SolState&)    = delete;
 
 private:

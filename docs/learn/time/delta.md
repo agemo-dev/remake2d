@@ -64,5 +64,13 @@ rmk::delta.update();
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| DeltaTime | No | No | ClockBase and Updatable |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](../maps/parallax.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](timer.md){ .md-button .md-button--primary }

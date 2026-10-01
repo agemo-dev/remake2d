@@ -100,5 +100,13 @@ rmk::physics.update();
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| PhysicManager | No | Yes | Updatable |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](body.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](../maps/tilegrid.md){ .md-button .md-button--primary }

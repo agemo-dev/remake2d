@@ -83,5 +83,13 @@ cooldown.repeat(true);
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Timer | Yes | Yes | Trackable |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](delta.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](chrono.md){ .md-button .md-button--primary }

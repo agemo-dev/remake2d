@@ -5,7 +5,7 @@
 
 namespace rmk {
 
-template <typename D> fmax BaseClock::count(void) const noexcept {
+template <typename D> fmax ClockBase::count(void) const noexcept {
     auto duration = std::chrono::duration_cast<D>(
 		m_end_point - m_start_point
 	);

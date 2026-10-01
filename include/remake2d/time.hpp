@@ -36,7 +36,7 @@ void delay(time::Second) noexcept;
 } // namespace time
 
 
-class BaseClock {
+class ClockBase {
 
 protected:
   using t_point    = std::chrono::time_point<std::chrono::steady_clock>;
@@ -48,11 +48,11 @@ protected:
 public:
   template <typename D = time::Second> fmax count(void) const noexcept;
 
-  virtual ~BaseClock(void) = default;
+  virtual ~ClockBase(void) = default;
 };
 
 
-class Chronometer : public BaseClock {
+class Chronometer : public ClockBase {
 
 private:
     bool        m_resumed{false};
@@ -117,7 +117,7 @@ private:
 inline auto& dlink = DeltaThreadConnector::getInstance();
 
 
-class DeltaTime : public BaseClock, public Updatable {
+class DeltaTime : public ClockBase, public Updatable {
 
 private:
     fmax              m_max_fps{120};
@@ -125,7 +125,9 @@ private:
 
 private:
     DeltaTime(void);
+    DeltaTime(DeltaTime&&)                  = delete;
     DeltaTime(const DeltaTime&)             = delete;
+    DeltaTime& operator=(DeltaTime&&)       = delete;
     DeltaTime& operator=(const DeltaTime&)  = delete;
 
 public:

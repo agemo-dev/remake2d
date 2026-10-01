@@ -33,7 +33,7 @@ names, and an optional list of data fields exposed as real Lua fields:
 
 ```cpp
 template<typename T, typename... Ctors, typename B = const std::tuple<>, typename... Fields>
-void registerType(std::string_view, std::function<void(SolState::Type&)> init = nullptr, B base = rmk::type::base<>, Fields... fields);
+void registerType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
 ```
 
 and utilitaries:
@@ -153,6 +153,14 @@ if (!rmk::script.isLoadedType("Player")) {
     rmk::script.registerType<Player, Player()>("Player");
 }
 ```
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| SolState | No | Yes | None |
 
 ---
 

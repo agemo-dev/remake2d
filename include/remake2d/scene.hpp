@@ -52,7 +52,7 @@ private:
 };
 
 
-class Act {
+class Act : public Trackable {
 private:
     std::map<std::string, std::vector<std::string>> m_links;
     std::map<std::string, Tracker<Scene>>           m_scenes;

@@ -14,12 +14,11 @@ following the exact contour of that shape rather than a plain rectangle. `Textur
 template<IsShape S> class Texture;
 ```
 
-`S` can be any type satisfying `IsShape` — `Rectangle`, `Circle`, etc .
+`S` can be any type satisfying `IsShape` (`Rectangle`, `Circle`, etc) .
 The image is triangulated and mapped onto that shape's actual points.
 
 !!! info
-	`Texture` is **copiable** and **movable** .
-    `Sprite` is simply an alias for the most common case, `Texture<Rectangle>`. It is **not** a separate texture system — it behaves exactly like any
+    `Sprite` is simply an alias for the most common case, `Texture<Rectangle>`. It is **not** a separate texture system ; it behaves exactly like any
     other `Texture<S>`, just permanently locked to a rectangular shape .
 
 ---
@@ -73,16 +72,18 @@ rmk::Shape<5> pentagon({400, 300}, {150, 150});
 rmk::Texture<rmk::Shape<5>> gem("gem.png", pentagon);
 ```
 
-### Drawing a texture
+### Drawing and filling a texture
 
-Drawing works identically regardless of `S` — `Window::draw` doesn't need to know or care what shape underlies the texture, since it always
+Drawing and filling works identically regardless of `S` ; `Window::draw/fill` doesn't need to know or care what shape underlies the texture, since it always
 renders the triangulated, UV-mapped vertices produced by that shape:
 
 ```cpp
 // In render loop
-win.draw(player);
 win.draw(gem);
+win.fill(player);
 ```
+
+`draw` draws the **outline** and `fill` print the full image .
 
 ```cpp
 #include <remake2d/window.hpp>
@@ -94,7 +95,7 @@ int main(void) {
     rmk::Sprite player("player.png", {win.center(), {64, 64}});
 
     rmk::loop.execute(win, [&](void) {
-        win.draw(player);
+        win.fill(player);
     });
 
     rmk::loop.update();
@@ -103,12 +104,12 @@ int main(void) {
 
 ### Tinting and transparency
 
-A texture has no color of its own; tint and opacity are entirely driven by the `Color` passed to draw, since the underlying image is generated 
+A texture has no color of its own; tint and opacity are entirely driven by the `Color` passed to `TextureBase::color`, since the underlying image is generated
 white so color modulation applies correctly:
 
 ```cpp
-win.draw(player, rmk::color::red);           // tinted red
-win.draw(player, {255, 255, 255, 128});      // half transparent
+win.fill(player, rmk::color::red);         // tinted red
+win.fill(player, {255, 255, 255, 128});      // half transparent
 ```
 
 This applies the same way whether the texture is a `Sprite` or any other shaped `Texture<S>`.
@@ -137,7 +138,7 @@ player.resize({96, 96});
 ### Collision
 
 hasIntersected checks overlap against a `Geometry` or another `TextureBase`, reusing the same separating-axis test as shapes. As noted above,
-this test follows the texture's actual shape — a `Sprite`'s rectangle, or a `Texture<S>`'s real contour for any other shape:
+this test follows the texture's actual shape (a `Sprite`'s rectangle, or a `Texture<S>`'s real contour for any other shape):
 
 ```cpp
 if (player.hasIntersected(wallSprite)) { /* blocked */ }
@@ -153,8 +154,8 @@ instantiated with a different `S`. The difference isn't in how the image is load
 
 !!! info
 	`Image<S>` is a simple alias of `Texture<S>` .
-	
-### Sprite — a rectangle, always
+
+### Sprite : a rectangle, always
 
 ```cpp
 class Sprite : public Image<Rectangle> {
@@ -163,7 +164,7 @@ public:
 };
 ```
 
-`Sprite` locks `S` to `Rectangle`. Whatever image you load, it gets stretched across exactly 4 points forming an axis-aligned box — the image's
+`Sprite` locks `S` to `Rectangle`. Whatever image you load, it gets stretched across exactly 4 points forming an axis-aligned box , the image's
 own content might have transparent corners or an irregular silhouette, but the texture's *shape* (used for triangulation, collision, and rendering
 bounds) is always a plain rectangle.
 
@@ -172,7 +173,7 @@ rmk::Rectangle rectangle(win.center(), 500);
 rmk::Sprite banner("banner.png", rectangle);
 
 // In game loop
-win.draw(banner);
+win.fill(banner);
 ```
 
 ![sprite rectangle example](assets/texture1.png)
@@ -181,7 +182,7 @@ Even if `banner.png` visually contains a diamond or a rounded icon, the underlyi
 rectangle. This is what you want majority of the time — UI panels, tile textures, standard character sprites — since most source images are
 naturally rectangular anyway.
 
-### Image — any shape, pixel-mapped onto its actual contour
+### Image : any shape, pixel-mapped onto its actual contour
 
 Pass any other shape as `S` and the exact same image gets triangulated and UV-mapped onto *that* shape's points instead. A `Image<Shape<5>>`
 (a pentagon) doesn't just clip a rectangular image into a pentagon-ish crop — it fits the image across the five actual vertices of the polygon,
@@ -192,7 +193,7 @@ rmk::Shape<5> pentagon(win.center(), 500);
 rmk::Texture gem("gem.png", pentagon);
 
 // In game loop
-win.draw(gem);
+win.fill(gem);
 ```
 
 ![texture pentagon example](assets/texture2.png)
@@ -210,10 +211,21 @@ rmk::Image<rmk::Triangle>  flag("flag.png", rmk::Triangle({400, 300}, {80, 80}))
 ```
 
 !!! warning
-    Choosing a non-rectangular `S` only changes the geometry the image is mapped onto and tested against — it does **not** crop or mask the
+    Choosing a non-rectangular `S` only changes the geometry the image is mapped onto and tested against . It does **not** crop or mask the
     source image file itself. If `gem.png` is a square PNG with a pentagon drawn inside it and transparent corners, using `Image<Shape<5>>`
     additionally aligns the *collision and render triangulation* with the pentagon, rather than the surrounding transparent square that a
     `Sprite` would have used.
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| TextureBase | Yes | Yes | Printable and Trackable |
+| `Texture<T>` | Yes | Yes | TextureBase |
+| `Image<T>` | Yes | Yes | TextureBase |
+| Sprite | Yes | Yes | `Image<Rectangle>` |
 
 ---
 

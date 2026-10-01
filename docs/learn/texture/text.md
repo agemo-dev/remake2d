@@ -6,7 +6,7 @@ Drawing a score counter or a dialogue box means rendering actual characters on s
 
 ## Overview
 
-`Text` is contained in the header **"remake2d/texture.hpp"**, inheriting from `Texture<Rectangle>`. It renders a string using a font previously loaded through 
+`Text` is contained in the header **"remake2d/texture.hpp"**, inheriting from `Texture<Rectangle>`. It renders a string using a font previously loaded through
 `FontManager`, exposed through the singleton `font`, and regenerates its underlying image whenever its content changes.
 
 ---
@@ -19,12 +19,12 @@ void anchorY(anchor::y) noexcept; // set vertical anchor (top, middle, bottom)
 
 std::string text(void) const noexcept; // get current text content
 
-void write(std::string_view);  // replace the text content
-void append(std::string_view); // append text to the current content
-void append(fmt);              // append a formatting token
+void write(std::string_view);   // replace the text content
+void append(std::string_view);  // append text to the current content
+void append(fmt);               // append a formatting token
 void clear(void);               // clear the text content
 
-void maxLengh(u16)       noexcept; // set max wrap length, in pixels
+void maxLengh(u16)        noexcept; // set max wrap length, in pixels
 u16  maxLengh(void) const noexcept; // get max wrap length
 ```
 
@@ -55,7 +55,7 @@ label.write("Score : 0");
 
 ```cpp
 // In render loop
-win.draw(label);
+win.fill(label);
 ```
 
 ### Updating content
@@ -103,6 +103,15 @@ label.anchorY(rmk::anchor::y::middle);
 ```cpp
 label.maxLengh(200);
 ```
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| FontManager | No | Yes | None |
+| Text | Yes | Yes | `Texture<Rectangle>` |
 
 ---
 

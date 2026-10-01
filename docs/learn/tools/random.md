@@ -17,11 +17,13 @@ engine, seeded automatically at startup using a hardware-based seed when availab
 The methods of the `Random` class are as follows:
 
 ```cpp
-u32  seed(void) noexcept;                   // get current seed
-void seed(u32) noexcept;                    // set seed
-u32  randSeed(void) noexcept;               // generate a hardware random seed
-void rollSeed(void) noexcept;               // generate and apply a new random seed
-bool chance(f32) noexcept;                  // true with given probability (0.0-1.0)
+u32  seed(void) noexcept;        // get current seed
+void seed(u32)  noexcept;        // set see
+
+u32  randSeed(void) noexcept;    // generate a hardware random seed
+void rollSeed(void) noexcept;    // generate and apply a new random seed
+
+bool chance(f32) noexcept;                     // true with given probability (0.0-1.0)
 std::vector<u8> dice(u8 n, u8 faces) noexcept; // roll n dice with given face count
 
 template<IsBasicType T = i32> T rand(const T&, const T&) noexcept; // random value in range
@@ -95,6 +97,14 @@ std::string name = rmk::random.choice<std::string>(names);
 
 !!! info
     `choice` returns `nil` if the given span is empty.
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Random | No | Yes | None |
 
 ---
 
