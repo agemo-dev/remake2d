@@ -161,7 +161,7 @@ void PhysicBody::isSolid(bool status) noexcept {
 }
 
 bool PhysicBody::isSolid(void) const noexcept {
-	return m_solid;
+    return m_solid;
 }
 
 void PhysicBody::move(const Vec2d& pos) noexcept {
@@ -226,8 +226,8 @@ void PhysicBody::resize(const Dim2d& newSize) noexcept {
 }
 
 void PhysicBody::linkAnimation(std::string_view tag, const Animation& anim) {
-	std::string t(tag);
-	if (m_animations.empty()) m_focused_anim = t;
+    std::string t(tag);
+    if (m_animations.empty()) m_focused_anim = t;
     m_animations.emplace(t, anim);
     auto& a = m_animations.at(t);
     a.move(center());
@@ -236,9 +236,9 @@ void PhysicBody::linkAnimation(std::string_view tag, const Animation& anim) {
 
 Animation& PhysicBody::animation(std::string_view name) {
     std::string n(name);
-	if (n == nil && m_focused_anim != nil) {
-		return m_animations.at(m_focused_anim);
-	}
+    if (n == nil && m_focused_anim != nil) {
+        return m_animations.at(m_focused_anim);
+    }
 
     auto it = m_animations.find(n);
     if (it == m_animations.end()) {
@@ -250,9 +250,9 @@ Animation& PhysicBody::animation(std::string_view name) {
 
 const Animation& PhysicBody::animation(std::string_view name) const {
     std::string n(name);
-	if (n == nil && m_focused_anim != nil) {
-		return m_animations.at(m_focused_anim);
-	}
+    if (n == nil && m_focused_anim != nil) {
+        return m_animations.at(m_focused_anim);
+    }
 
     auto it = m_animations.find(n);
     if (it == m_animations.end())
@@ -262,18 +262,18 @@ const Animation& PhysicBody::animation(std::string_view name) const {
 }
 
 void PhysicBody::focusAnimation(std::string_view name) {
-	std::string n(name);
-	auto it = m_animations.find(n);
-    if (it == m_animations.end())
-        rmk_dynamicAssert(rmk::PhysicError,
-            (std::string(error::physic::animation_no_found) + n));
-	m_focused_anim = n;
+    std::string n(name);
+    auto it = m_animations.find(n);
+    if (it == m_animations.end()) {
+        rmk_dynamicAssert(rmk::PhysicError, (std::string(error::physic::animation_no_found) + n));
+    }
+    m_focused_anim = n;
 
 }
 
 void PhysicBody::_calculateVertices(void) noexcept {
 
-	if(m_focused_anim != nil) return;
+    if(m_focused_anim != nil) return;
 
     m_cached_vertices.clear();
     m_cached_contour.clear();
@@ -622,7 +622,7 @@ PhysicBody::~PhysicBody(void) {
 
 StaticBody::StaticBody(const Geometry& shape) : PhysicBody(shape) {
     m_type_id = physic::id::statics;
-	physics._registerBody(this);
+    physics._registerBody(this);
 }
 
 StaticBody::StaticBody(const StaticBody& other) : PhysicBody(other) {
@@ -650,7 +650,7 @@ StaticBody& StaticBody::operator=(StaticBody&& other) noexcept {
 }
 
 DynamicBody::DynamicBody(const Geometry& shape) : PhysicBody(shape) {
-	m_type_id = physic::id::dynamics;
+    m_type_id = physic::id::dynamics;
     physics._registerBody(this);
 }
 

@@ -27,14 +27,14 @@ namespace rmk {
 namespace type {
 
 template<typename... Bases> inline constexpr auto base = [] {
-	if constexpr (sizeof...(Bases) == 0) {
-		return std::tuple<>{};
-	} else {
-		return std::tuple{
-			sol::base_classes,
-			sol::bases<Bases...>()
-		};
-	}
+    if constexpr (sizeof...(Bases) == 0) {
+        return std::tuple<>{};
+    } else {
+        return std::tuple{
+            sol::base_classes_tag{},
+            sol::bases<Bases...>()
+        };
+    }
 }();
 
 template <typename... Args> inline auto overload(Args&&... args) {

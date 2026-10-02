@@ -49,11 +49,11 @@ public:
 **RE:MAKE 2D** offers several traits, namely:
 
 - [Printable](../graphics/draw.md)
-- [Followable](..)
-- [Updatable](..)
-- [Trackable](..)
-- [Savable](..)
-- [Actor](..)
+- [Followable](../graphics/camera.md/#following)
+- [Updatable](../graphics/loop.md/#updatable)
+- [Trackable](../core/tracker.md/#trackable)
+- [Savable](../data/savable.md)
+- [Actor](../scene/actor.md)
 
 Most of the time, their name will end with **-able**, but there can be
 exceptions (such as `Actor`).

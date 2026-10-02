@@ -45,18 +45,20 @@
 ```cpp
 #include <remake2d/all/graphics.hpp>
 
-int main(void) {
-    rmk::Window win("My Game");
+int main (void) {
+    rmk::Window win;
     rmk::Circle circle(win.center(), 100);
 
+    circle.color(rmk::color::cyan);
+
     rmk::loop.execute(win, [&]() {
-        win.draw(circle, rmk::color::cyan);
+        win.draw(circle);
     });
     rmk::loop.update();
 }
 ```
 
-[GitHub :octicons-mark-github-24:](https://github.com/agemo-dev){ .md-button }
+[GitHub :octicons-mark-github-24:](https://github.com/agemo-dev/remake2d){ .md-button }
 [Get started :octicons-arrow-right-24:](home/about.md){ .md-button .md-button--primary }
 
 ---
