@@ -42,6 +42,7 @@ licence of all **RE:MAKE 2D** dependancies :
 | Lua 5.4 | MIT | [lua.org](https://lua.org) |
 | sol2 | MIT | [github.com/ThePhD/sol2](https://github.com/ThePhD/sol2) |
 | nlohmann/json | MIT | [github.com/nlohmann/json](https://github.com/nlohmann/json) |
+| skiptracer | MIT | [github.com/agemo-dev/skiptracer](https://github.com/agemo-dev/skiptracer) |
 
 ## Add-ons
 

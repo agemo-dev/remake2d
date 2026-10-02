@@ -120,7 +120,7 @@ inline auto& dlink = DeltaThreadConnector::getInstance();
 class DeltaTime : public ClockBase, public Updatable {
 
 private:
-    fmax              m_max_fps{120};
+    fmax              m_max_fps{-1};
     std::atomic<fmax> m_frame_time{0.0};
 
 private:
@@ -160,10 +160,10 @@ public:
     Timer(void);
     Timer(fmax);
     Timer(time::Second);
-    Timer(Timer&&);
     Timer(const Timer&);
-    Timer& operator=(Timer&&);
+    Timer(Timer&&) noexcept;
     Timer& operator=(const Timer&);
+    Timer& operator=(Timer&&) noexcept;
 
 public:
     void limit(fmax)          noexcept;
@@ -194,6 +194,7 @@ private:
 };
 
 class TimerManager {
+
 private:
     std::atomic<bool>             m_routine_started{false};
     std::atomic<bool>             m_running{true};

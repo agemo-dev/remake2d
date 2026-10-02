@@ -16,10 +16,11 @@
 namespace rmk {
 
 class EventManager : public Updatable {
+
 private:
-    std::unique_ptr<SDL_Event>                      m_event{nullptr};
     bool                                            m_has_event{false};
     bool                                            m_text_input{false};
+    std::unique_ptr<SDL_Event>                      m_event{nullptr};
     std::unordered_map<i32, SDL_GameController*>    m_controllers;
 
 private:
@@ -197,14 +198,14 @@ public:
     _EventSignal<u32>        onWindowClose;
     _EventSignal<u32>        onWindowMinimized;
     _EventSignal<u32>        onWindowMaximized;
-    _EventSignal<u32>        onWindowRestored;  
-    _EventSignal<u32>        onWindowShown;  
+    _EventSignal<u32>        onWindowRestored;
+    _EventSignal<u32>        onWindowShown;
     _EventSignal<u32>        onWindowHidden;
     _EventSignal<u32>        onWindowExposed;
     _EventSignal<u32>        onWindowFocusGained;
     _EventSignal<u32>        onWindowFocusLost;
-    _EventSignal<u32>        onWindowMouseEnter;   
-    _EventSignal<u32>        onWindowMouseLeave;   
+    _EventSignal<u32>        onWindowMouseEnter;
+    _EventSignal<u32>        onWindowMouseLeave;
     _EventSignal<u32, Dim2d> onWindowResized;
     _EventSignal<u32, Vec2d> onWindowMoved;
 
@@ -220,8 +221,6 @@ public:
     _EventSignal<>            onLocaleChanged;
     _EventSignal<>            onDisplayChanged;
     _EventSignal<>            onRenderReset;
-
-
 
 
     _EventSignal<> onEventNone;

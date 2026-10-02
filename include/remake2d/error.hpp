@@ -22,6 +22,7 @@
 namespace rmk {
 
 class Error : public std::exception {
+
 private:
     std::string m_msg;
 
@@ -38,6 +39,7 @@ public:
 public:
     Error(std::string_view msg) : m_msg(msg) {}
 
+public:
     const char *what() const noexcept override { return m_msg.c_str(); }
 };
 
@@ -75,7 +77,7 @@ class DataError : public Error {
     using Error::Error;
 };
 
-class DateError  : public Error { 
+class DateError  : public Error {
     using Error::Error;
 };
 

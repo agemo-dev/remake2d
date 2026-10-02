@@ -19,11 +19,13 @@ protected:
     bool                              m_active{true};
 
 public:
-    Actor(void)                     = default;
-    Actor(Actor&&)                  = default;
-    Actor(const Actor&)             = default;
-    Actor& operator=(Actor&&)       = default;
-    Actor& operator=(const Actor&)  = default;
+    Actor(const Actor&);
+    Actor& operator=(const Actor&);
+
+public:
+    Actor(void)                         = default;
+    Actor(Actor&&)            noexcept  = default;
+    Actor& operator=(Actor&&) noexcept  = default;
 
 public:
     void addChild(Actor&)           noexcept;

@@ -75,11 +75,13 @@ public:
 
     public:
         explicit Viewport(const Area&);
-        Viewport(void)                       = default;
-        Viewport(Viewport&&)                 = default;
-        Viewport(const Viewport&)            = default;
-        Viewport& operator=(Viewport&&)      = default;
-        Viewport& operator=(const Viewport&) = default;
+
+    public:
+        Viewport(void)                           = default;
+        Viewport(const Viewport&)                = default;
+        Viewport(Viewport&&) noexcept            = default;
+        Viewport& operator=(const Viewport&)     = default;
+        Viewport& operator=(Viewport&&) noexcept = default;
 
     public:
         Camera& camera(void)             noexcept;

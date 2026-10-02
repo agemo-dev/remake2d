@@ -20,6 +20,7 @@ private:
     char            m_separator{'-'};
     std::string     m_format{"year-month-day"};
 
+private:
     inline static constexpr const char m_date_separators[] = { '-', '/', ' ', '.', '\0' };
 
     inline static const std::map<std::string, u8> m_month_map = {
@@ -27,9 +28,11 @@ private:
         {"07",7},{"08",8},{"09",9},{"10",10},{"11",11},{"12",12},
         {"1",1},{"2",2},{"3",3},{"4",4},{"5",5},{"6",6},
         {"7",7},{"8",8},{"9",9},
+
         {"january",1},{"february",2},{"march",3},{"april",4},
         {"may",5},{"june",6},{"july",7},{"august",8},
         {"september",9},{"october",10},{"november",11},{"december",12},
+
         {"jan",1},{"feb",2},{"mar",3},{"apr",4},
         {"jun",6},{"jul",7},{"aug",8},
         {"sep",9},{"oct",10},{"nov",11},{"dec",12}
@@ -88,6 +91,7 @@ private:
     char            m_separator{':'};
     std::string     m_format{"hour:minute:second"};
 
+private:
     inline static constexpr const char m_clock_separators[] = { ':', '-', '*', '\0' };
 
 public:

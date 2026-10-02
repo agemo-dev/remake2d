@@ -14,7 +14,7 @@ namespace rmk {
 class Followable : public Trackable {
 
 public:
-	virtual Vec2d center(void) const noexcept = 0;
+    virtual Vec2d center(void) const noexcept = 0;
 
 public:
     rmk_heritableBaseClass(Followable);
@@ -39,10 +39,11 @@ public:
     Camera(void);
     Camera(const Vec2d&, const Dim2d&, const Dim2d& = nil);
 
-    Camera(Camera&&)                 = default;
-    Camera(const Camera&)            = default;
-    Camera& operator=(Camera&&)      = default;
-    Camera& operator=(const Camera&) = default;
+public:
+    Camera(const Camera&)                 = default;
+    Camera(Camera&&) noexcept             = default;
+    Camera& operator=(const Camera&)      = default;
+    Camera& operator=(Camera&&) noexcept  = default;
 
 public:
     void  zoom(f32)            noexcept;
@@ -51,6 +52,7 @@ public:
     void  resize(const Dim2d&) noexcept;
     void  smoothing(f32)       noexcept;
 
+public:
     f32  zoom(void)           const noexcept;
     Dim2d size(void)          const noexcept;
     Vec2d center(void)        const noexcept;
@@ -62,7 +64,7 @@ public:
 
 public:
     void unfollow(void)            noexcept;
-	void follow(const Followable&) noexcept;
+    void follow(const Followable&) noexcept;
 
 private:
     void _offset(void)        noexcept;

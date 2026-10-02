@@ -5,6 +5,15 @@
 
 namespace rmk {
 
+Actor::Actor(const Actor& other) : m_children() , m_parent(nil) {
+    (void) other;
+}
+
+Actor& Actor::operator=(const Actor& other) {
+    (void) other;
+    return *this;
+}
+
 void Actor::addChild(Actor& child) noexcept {
     if (child.m_parent) child.m_parent->removeChild(child);
     child.m_parent = tracker();

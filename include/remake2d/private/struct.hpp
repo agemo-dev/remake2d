@@ -5,18 +5,18 @@
 #define rmk_defineID(CLASS) using _ ## CLASS ## ID_ = void;
 
 #define rmk_baseClass(CLASS) public: \
-    CLASS(void)                     = default; \
-    CLASS(CLASS&&)                  = default; \
-    CLASS(const CLASS&)             = default; \
-    CLASS& operator=(CLASS&&)       = default; \
-    CLASS& operator=(const CLASS&)  = default;
+    CLASS(void)                        = default; \
+    CLASS(const CLASS&)                = default; \
+    CLASS(CLASS&&) noexcept            = default; \
+    CLASS& operator=(const CLASS&)     = default; \
+    CLASS& operator=(CLASS&&) noexcept = default;
 
 #define rmk_heritableBaseClass(CLASS) public: \
-    CLASS(void)                     = default; \
-    CLASS(CLASS&&)                  = default; \
-    CLASS(const CLASS&)             = default; \
-    CLASS& operator=(CLASS&&)       = default; \
-    CLASS& operator=(const CLASS&)  = default; \
+    CLASS(void)                        = default; \
+    CLASS(const CLASS&)                = default; \
+    CLASS(CLASS&&) noexcept            = default; \
+    CLASS& operator=(const CLASS&)     = default; \
+    CLASS& operator=(CLASS&&) noexcept = default; \
 public: \
     virtual ~CLASS(void) = default;
 

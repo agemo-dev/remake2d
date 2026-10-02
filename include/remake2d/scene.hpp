@@ -28,11 +28,11 @@ private:
     bool                                    m_is_active{true};
 
 public:
-    Scene(void)                      = default;
-    Scene(Scene&&)                   = default;
-    Scene(const Scene&)              = delete;
-    Scene& operator=(Scene&&)        = default;
-    Scene& operator=(const Scene&)   = delete;
+    Scene(void)                        = default;
+    Scene(const Scene&)                = delete;
+    Scene(Scene&&) noexcept            = default;
+    Scene& operator=(const Scene&)     = delete;
+    Scene& operator=(Scene&&) noexcept = default;
 
 public:
     void update(void) const;
@@ -53,6 +53,7 @@ private:
 
 
 class Act : public Trackable {
+
 private:
     std::map<std::string, std::vector<std::string>> m_links;
     std::map<std::string, Tracker<Scene>>           m_scenes;

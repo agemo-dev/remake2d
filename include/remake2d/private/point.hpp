@@ -6,8 +6,8 @@
 namespace rmk {
 
 enum class point : u8 {
-	min = 0,
-	max = 50
+    min = 0,
+    max = 50
 };
 
 } // namespace rmk

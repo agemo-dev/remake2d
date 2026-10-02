@@ -11,6 +11,7 @@
 namespace rmk {
 
 class TileGrid : public Printable {
+
 private:
     Grid2d              m_cut{0};
     Dim2d               m_size{0};
@@ -19,12 +20,14 @@ private:
 
 public:
     TileGrid(const Vec2d&, const Dim2d&, const Grid2d&);
-    TileGrid(void)                          = delete;
-    TileGrid(TileGrid&&)                    = default;
-    TileGrid(const TileGrid&)               = default;
-    TileGrid& operator=(TileGrid&&)         = default;
-    TileGrid& operator=(const TileGrid&)    = default;
-    
+
+public:
+    TileGrid(void)                            = delete;
+    TileGrid(const TileGrid&)                 = default;
+    TileGrid(TileGrid&&) noexcept             = default;
+    TileGrid& operator=(const TileGrid&)      = default;
+    TileGrid& operator=(TileGrid&&) noexcept  = default;
+
 public:
     void move(const Vec2d&)   noexcept;
     void cut(const Grid2d&)   noexcept;

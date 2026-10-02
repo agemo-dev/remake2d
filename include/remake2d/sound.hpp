@@ -26,10 +26,10 @@ protected:
     Sound(void) = default;
 
 public:
-    Sound(Sound&&)                  = default;
-    Sound(const Sound&)             = default;
-    Sound& operator=(Sound&&)       = default;
-    Sound& operator=(const Sound&)  = default;
+    Sound(const Sound&)                 = default;
+    Sound(Sound&&) noexcept             = default;
+    Sound& operator=(const Sound&)      = default;
+    Sound& operator=(Sound&&) noexcept  = default;
 
 public:
     i8 playFor(void) const noexcept;
@@ -58,11 +58,11 @@ private:
 
 public:
     Music(std::string_view, u8 = 64);
-    Music(void)                     = delete;
-    Music(Music&&)                  = default;
-    Music(const Music&)             = default;
-    Music& operator=(Music&&)       = default;
-    Music& operator=(const Music&)  = default;
+    Music(void)                        = delete;
+    Music(const Music&)                = default;
+    Music(Music&&) noexcept            = default;
+    Music& operator=(const Music&)     = default;
+    Music& operator=(Music&&) noexcept = default;
 
 public:
     void play(i8 = 0)        override;
@@ -90,11 +90,11 @@ private:
 
 public:
     SFX(std::string_view, u8 = 64);
-    SFX(void)                   = delete;
-    SFX(SFX&&)                  = default;
-    SFX(const SFX&)             = default;
-    SFX& operator=(SFX&&)       = default;
-    SFX& operator=(const SFX&)  = default;
+    SFX(void)                      = delete;
+    SFX(const SFX&)                = default;
+    SFX(SFX&&) noexcept            = default;
+    SFX& operator=(const SFX&)     = default;
+    SFX& operator=(SFX&&) noexcept = default;
 
 public:
     void stopAll(void);

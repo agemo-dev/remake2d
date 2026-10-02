@@ -116,17 +116,20 @@ public:
 
 
 class Savable {
+
 public:
     virtual Data        sdata(void) const  = 0;
     virtual void        ldata(const Data&) = 0;
 
-rmk_heritableBaseClass(Savable);
+public:
+    rmk_heritableBaseClass(Savable);
 };
 
 
 class SaveManager;
 
 class DataFile {
+
 private:
     std::string    m_name;
     std::string    m_path;
@@ -144,8 +147,8 @@ public:
     void load(Savable&);
     void save(const Savable&);
 
-    void remove(void) 			 noexcept;
-    bool exist(void) 	   const noexcept;
+    void remove(void)            noexcept;
+    bool exist(void)       const noexcept;
     std::string path(void) const noexcept;
     std::string name(void) const noexcept;
 
@@ -166,10 +169,10 @@ private:
     SaveManager& operator=(const SaveManager&) = delete;
 
 public:
-    std::string root(void) 			const noexcept;
-    bool isInitialized(void) 		const noexcept;
-    void root(std::string_view)      	  noexcept;
-    static SaveManager& getInstance(void) noexcept;
+    std::string root(void)           const noexcept;
+    bool isInitialized(void)         const noexcept;
+    void root(std::string_view)            noexcept;
+    static SaveManager& getInstance(void)  noexcept;
 
 private:
     void _init(void);

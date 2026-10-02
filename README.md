@@ -45,7 +45,7 @@ player.tag("player");
 player.mass(10.0f);
 player.friction(0.3f);
 
-player.onContact.join([&](rmk::PhysicBody* self, rmk::PhysicBody* other) {
+player.onContact.join([&](rmk::Tracker<rmk::PhysicBody> self, rmk::Tracker<rmk::PhysicBody> other) {
     if (other->tag() == "enemy") hp -= 10.0f;
 });
 ```
@@ -66,8 +66,8 @@ rock.onFileChanged.join([&]() {
 });
 ```
 
-There's more to discover beyond these — tilemaps, save data,
-coroutines, cameras — all covered in the
+There's more to discover beyond these : tilemaps, save data,
+coroutines, cameras ... all covered in the
 [documentation](https://agemo-dev.github.io/remake2d/).
 
 ---

@@ -6,6 +6,7 @@
 #include <remake2d/texture.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/private/draw.hpp>
+#include <remake2d/private/struct.hpp>
 #include <remake2d/config/forward.hpp>
 
 #include <map>
@@ -16,11 +17,10 @@
 #include <utility>
 #include <algorithm>
 
-struct SDL_Renderer;
-
 namespace rmk {
 
 struct TileMapData {
+
 public:
     Vec2d  center{0};
     Dim2d  size{0};
@@ -30,11 +30,7 @@ public:
     Vec2d  margin{0};
 
 public:
-    TileMapData(void)                           = default;
-    TileMapData(TileMapData&&)                  = default;
-    TileMapData(const TileMapData&)             = default;
-    TileMapData& operator=(TileMapData&&)       = default;
-    TileMapData& operator=(const TileMapData&)  = default;
+    rmk_baseClass(TileMapData);
 
 public:
     TileMapData(Vec2d c, Dim2d s, Grid2d ct, Dim2d csize, Vec2d cstart = 0, Vec2d marg = 0)
@@ -57,37 +53,37 @@ public:
     using TagMap       = std::map<std::string, TileID>;
 
 private:
-    TileTemplate       m_template;
-    TileMapData        m_data;
-    ClipMap            m_clip_positions;
-    CountMap           m_id_count;
-    PhysicMap          m_template_physic;
-    mutable BodyList   m_bodies;
-    std::vector<u32>   m_body_slot;
-    TagMap             m_tags;
-    i16                m_counter_start{0};
-    bool               m_is_built{false};
-    std::string        m_path;
-    std::vector<Sprite> m_tileset;
-    std::vector<u32>   m_sprite_slot;
+    TileTemplate              m_template;
+    TileMapData               m_data;
+    ClipMap                   m_clip_positions;
+    CountMap                  m_id_count;
+    PhysicMap                 m_template_physic;
+    mutable BodyList          m_bodies;
+    std::vector<u32>          m_body_slot;
+    TagMap                    m_tags;
+    i16                       m_counter_start{0};
+    bool                      m_is_built{false};
+    std::string               m_path;
+    std::vector<Sprite>       m_tileset;
+    std::vector<u32>          m_sprite_slot;
     mutable std::future<void> m_build_future;
 
 public:
     TileMap(std::string_view, TileMapData);
-    TileMap(void)                        = delete;
-    TileMap(TileMap&&)                   = default;
-    TileMap(const TileMap&)              = delete;
-    TileMap& operator=(TileMap&&)        = default;
-    TileMap& operator=(const TileMap&)   = delete;
+    TileMap(void)                          = delete;
+    TileMap(const TileMap&)                = delete;
+    TileMap(TileMap&&) noexcept            = default;
+    TileMap& operator=(const TileMap&)     = delete;
+    TileMap& operator=(TileMap&&) noexcept = default;
 
 public:
     Dim2d  clip(void)      const noexcept;
     Dim2d  size(void)      const noexcept;
     Vec2d  center(void)    const noexcept;
     Grid2d cut(void)       const noexcept;
-    TileMapData data(void) const noexcept;
     u32  tileCount(void)   const noexcept;
     u32  tileCount(TileID) const noexcept;
+    TileMapData data(void) const noexcept;
 
 public:
     void   move(Vec2d)       noexcept;
@@ -107,9 +103,9 @@ public:
     PhysicBody& body(std::string_view);
 
 private:
+    void _buildSprites(void);
     void _applyAttributes(void)      noexcept;
     void _buildClipPositions(void)   noexcept;
-    void _buildSprites(void);
     Vec2d _tilePos(usize)      const noexcept;
     void _waitBuild(void)      const noexcept;
     StaticBody* _bodyAt(usize) const noexcept;

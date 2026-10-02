@@ -2,6 +2,7 @@
 #include <remake2d/time.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/system.hpp>
+#include <remake2d/utility.hpp>
 #include <remake2d/croutine.hpp>
 
 #include <map>
@@ -14,6 +15,8 @@
 
 
 namespace rmk {
+
+constexpr usize RESERVED_TIMER = 4;
 
 Task _timerCounter(void) noexcept {
     std::mutex mut;
@@ -29,9 +32,9 @@ Task _timerCounter(void) noexcept {
                 t->m_elapsed.store(true, std::memory_order_release);
                 t->m_active.store(false, std::memory_order_relaxed);
 
+                if(t->m_repeat.load(std::memory_order_relaxed)) t->start();
                 std::lock_guard<std::mutex> lock(mut);
                 t->_evaluate();
-                if(t->m_repeat.load(std::memory_order_relaxed)) t->start();
             }
         }
         dlink.on_count.store(false, std::memory_order_release);
@@ -132,7 +135,7 @@ fmax DeltaTime::maxFPS(void) const noexcept {
 }
 
 void DeltaTime::maxFPS(fmax limit) noexcept {
-    m_max_fps = std::clamp(limit, (fmax)fps::min, (fmax)fps::max);
+    m_max_fps = limit != nil ? std::clamp(limit, (fmax)fps::min, (fmax)fps::max) : -1;
 }
 
 void DeltaTime::update(void) {
@@ -148,9 +151,11 @@ void DeltaTime::update(void) {
     m_frame_time.store(wtimer / 1'000'000.0L, std::memory_order_relaxed);
     m_start_point = std::chrono::steady_clock::now();
 
-    std::this_thread::sleep_until(
-        m_start_point + time::Millisecond(umax((1.0 / m_max_fps) * 1'000.0))
-    );
+    if (m_max_fps < 0) {
+        std::this_thread::sleep_until(
+            m_start_point + time::Millisecond(umax((1.0 / m_max_fps) * 1'000.0))
+        );
+    }
 
     dlink.resumeCroutines();
 }
@@ -178,7 +183,7 @@ Timer::Timer(fmax l) : m_limit(l < 0 ? 0 : l) {
 
 Timer::Timer(time::Second l) : Timer(l.count()) {}
 
-Timer::Timer(Timer&& other)
+Timer::Timer(Timer&& other) noexcept
     : Trackable(std::move(other))
     , m_limit(other.m_limit.load(std::memory_order_relaxed))
     , m_active(other.m_active.load(std::memory_order_relaxed))
@@ -200,7 +205,7 @@ Timer::Timer(const Timer& other)
     timer._registerTimer(this);
 }
 
-Timer& Timer::operator=(Timer&& other) {
+Timer& Timer::operator=(Timer&& other) noexcept {
     if (this != &other) {
         Trackable::operator=(std::move(other));
         m_limit.store(other.m_limit.load(std::memory_order_relaxed), std::memory_order_relaxed);
@@ -281,6 +286,7 @@ Timer::~Timer(void) {
 }
 
 TimerManager::TimerManager(void) {
+    m_timers.reserve(RESERVED_TIMER);
     m_routine.load(_timerCounter);
 }
 

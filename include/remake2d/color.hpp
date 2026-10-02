@@ -19,11 +19,13 @@ public:
 
 public:
     constexpr Color(byte R, byte G, byte B, byte A = 255) : r(R), g(G), b(B), a(A) {}
-    constexpr Color(void)                       = default;
-    constexpr Color(Color&&)                    = default;
-    constexpr Color(const Color&)               = default;
-    constexpr Color& operator=(Color&&)         = default;
-    constexpr Color& operator=(const Color&)    = default;
+
+public:
+    constexpr Color(void)                         = default;
+    constexpr Color(const Color&)                 = default;
+    constexpr Color(Color&&) noexcept             = default;
+    constexpr Color& operator=(const Color&)      = default;
+    constexpr Color& operator=(Color&&) noexcept  = default;
 
 public:
     operator SDL_Color (void) const noexcept;
@@ -34,6 +36,7 @@ public:
 
 // HSL : Hue - Saturation - Luminosity
 struct HSL {
+
 public:
     f32 h{0.0f};
     f32 s{0.0f};
@@ -41,11 +44,13 @@ public:
 
 public:
     constexpr HSL(f32 H, f32 S, f32 L) : h(H), s(S), l(L) {}
-    constexpr HSL(void)                   = default;
-    constexpr HSL(HSL&&)                  = default;
-    constexpr HSL(const HSL&)             = default;
-    constexpr HSL& operator=(HSL&&)       = default;
-    constexpr HSL& operator=(const HSL&)  = default;
+
+public:
+    constexpr HSL(void)                      = default;
+    constexpr HSL(const HSL&)                = default;
+    constexpr HSL(HSL&&) noexcept            = default;
+    constexpr HSL& operator=(const HSL&)     = default;
+    constexpr HSL& operator=(HSL&&) noexcept = default;
 
 public:
     constexpr auto operator<=>(const HSL&) const noexcept = default;

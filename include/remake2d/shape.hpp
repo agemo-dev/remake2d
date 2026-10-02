@@ -34,11 +34,11 @@ protected:
     virtual std::vector<Vertex>  _verticesImpl(void)     const noexcept = 0;
 
 public:
-    Geometry(void)                          = default;
-    Geometry(Geometry&&)                    = default;
-    Geometry(const Geometry&)               = default;
-    Geometry& operator=(Geometry&&)         = default;
-    Geometry& operator=(const Geometry&)    = default;
+    Geometry(void)                            = default;
+    Geometry(const Geometry&)                 = default;
+    Geometry(Geometry&&) noexcept             = default;
+    Geometry& operator=(const Geometry&)      = default;
+    Geometry& operator=(Geometry&&) noexcept  = default;
 
 public:
     Geometry(const Vec2d&, const Dim2d&);
@@ -79,12 +79,23 @@ private:
 
 template<usize POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COUNT <= (u8)point::max)
 class Shape : public Geometry {
+
 protected:
     u8                  m_n{POINT_COUNT};
     Vec2d               m_points[POINT_COUNT + 1];
     mutable Vec2d       m_contour_cache[POINT_COUNT + 1];
     Triangulation       m_tris[POINT_COUNT >= 3 ? POINT_COUNT - 2 : 1];
     mutable Vertex      m_vertex_cache[POINT_COUNT >= 3 ? (POINT_COUNT - 2) * 3 : 1];
+
+public:
+    Shape(void)                                      = default;
+    Shape(const Shape<POINT_COUNT>&)                 = default;
+    Shape(Shape<POINT_COUNT>&&) noexcept             = default;
+    Shape& operator=(const Shape<POINT_COUNT>&)      = default;
+    Shape& operator=(Shape<POINT_COUNT>&&) noexcept  = default;
+
+public:
+    Shape(const Vec2d&, const Dim2d&);
 
 protected:
     void _triangulate(void)   noexcept override;
@@ -94,16 +105,6 @@ protected:
     std::vector<Vec2d>   _contourImpl(void)     const noexcept override;
     std::vector<Vertex>  _verticesImpl(void)    const noexcept override;
     const Triangulation* _triangulations(void)  const noexcept override;
-
-public:
-    Shape(void)                                     = default;
-    Shape(Shape<POINT_COUNT>&&)                     = default;
-    Shape(const Shape<POINT_COUNT>&)                = default;
-    Shape& operator=(Shape<POINT_COUNT>&&)          = default;
-    Shape& operator=(const Shape<POINT_COUNT>&)     = default;
-
-public:
-    Shape(const Vec2d&, const Dim2d&);
 
 public:
     void rotate(f32)                                          noexcept override;
@@ -133,6 +134,7 @@ private:
 
 
 class Point : public Shape<1> {
+
 public:
     Point(void)                       = default;
     Point(Point&&)                    = default;
@@ -154,6 +156,7 @@ public:
 };
 
 class Circle : public Shape<36> {
+
 public:
     Circle(void)                        = default;
     Circle(Circle&&)                    = default;
@@ -175,6 +178,7 @@ public:
 };
 
 class Triangle : public Shape<3> {
+
 public:
     Triangle(void)                          = default;
     Triangle(Triangle&&)                    = default;
@@ -193,6 +197,7 @@ public:
 };
 
 class Rectangle : public Shape<4> {
+
 public:
     Rectangle(void)                          = default;
     Rectangle(Rectangle&&)                   = default;
@@ -214,6 +219,7 @@ private:
 };
 
 class Square : public Rectangle {
+
 public:
     Square(void)                        = default;
     Square(Square&&)                    = default;

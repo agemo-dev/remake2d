@@ -9,14 +9,18 @@
 namespace rmk {
 
 struct Triangulation {
+
+public:
     Vec2d a, b, c;
 
 public:
-    constexpr Triangulation(void)                             = default;
-    constexpr Triangulation(Triangulation&&)                  = default;
-    constexpr Triangulation(const Triangulation&)             = default;
-    constexpr Triangulation& operator=(Triangulation&&)       = default;
-    constexpr Triangulation& operator=(const Triangulation&)  = default;
+    constexpr Triangulation(void)                                = default;
+    constexpr Triangulation(const Triangulation&)                = default;
+    constexpr Triangulation(Triangulation&&) noexcept            = default;
+    constexpr Triangulation& operator=(const Triangulation&)     = default;
+    constexpr Triangulation& operator=(Triangulation&&) noexcept = default;
+
+public:
     constexpr Triangulation(const Vec2d& A, const Vec2d& B, const Vec2d& C) : a(A), b(B), c(C) {}
 
 public:
@@ -24,15 +28,18 @@ public:
 };
 
 struct Area : public Printable {
+
+public:
     i32 x{0}, y{0}, w{0}, h{0};
 
 public:
-    Area(void)                    = default;
-    Area(Area&&)                  = default;
-    Area(const Area&)             = default;
-    Area& operator=(Area&&)       = default;
-    Area& operator=(const Area&)  = default;
+    Area(void)                        = default;
+    Area(const Area&)                 = default;
+    Area(Area&&) noexcept             = default;
+    Area& operator=(const Area&)      = default;
+    Area& operator=(Area&&) noexcept  = default;
 
+public:
     Area(i32 X, i32 Y, i32 W, i32 H)     : x(X), y(Y), w(W), h(H)         {}
     Area(const Vec2d& p, const Dim2d& s) : x(p.x), y(p.y), w(s.w), h(s.h) {}
 
