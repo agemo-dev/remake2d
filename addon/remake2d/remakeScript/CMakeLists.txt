@@ -130,8 +130,24 @@ target_link_libraries(
         remake2d
 )
 
-if(BUILD_SHARED_LIBS AND MSVC)
-  set_target_properties(remakeScript PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+if(BUILD_SHARED_LIBS)
+    set_target_properties(remakeScript PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+    )
+
+    target_compile_definitions(
+        remakeScript
+        PUBLIC
+            REMAKE2D_SCRIPT_SHARED
+        PRIVATE
+            REMAKE2D_SCRIPT_BUILD
+    )
+
+    if(WIN32)
+        target_compile_definitions(lualib PRIVATE LUA_BUILD_AS_DLL)
+        target_compile_definitions(remakeScript PUBLIC LUA_BUILD_AS_DLL)
+    endif()
 endif()
 
 if(WIN32)
