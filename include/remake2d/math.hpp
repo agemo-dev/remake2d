@@ -4,9 +4,10 @@
 #include <remake2d/all/types.hpp>
 #include <remake2d/clock.hpp>
 
+#include <cmath>
 
 namespace rmk {
-    
+
 inline constexpr fmax pi = 3.14159265358979;
 
 

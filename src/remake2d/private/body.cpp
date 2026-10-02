@@ -15,6 +15,8 @@ u64 PhysicBody::_nextId(void) {
     return counter.fetch_add(1);
 }
 
+PhysicBody::PhysicBody(void) = default;
+
 PhysicBody::PhysicBody(const Geometry& shape)
     : m_needs_sync(true), m_id(_nextId())
 {

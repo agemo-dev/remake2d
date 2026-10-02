@@ -1,6 +1,7 @@
 #ifndef REMAKE2D_RESSOURCE_
 #define REMAKE2D_RESSOURCE_
 
+#include <remake2d/system.hpp>
 #include <remake2d/config/sdl.hpp>
 #include <remake2d/config/forward.hpp>
 

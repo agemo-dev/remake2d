@@ -625,4 +625,6 @@ bool EventManager::textInput(void) {
 	return m_text_input;
 }
 
+EventManager::~EventManager(void) = default;
+
 }//namespace rmk

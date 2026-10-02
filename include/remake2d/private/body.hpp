@@ -68,10 +68,10 @@ public:
     _PhysicSignal<UnsafeTracker<PhysicBody>, UnsafeTracker<PhysicBody>> onContactStart;
 
 public:
+    PhysicBody(void);
     PhysicBody(const Geometry&);
     PhysicBody(const PhysicBody&);
     PhysicBody& operator=(const PhysicBody&);
-    PhysicBody(void)                         = default;
     PhysicBody(PhysicBody&&)                 noexcept;
     PhysicBody& operator=(PhysicBody&&)      noexcept;
 

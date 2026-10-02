@@ -1,0 +1,206 @@
+--- orig/RMK2D/CMakeLists.txt	2026-09-17 13:32:46.000000000 +0000
++++ RMK2D/CMakeLists.txt	2026-10-01 17:30:02.632642812 +0000
+@@ -26,7 +26,11 @@
+ endif()
+ 
+ string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O2 -DNDEBUG")
+-string(APPEND CMAKE_CXX_FLAGS_DEBUG  " -Wall -Wextra -Werror")
++if(MSVC)
++    string(APPEND CMAKE_CXX_FLAGS_DEBUG " /W4")
++else()
++    string(APPEND CMAKE_CXX_FLAGS_DEBUG " -Wall -Wextra -Werror")
++endif()
+ 
+ option(USE_NATIVE_OPT      "Enable -march=native optimizations" OFF)
+ option(BUILD_SHARED_LIBS   "Build shared libraries"              ON)
+@@ -277,6 +281,14 @@
+ 	target_link_options(remake2d PRIVATE "-Wl,--exclude-libs,ALL")
+ endif()
+ 
++# Static build with SDL fetched via FetchContent: the private SDL targets leak into the
++# exported interface (LINK_ONLY) and are not in any export set -> install(EXPORT) fails.
++if(TERMUX_BUILD OR BUILD_SHARED_LIBS)
++    set(REMAKE2D_EXPORT_TARGETS ON)
++else()
++    set(REMAKE2D_EXPORT_TARGETS OFF)
++endif()
++
+ if(BUILD_REMAKE_SCRIPT)
+     add_subdirectory(addon/remake2d/remakeScript)
+ endif()
+@@ -297,11 +309,13 @@
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+ )
+ 
+-install(EXPORT remake2dTargets
+-    FILE remake2dTargets.cmake
+-    NAMESPACE remake2d::
+-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
+-)
++if(REMAKE2D_EXPORT_TARGETS)
++    install(EXPORT remake2dTargets
++        FILE remake2dTargets.cmake
++        NAMESPACE remake2d::
++        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
++    )
++endif()
+ 
+ install(
+     FILES
+--- orig/RMK2D/addon/remake2d/remakeScript/CMakeLists.txt	2026-09-17 13:32:46.000000000 +0000
++++ RMK2D/addon/remake2d/remakeScript/CMakeLists.txt	2026-10-01 18:19:43.925904114 +0000
+@@ -17,7 +17,11 @@
+ endif()
+ 
+ string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O2 -DNDEBUG")
+-string(APPEND CMAKE_CXX_FLAGS_DEBUG   " -Wall -Wextra -Werror")
++if(MSVC)
++    string(APPEND CMAKE_CXX_FLAGS_DEBUG " /W4")
++else()
++    string(APPEND CMAKE_CXX_FLAGS_DEBUG " -Wall -Wextra -Werror")
++endif()
+ 
+ include(GNUInstallDirs)
+ include(CMakePackageConfigHelpers)
+@@ -142,12 +146,14 @@
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+ )
+ 
+-install(
+-    EXPORT remakeScriptTargets
+-    FILE remakeScriptTargets.cmake
+-    NAMESPACE remake2d::
+-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
+-)
++if(REMAKE2D_EXPORT_TARGETS)
++    install(
++        EXPORT remakeScriptTargets
++        FILE remakeScriptTargets.cmake
++        NAMESPACE remake2d::
++        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
++    )
++endif()
+ 
+ install(
+     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/remake2d
+--- orig/RMK2D/include/remake2d/window.hpp	2026-09-29 12:58:56.000000000 +0000
++++ RMK2D/include/remake2d/window.hpp	2026-10-01 17:30:02.639410186 +0000
+@@ -15,6 +15,7 @@
+ #include <remake2d/config/forward.hpp>
+ 
+ #include <algorithm>
++#include <bitset>
+ #include <string>
+ #include <vector>
+ #include <stack>
+--- orig/RMK2D/include/remake2d/config/forward.hpp	2026-09-29 17:47:12.000000000 +0000
++++ RMK2D/include/remake2d/config/forward.hpp	2026-10-01 19:08:13.724111820 +0000
+@@ -12,6 +12,7 @@
+ struct SDL_FPoint;
+ struct SDL_Vertex;
+ struct SDL_Texture;
++struct SDL_Event;
+ struct TTF_Font;
+ struct Mix_Music;
+ struct Mix_Chunk;
+--- orig/RMK2D/include/remake2d/config/resource.hpp	2026-09-17 14:32:46.000000000 +0000
++++ RMK2D/include/remake2d/config/resource.hpp	2026-10-01 19:09:03.250763266 +0000
+@@ -1,6 +1,7 @@
+ #ifndef REMAKE2D_RESSOURCE_
+ #define REMAKE2D_RESSOURCE_
+ 
++#include <remake2d/system.hpp>
+ #include <remake2d/config/sdl.hpp>
+ #include <remake2d/config/forward.hpp>
+ 
+--- orig/RMK2D/include/remake2d/event.hpp	2026-09-17 14:32:46.000000000 +0000
++++ RMK2D/include/remake2d/event.hpp	2026-10-01 19:08:13.724434182 +0000
+@@ -24,6 +24,7 @@
+ 
+ private:
+     EventManager(void);
++    ~EventManager(void) override;
+     EventManager(const EventManager&)            = delete;
+     EventManager& operator=(const EventManager&) = delete;
+ 
+--- orig/RMK2D/include/remake2d/private/body.hpp	2026-09-30 12:07:34.000000000 +0000
++++ RMK2D/include/remake2d/private/body.hpp	2026-10-02 07:06:31.953374526 +0000
+@@ -71,7 +71,7 @@
+     PhysicBody(const Geometry&);
+     PhysicBody(const PhysicBody&);
+     PhysicBody& operator=(const PhysicBody&);
+-    PhysicBody(void)                         = default;
++    PhysicBody(void);
+     PhysicBody(PhysicBody&&)                 noexcept;
+     PhysicBody& operator=(PhysicBody&&)      noexcept;
+ 
+--- orig/RMK2D/src/remake2d/event.cpp	2026-09-19 22:00:20.000000000 +0000
++++ RMK2D/src/remake2d/event.cpp	2026-10-01 19:08:13.724637657 +0000
+@@ -8,6 +8,8 @@
+ 
+ namespace rmk {
+ 
++EventManager::~EventManager(void) = default;
++
+ EventManager::EventManager(void) {
+ 
+     m_event = std::make_unique<SDL_Event>();
+--- orig/RMK2D/src/remake2d/private/body.cpp	2026-09-30 12:10:40.000000000 +0000
++++ RMK2D/src/remake2d/private/body.cpp	2026-10-02 07:06:35.760015112 +0000
+@@ -15,6 +15,8 @@
+     return counter.fetch_add(1);
+ }
+ 
++PhysicBody::PhysicBody(void) = default;
++
+ PhysicBody::PhysicBody(const Geometry& shape)
+     : m_needs_sync(true), m_id(_nextId())
+ {
+--- orig/RMK2D/src/remake2d/template/shape.tpp	2026-09-17 14:32:46.000000000 +0000
++++ RMK2D/src/remake2d/template/shape.tpp	2026-10-01 19:08:13.724288842 +0000
+@@ -3,6 +3,8 @@
+ 
+ #include <remake2d/math.hpp>
+ 
++#include <cmath>
++
+ namespace rmk{
+ 
+ template<IsShape S> S Geometry::as(void) const noexcept {
+--- /dev/null	2026-10-01 19:26:42.485373486 +0000
++++ RMK2D/tools/check_headers.sh	2026-10-02 07:07:12.920258217 +0000
+@@ -0,0 +1,34 @@
++#!/usr/bin/env bash
++# Pre-push check, no SDL needed. Run from the repo root:  tools/check_headers.sh [c++ compiler]
++#  1) every public header must compile on its own (catches missing <cmath>, <bitset>...)
++#  2) public headers must not include SDL (remake2d keeps SDL private)
++#  3) no .cpp may instantiate a type holding an incomplete SDL type (see below)
++# Tip: run it with g++ AND clang++ (libstdc++ vs libc++ include different things transitively).
++CXX=${1:-g++}
++# Internal headers that are only meant to be included from another header
++SKIP='remake2d/config/version.hpp|remake2d/private/esignal.hpp'
++fail=0
++tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
++
++for h in $(cd include && find remake2d -name '*.hpp' | sort | grep -Ev "$SKIP"); do
++    echo "#include <$h>" > "$tmp/t.cpp"
++    out=$($CXX -std=c++20 -fsyntax-only -Iinclude -Isrc -Iassets -Iexternal \
++          -Iexternal/remake2d -Iexternal/remake2d/box2d/include "$tmp/t.cpp" 2>&1 | grep -m2 "error")
++    if [ -n "$out" ]; then echo "NOT SELF-CONTAINED: $h"; echo "$out" | cut -c1-200; fail=1; fi
++done
++
++# 3) .cpp files: catches std::vector<SDL_X>/unique_ptr<SDL_X> members whose ctor/dtor is
++#    defined inline in a header (incomplete type) in files that never include SDL.
++#    Files that include SDL themselves stop at that include (no SDL in this check): ignored.
++for f in $(find src -name '*.cpp' | sort); do
++    out=$($CXX -std=c++20 -fsyntax-only -Iinclude -Isrc -Iassets -Iexternal \
++          -Iexternal/remake2d -Iexternal/remake2d/box2d/include "$f" 2>&1 \
++          | grep -E "incomplete type|must be a complete class|is destructible" | head -2)
++    if [ -n "$out" ]; then echo "INCOMPLETE SDL TYPE USED IN: $f"; echo "$out" | cut -c1-200; fail=1; fi
++done
++
++leaks=$(grep -rnE '#include *[<"](SDL2?/|SDL|SDL_)' include src/remake2d/template 2>/dev/null)
++if [ -n "$leaks" ]; then echo "SDL LEAK in public headers:"; echo "$leaks"; fail=1; fi
++
++[ $fail -eq 0 ] && echo "OK: headers are self-contained and SDL-free"
++exit $fail

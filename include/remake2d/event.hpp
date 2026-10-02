@@ -40,9 +40,6 @@ public:
 public:
     void textInput(bool);
     bool textInput(void);
-    
-public:
-    friend SDL_GameController* _getOpenController(i32) noexcept;
 
 public:
 
@@ -227,7 +224,14 @@ public:
 
 
 
-    _EventSignal<> onEventNone; 
+    _EventSignal<> onEventNone;
+
+
+private:
+    ~EventManager(void);
+
+private:
+    friend SDL_GameController* _getOpenController(i32) noexcept;
 };
 
 inline EventManager& event = EventManager::getInstance();

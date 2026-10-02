@@ -8,6 +8,7 @@ struct SDL_Window;
 struct SDL_Surface;
 struct SDL_Renderer;
 struct SDL_Rect;
+union  SDL_Event;
 struct SDL_Point;
 struct SDL_FPoint;
 struct SDL_Vertex;
