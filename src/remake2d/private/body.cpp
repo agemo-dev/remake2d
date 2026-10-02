@@ -39,7 +39,8 @@ PhysicBody::PhysicBody(const Geometry& shape)
 }
 
 PhysicBody::PhysicBody(const PhysicBody& other)
-    : m_type_id(other.m_type_id)
+    : Trackable(other)
+    , m_type_id(other.m_type_id)
     , m_shape_cache(other.m_shape_cache)
     , m_animations(other.m_animations)
     , m_focused_anim(other.m_focused_anim)
@@ -240,9 +241,10 @@ Animation& PhysicBody::animation(std::string_view name) {
 	}
 
     auto it = m_animations.find(n);
-    if (it == m_animations.end())
+    if (it == m_animations.end()) {
         rmk_dynamicAssert(rmk::PhysicError,
             (std::string(error::physic::animation_no_found) + n));
+    }
     return it->second;
 }
 

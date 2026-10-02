@@ -92,7 +92,7 @@ int main () {
 
     rmk::Animation anim(
             "texture3.png",                 // path to animation sheet
-            {win.center(), {320, 360}},     // Printing rectangle
+            { win.center(), {320, 360} },   // Printing rectangle
             4,                              // 4 clips
             {32, 36}                        // clip size
     );
@@ -100,7 +100,7 @@ int main () {
     anim.play(-1, 8);                       // infinity loop + 8 fps speed
 
     rmk::loop.execute(win, [&] (){
-        win.clear(rmk::color::green);       // clear screen on green
+        win.clear(rmk::color::green);     // clear screen on green
         win.fill(anim);                     // fill current clip
     });
 

@@ -18,7 +18,7 @@ template<usize POINT_COUNT> requires (POINT_COUNT > (u8)point::min && POINT_COUN
 void Shape<POINT_COUNT>::_triangulate(void) noexcept {
     if (!m_is_changed || m_n < 3) return;
 
-    for (usize i = 0; i < m_n - 2; i++) {
+    for (usize i = 0; i + 2 < m_n; i++) {
         m_tris[i] = {m_points[0], m_points[i+1], m_points[i+2]};
     }
     usize vi = 0;
@@ -142,7 +142,7 @@ bool Shape<POINT_COUNT>::hasIntersected(const Geometry& other) const noexcept {
     if(maxAx < minBx || maxBx < minAx || maxAy < minBy || maxBy < minAy) return false;
 
     auto checkAxes = [](const Vec2d A[], const u8& n1, const Vec2d B[], const u8& n2) {
-        for(usize i = 0; i < n1 - 1; i++) {
+        for(usize i = 0; i + 1 < n1; i++) {
             Vec2d edge = {A[i+1].x - A[i].x, A[i+1].y - A[i].y};
             Vec2d axis = {-edge.y, edge.x};
 

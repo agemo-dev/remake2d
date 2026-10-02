@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.32)
 
 project(
-	remakeScript
-	VERSION 0.2.0
-	DESCRIPTION "A remake2d add-on for lua scripting"
-	LANGUAGES CXX C
+    remakeScript
+    VERSION 0.2.0
+    DESCRIPTION "A remake2d add-on for lua scripting"
+    LANGUAGES CXX C
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -82,7 +82,10 @@ endforeach()
 file(GLOB_RECURSE LUA_SRC external/remake2d/lua/*.c)
 add_library(lualib OBJECT ${LUA_SRC})
 
-target_compile_options(lualib PRIVATE -Wno-unused-parameter)
+if(NOT MSVC)
+    target_compile_options(lualib PRIVATE -Wno-unused-parameter)
+endif()
+
 target_include_directories(lualib PRIVATE external/remake2d)
 set_target_properties(lualib PROPERTIES LINKER_LANGUAGE C)
 
@@ -91,16 +94,16 @@ file(GLOB_RECURSE REMAKE_SCRIPT_CONFIG_SRC src/remake2d/config/*.cpp)
 
 if(BUILD_SHARED_LIBS)
     add_library(remakeScript SHARED
-		$<TARGET_OBJECTS:lualib>
-		${REMAKE_SCRIPT_SRC}
-		${REMAKE_SCRIPT_CONFIG_SRC}
-	)
+        $<TARGET_OBJECTS:lualib>
+        ${REMAKE_SCRIPT_SRC}
+        ${REMAKE_SCRIPT_CONFIG_SRC}
+    )
 else()
-	add_library(remakeScript STATIC
-		$<TARGET_OBJECTS:lualib>
-		${REMAKE_SCRIPT_SRC}
-		${REMAKE_SCRIPT_CONFIG_SRC}
-	)
+    add_library(remakeScript STATIC
+        $<TARGET_OBJECTS:lualib>
+        ${REMAKE_SCRIPT_SRC}
+        ${REMAKE_SCRIPT_CONFIG_SRC}
+    )
 endif()
 
 
@@ -122,9 +125,9 @@ target_compile_definitions(
 )
 
 target_link_libraries(
-	remakeScript
-	PUBLIC
-		remake2d
+    remakeScript
+    PUBLIC
+        remake2d
 )
 
 if(BUILD_SHARED_LIBS AND MSVC)
@@ -140,8 +143,8 @@ if(WIN32)
 endif()
 
 install(
-	TARGETS remakeScript
-	EXPORT remakeScriptTargets
+    TARGETS remakeScript
+    EXPORT remakeScriptTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

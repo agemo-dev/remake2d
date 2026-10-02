@@ -179,7 +179,8 @@ Timer::Timer(fmax l) : m_limit(l < 0 ? 0 : l) {
 Timer::Timer(time::Second l) : Timer(l.count()) {}
 
 Timer::Timer(Timer&& other)
-    : m_limit(other.m_limit.load(std::memory_order_relaxed))
+    : Trackable(std::move(other))
+    , m_limit(other.m_limit.load(std::memory_order_relaxed))
     , m_active(other.m_active.load(std::memory_order_relaxed))
     , m_elapsed(other.m_elapsed.load(std::memory_order_relaxed))
     , m_current_time(other.m_current_time.load(std::memory_order_relaxed))
@@ -189,7 +190,8 @@ Timer::Timer(Timer&& other)
 }
 
 Timer::Timer(const Timer& other)
-    : m_limit(other.m_limit.load(std::memory_order_relaxed))
+    : Trackable(other)
+    , m_limit(other.m_limit.load(std::memory_order_relaxed))
     , m_active(other.m_active.load(std::memory_order_relaxed))
     , m_elapsed(other.m_elapsed.load(std::memory_order_relaxed))
     , m_current_time(other.m_current_time.load(std::memory_order_relaxed))
@@ -200,6 +202,7 @@ Timer::Timer(const Timer& other)
 
 Timer& Timer::operator=(Timer&& other) {
     if (this != &other) {
+        Trackable::operator=(std::move(other));
         m_limit.store(other.m_limit.load(std::memory_order_relaxed), std::memory_order_relaxed);
         m_active.store(other.m_active.load(std::memory_order_relaxed), std::memory_order_relaxed);
         m_elapsed.store(other.m_elapsed.load(std::memory_order_relaxed), std::memory_order_relaxed);

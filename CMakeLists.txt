@@ -54,6 +54,7 @@ set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
     find_package(SDL2 QUIET)
+
     if(NOT SDL2_FOUND)
         execute_process(
             COMMAND pkg install -y x11-repo
@@ -76,14 +77,22 @@ if(TERMUX_BUILD)
     find_package(SDL2_ttf   REQUIRED)
     find_package(SDL2_image REQUIRED)
     find_package(SDL2_mixer REQUIRED)
+
 else()
     set(USER_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
     set(BUILD_SHARED_LIBS OFF)
 
-    set(SDL2_DISABLE_INSTALL   ON   CACHE BOOL "" FORCE)
-    set(SDL2IMAGE_INSTALL      OFF  CACHE BOOL "" FORCE)
-    set(SDL2MIXER_INSTALL      OFF  CACHE BOOL "" FORCE)
-    set(SDL2TTF_INSTALL        OFF  CACHE BOOL "" FORCE)
+    if(USER_BUILD_SHARED_LIBS)
+        set(SDL2_DISABLE_INSTALL   ON   CACHE BOOL "" FORCE)
+        set(SDL2IMAGE_INSTALL      OFF  CACHE BOOL "" FORCE)
+        set(SDL2MIXER_INSTALL      OFF  CACHE BOOL "" FORCE)
+        set(SDL2TTF_INSTALL        OFF  CACHE BOOL "" FORCE)
+    else()
+        set(SDL2_DISABLE_INSTALL   OFF  CACHE BOOL "" FORCE)
+        set(SDL2IMAGE_INSTALL      ON   CACHE BOOL "" FORCE)
+        set(SDL2MIXER_INSTALL      ON   CACHE BOOL "" FORCE)
+        set(SDL2TTF_INSTALL        ON   CACHE BOOL "" FORCE)
+    endif()
 
     set(SDL2IMAGE_VENDORED ON CACHE BOOL "" FORCE)
     set(SDL2MIXER_VENDORED ON CACHE BOOL "" FORCE)
@@ -266,16 +275,29 @@ target_compile_definitions(
         SDL_MAIN_HANDLED
 )
 
-target_link_libraries(
-    remake2d
-    PRIVATE
-        $<BUILD_INTERFACE:SDL2::SDL2>
-        $<BUILD_INTERFACE:SDL2_ttf::SDL2_ttf>
-        $<BUILD_INTERFACE:SDL2_image::SDL2_image>
-        $<BUILD_INTERFACE:SDL2_mixer::SDL2_mixer>
-        $<$<CXX_COMPILER_ID:GNU>:atomic>
-        ${CMAKE_DL_LIBS}
-)
+if (BUILD_SHARED_LIBS)
+    target_link_libraries(
+        remake2d
+        PRIVATE
+            $<BUILD_INTERFACE:SDL2::SDL2>
+            $<BUILD_INTERFACE:SDL2_ttf::SDL2_ttf>
+            $<BUILD_INTERFACE:SDL2_image::SDL2_image>
+            $<BUILD_INTERFACE:SDL2_mixer::SDL2_mixer>
+            $<$<CXX_COMPILER_ID:GNU>:atomic>
+            ${CMAKE_DL_LIBS}
+    )
+else()
+    target_link_libraries(
+        remake2d
+        PRIVATE
+            SDL2::SDL2
+            SDL2_ttf::SDL2_ttf
+            SDL2_image::SDL2_image
+            SDL2_mixer::SDL2_mixer
+            $<$<CXX_COMPILER_ID:GNU>:atomic>
+            ${CMAKE_DL_LIBS}
+    )
+endif()
 
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_link_options(remake2d PRIVATE "-Wl,--exclude-libs,ALL")
