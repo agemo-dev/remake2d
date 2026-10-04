@@ -107,6 +107,9 @@ public:
     mutable bool is_fill_dirty{true};
 
 public:
+    mutable bool overridden {false};
+
+public:
     mutable std::vector<VertexBatch> _fill_cache_;
 
 public:

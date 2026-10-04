@@ -372,12 +372,12 @@ void Signal<Args...>::stop(void) {
 }
 
 template<typename... Args>
-u32 Signal<Args...>::count(void) const {
+usize Signal<Args...>::count(void) const {
     return m_count;
 }
 
 template<typename... Args>
-void Signal<Args...>::reserve(u32 size) {
+void Signal<Args...>::reserve(usize size) {
     m_connected_funcs.reserve(size);
     m_prioritary_funcs.reserve(size);
     m_connected_slots.reserve(size);

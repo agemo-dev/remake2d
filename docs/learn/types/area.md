@@ -26,9 +26,9 @@ It is composed of four integers:
 The `Area` type own three methods:
 
 ```cpp
-Vec2d pos(void)    noexcept; // get Area upper-left position
-Vec2d size(void)   noexcept; // get Area size
-Vec2d center(void) noexcept; // get Area center
+Vec2d pos(void)    const noexcept; // get Area upper-left position
+Dim2d size(void)   const noexcept; // get Area size
+Vec2d center(void) const noexcept; // get Area center
 ```
 
 ---
@@ -38,9 +38,9 @@ Vec2d center(void) noexcept; // get Area center
 Its constructors is as follows:
 
 ```cpp
-constexpr Area(void);
-constexpr Area(Vec2d pos, Dim2d size);
-constexpr Area(i32 x, i32 y, i32 w, i32 h);
+Area(void);
+Area(Vec2d pos, Dim2d size);
+Area(i32 x, i32 y, i32 w, i32 h);
 ```
 
 ```cpp

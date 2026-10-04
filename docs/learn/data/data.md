@@ -114,7 +114,7 @@ rmk::Data first = inv[0];
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](../tools/scene.md){ .md-button }
+[:octicons-arrow-left-24: Previous chapter](../tools/headers.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](datafile.md){ .md-button .md-button--primary }
 
 ---

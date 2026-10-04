@@ -158,7 +158,7 @@ The `EventManager` provides three ways to read events each frame, depending on h
 ```cpp
 void poll(void);                        // process all pending events (non-blocking)
 void wait(void);                        // wait indefinitely for an event
-void wait(time::Millisecond timeout);   // wait for an event with timeout
+void wait(time::Second timeout);        // wait for an event with timeout
 void update(void);                      // EventManager::poll alias
 
 void textInput(bool);					// Enable/disable text read mode
@@ -184,7 +184,7 @@ rmk::loop.execute(win, [&]() {
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| EventManager | No | Yes | None |
+| EventManager | No | No | None |
 
 ---
 

@@ -17,7 +17,7 @@ The methods shared by every `Sound` are as follows:
 
 ```cpp
 i8 playFor(void)   const noexcept; // remaining loops
-u8 getVolume(void) const noexcept; // current volume
+u8 volume(void) const noexcept;    // current volume
 
 virtual void play(i8 loop = 0)   = 0; // start playback
 virtual void stop(void)          = 0; // stop playback
@@ -78,7 +78,7 @@ Volume ranges from `1` to `128`, independent of the host device's system volume,
 
 ```cpp
 enum class volume : u8 {
-    min = 1,
+    min = 0,
     max = 128
 };
 ```

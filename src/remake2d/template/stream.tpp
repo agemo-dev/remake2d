@@ -6,9 +6,13 @@
 namespace rmk {
 
 template<IsBasicType T> Text& operator<<(Text& t, const T& value) noexcept {
-    std::ostringstream oss;
-    oss << value;
-    return t << oss.str();
+    if constexpr (std::same_as<T, Triangulation>) {
+        return t;
+    } else {
+        std::ostringstream oss;
+        oss << value;
+        return t << oss.str();
+    }
 }
 
 template<IsSavable T> DataFile& operator<<(DataFile& dfile, const T& obj) {

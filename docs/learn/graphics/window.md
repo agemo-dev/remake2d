@@ -19,7 +19,7 @@ Window(std::string_view title, Vec2d pos, Dim2d size);
 
 !!! info
     All parameters are optional and will be initialized with default values.
-    Windows are automatically bound to the `onWindowClosed`, `onWindowResized`
+    Windows are automatically bound to the `onWindowClose`, `onWindowResized`
     and `onWindowMoved` events, in order to keep their internal data up to date.
 
 ---
@@ -124,5 +124,5 @@ inline constexpr Dim2d uhd    = { 3840, 2160 };
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](../types/color.md){ .md-button }
+[:octicons-arrow-left-24: Previous chapter](../types/trait.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](loop.md){ .md-button .md-button--primary }

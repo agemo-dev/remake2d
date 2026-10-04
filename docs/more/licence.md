@@ -6,7 +6,7 @@ RE:MAKE 2D is on  **MIT Licene**.
 
 ## MIT License
 
-Copyright (c) 2025-2026 agemo-dev
+Copyright (c) 2026-2027 agemo-dev
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

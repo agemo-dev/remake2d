@@ -62,7 +62,7 @@ int main(void) {
     
     num += 10; // 110
     num = num - 50; // 60
-    num = num * num; // 360
+    num = num * num; // 3600
     
     dbl = dbl - 0.005; // 10.500;
     dbl = dbl % 10; // ERROR: modulo cannot be applied to double

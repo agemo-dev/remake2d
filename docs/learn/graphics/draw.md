@@ -17,11 +17,13 @@ To do that, we'll use a dedicated engine trait: **Printable**, contained in the 
 
 ## Methods
 
-The `Printable` class has **two virtual methods** and **four public members**:
+The `Printable` class has **two virtual methods** and **five public members**:
 
 ```cpp
 mutable bool filled{false}; // check if filled
 mutable bool drawn{false};  // check if drawn
+
+mutable bool overridden{false}; // check if inherit from parent attributs
 
 mutable bool is_fill_dirty{true};
 mutable bool is_draw_dirty{true};
@@ -156,8 +158,9 @@ p.layer(rmk::level::world(2));
 
 The `Printable` class also exposes a few public members:
 
-- `filled` : set to `true` by the engine the first time the object is displayed through `fill`.
-- `drawn`  : set to `true` by the engine the first time the object is displayed through `draw`.
+- `filled`     : set to `true` by the engine the first time the object is displayed through `fill`.
+- `drawn`      : set to `true` by the engine the first time the object is displayed through `draw`.
+- `overridden` : set manually to `true` if you want set a custom color or layer for a children .
 
 There are also `is_draw_dirty` and `is_fill_dirty`, which tell the engine that the object has been modified
 and that its drawing cache needs to be refreshed.

@@ -5,12 +5,12 @@
 
 namespace rmk {
 
-Actor::Actor(const Actor& other) : m_children() , m_parent(nil) {
+Actor::Actor(const Actor& other) : Trackable(other), m_children() , m_parent(nil) {
     (void) other;
 }
 
 Actor& Actor::operator=(const Actor& other) {
-    (void) other;
+    if (this != &other) Trackable::operator=(other);
     return *this;
 }
 

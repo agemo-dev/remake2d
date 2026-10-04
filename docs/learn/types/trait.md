@@ -49,9 +49,9 @@ public:
 **RE:MAKE 2D** offers several traits, namely:
 
 - [Printable](../graphics/draw.md)
-- [Followable](../graphics/camera.md/#following)
-- [Updatable](../graphics/loop.md/#updatable)
-- [Trackable](../core/tracker.md/#trackable)
+- [Followable](../graphics/camera.md#following)
+- [Updatable](../graphics/loop.md#updatable)
+- [Trackable](../core/tracker.md#trackable)
 - [Savable](../data/savable.md)
 - [Actor](../scene/actor.md)
 

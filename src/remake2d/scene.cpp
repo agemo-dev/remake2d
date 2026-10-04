@@ -168,17 +168,17 @@ void Act::updates(void) const {
     }
 }
 
-Scene& Act::scene(std::string_view tag) {
+Tracker<Scene> Act::scene(std::string_view tag) {
     std::string key(tag);
     auto it = m_scenes.find(key);
-    if (it != m_scenes.end()) return *(it->second);
+    if (it != m_scenes.end()) return it->second;
     rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
 }
 
-const Scene& Act::scene(std::string_view tag) const {
+const Tacker<Scene> Act::scene(std::string_view tag) const {
     std::string key(tag);
     auto it = m_scenes.find(key);
-    if (it != m_scenes.end()) return *(it->second);
+    if (it != m_scenes.end()) return it->second;
     rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
 }
 

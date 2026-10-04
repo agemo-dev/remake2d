@@ -104,7 +104,7 @@ std::string name = rmk::random.choice<std::string>(names);
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| Random | No | Yes | None |
+| Random | No | No | None |
 
 ---
 

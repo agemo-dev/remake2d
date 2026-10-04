@@ -52,7 +52,6 @@ rmk::Animation walk("player_walk.png", {{400, 300}, {32, 48}}, 6, {32, 48});
 Play must be called once for the animation to advance; it takes a loop count and a playback speed in frames per second:
 
 ```cpp
-// In render loop
 walk.play(-1, 8); // loop forever, 8 frames per second
 ```
 
@@ -63,7 +62,7 @@ walk.play(-1, 8); // loop forever, 8 frames per second
 Since `Animation` inherits from `Sprite`, it draws exactly the same way:
 
 ```cpp
-win.fill(walk, rmk::color::white);
+win.fill(walk);
 ```
 
 ### Pausing and stopping

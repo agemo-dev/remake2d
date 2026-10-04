@@ -49,7 +49,7 @@ bool hasIntersected(const TextureBase&) const noexcept; // collision test
 
 ### Loading a sprite
 
-The most common texture is a `Sprite`, a `Texture<Rectangle>` alias, taking a path and a `Rectangle` describing its position and size:
+The most common texture is a `Sprite`, a `Texture<Rectangle>` derived, taking a path and a `Rectangle` describing its position and size:
 
 ```cpp
 Sprite(std::string_view path, const Rectangle&);
@@ -108,8 +108,11 @@ A texture has no color of its own; tint and opacity are entirely driven by the `
 white so color modulation applies correctly:
 
 ```cpp
-win.fill(player, rmk::color::red);         // tinted red
-win.fill(player, {255, 255, 255, 128});      // half transparent
+player.color(rmk::color::red); // tinted red
+win.fill(player);
+
+player.color({255, 255, 255, 128}); // half transparent
+win.fill(player);
 ```
 
 This applies the same way whether the texture is a `Sprite` or any other shaped `Texture<S>`.
@@ -229,5 +232,5 @@ rmk::Image<rmk::Triangle>  flag("flag.png", rmk::Triangle({400, 300}, {80, 80}))
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](../graphics/viewport.md){ .md-button }
+[:octicons-arrow-left-24: Previous chapter](../graphics/camera.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](text.md){ .md-button .md-button--primary }

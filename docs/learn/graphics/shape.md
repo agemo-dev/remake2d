@@ -38,8 +38,8 @@ Numbers limit point are reprenseted by following enumeration:
 
 ```cpp
 enum class point : u8 {
-	min = 0,
-	max = 50
+    min = 0,
+    max = 50
 };
 ```
 
@@ -51,9 +51,9 @@ The `Geometry` class has several **pure virtual methods** that `Shape` inherits 
 Among these, we have:
 
 ```cpp
-virtual u8 points(void)   			 const noexcept = 0; // number of points
-virtual Dim2d size(void)   			 const noexcept = 0; // shape size
-virtual Vec2d center(void) 			 const noexcept = 0; // center position
+virtual u8 points(void)              const noexcept = 0; // number of points
+virtual Dim2d size(void)             const noexcept = 0; // shape size
+virtual Vec2d center(void)           const noexcept = 0; // center position
 virtual const Vec2d* pointsPos(void) const noexcept = 0; // raw points array
 
 virtual void move(const Vec2d& center) noexcept = 0;     // translate shape
@@ -161,17 +161,17 @@ win.fill(triangle);
 ![semi-transparent triangle](assets/graphics4.png)
 
 You can change the transparency mode via the `blendMode` method of the `Window` class, which can take
-three distinct values:
+five distinct values:
 
 ```cpp
 namespace window {
 
 enum class blendmode : u8 {
-	none,
-	normal,
-	add,
-	mod,
-	mul
+    none,
+    normal,
+    add,
+    mod,
+    mul
 };
 
 }
@@ -217,7 +217,7 @@ class Circle    : public Ellipse;   // circle (w == h enforced)
 ```
 
 !!! info
-    For the `Square` and `Circle` types, only the `resize` method is overridden to take just the width into account.
+    For the `Square` and `Circle` types, only the `transform` method is overridden to take just the width into account.
     The constructors of the `Square` and `Circle` types take an `f32` rather than a `Dim2d` in their constructor.
 
 ---

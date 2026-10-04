@@ -114,4 +114,4 @@ Changing the root only affects `DataFile` instances created afterwards.
 ---
 
 [:octicons-arrow-left-24: Previous chapter](data.md){ .md-button }
-[Next chapter :octicons-arrow-right-24:](isavable.md){ .md-button .md-button--primary }
+[Next chapter :octicons-arrow-right-24:](savable.md){ .md-button .md-button--primary }

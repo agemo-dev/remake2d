@@ -167,7 +167,7 @@ This will be executed right before the function passed to execute.
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
 | Updatable | Yes | Yes | Trackable |
-| MainRenderLoop | No | Yes | None |
+| MainRenderLoop | No | No | None |
 
 ---
 

@@ -120,7 +120,7 @@ inline auto& dlink = DeltaThreadConnector::getInstance();
 class DeltaTime : public ClockBase, public Updatable {
 
 private:
-    fmax              m_max_fps{-1};
+    fmax              m_max_fps{120};
     std::atomic<fmax> m_frame_time{0.0};
 
 private:

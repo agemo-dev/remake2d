@@ -44,6 +44,7 @@ void MainRenderLoop::execute(Window& win, const std::function<void(void)>& body)
 void MainRenderLoop::execute(const std::function<bool(void)>& condition, const std::function<void(void)>& body) noexcept {
     m_condition = condition;
     m_execute   = body;
+    config::loop::init();
 }
 
 bool MainRenderLoop::isRunning(void) const noexcept {

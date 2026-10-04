@@ -22,9 +22,8 @@ void execute(const Frame&);               // set main update function
 void add(Actor&, i16 layer = 0);          // add actor to a layer
 void add(const Frame&, i16 layer = 0);    // add function to a layer
 void remove(Actor&);                      // remove actor from scene
-void enable(void) noexcept;               // enable scene updates
-void disable(void) noexcept;              // disable scene updates
-bool isEnabled(void) const noexcept;      // check if scene is enabled
+void active(bool)       noexcept;         // enable/disable active
+bool active(void) const noexcept;         // check if is active
 void setLayerActive(i16 layer, bool);     // enable/disable all actors on a layer
 void setActorActive(Actor&, bool);        // enable/disable a specific actor
 ```
@@ -77,8 +76,8 @@ Update, in order, calls the main function, then every layered free function and 
 Pausing a whole menu, or hiding the HUD temporarily, doesn't require removing anything from the scene:
 
 ```cpp
-scene.disable();
-if (scene.isEnabled()) scene.update(); // skipped
+scene.active(false);
+if (scene.active()) scene.update(); // skipped
 ```
 
 Individual layers or actors can also be toggled independently:
@@ -100,10 +99,12 @@ Where a `Scene` handles one single state, `Act` handles the transition between s
 void add(std::string_view tag, Scene&);                                // register a scene
 void link(std::string_view tag, std::span<std::string_view> scenes);   // group scenes under a tag
 void focus(std::string_view tag);                                      // activate a scene or link
-void update(void) const;                                                // update focused scene(s)
-void update(std::string_view tag) const;                                // update a specific scene or link
-void updates(void) const;                                                // update all scenes
-Scene* getScene(std::string_view tag) const;                            // get scene by tag
+void update(void) const;                                               // update focused scene(s)
+void updates(void) const;                                              // update all scenes
+void update(std::string_view tag) const;                               // update a specific scene or link
+
+Tracker<Scene>       scene(std::string_view);                          // get scene by tag
+const Tracker<Scene> scene(std::string_view) const;                    // get scene by tag (const)
 ```
 
 ### Usage
@@ -159,8 +160,8 @@ act.updates();
 #### Retrieving a scene
 
 ```cpp
-rmk::Scene* menu = act.getScene("menu");
-if (menu) menu->disable();
+rmk::Tracker<rmk::Scene> menu = act.scene("menu");
+if (menu) menu->active();
 ```
 
 ---
@@ -175,4 +176,4 @@ if (menu) menu->disable();
 ---
 
 [:octicons-arrow-left-24: Previous chapter](actor.md){ .md-button }
-[Next chapter :octicons-arrow-right-24:](headers.md){ .md-button .md-button--primary }
+[Next chapter :octicons-arrow-right-24:](../time/delta.md){ .md-button .md-button--primary }

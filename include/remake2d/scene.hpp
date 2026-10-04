@@ -79,8 +79,8 @@ public:
     void update(std::string_view)    const;
 
 public:
-    Scene& scene(std::string_view);
-    const Scene& scene(std::string_view) const;
+    Tracker<Scene>       scene(std::string_view);
+    const Tracker<Scene> scene(std::string_view) const;
 
 private:
     void _rebuildFocusCache(void) const;

@@ -43,7 +43,7 @@
 ## Quick Start
 
 ```cpp
-#include <remake2d/all/graphics.hpp>
+#include <remake2d/all/bases.hpp>
 
 int main (void) {
     rmk::Window win;

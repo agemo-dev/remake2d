@@ -48,21 +48,14 @@ rmk::TileGrid grid({400, 300}, {800, 600}, {8, 6});
 Like any `Geometry`, `TileGrid` draws directly through `Window::draw`, handy for visualizing an alignment during development:
 
 ```cpp
-grid.color(rmk::color::gray);
-
-// In render loop
-win.draw(grid);
-```
-
-```cpp
 #include <remake2d/window.hpp>
 #include <remake2d/loop.hpp>
 #include <remake2d/tilegrid.hpp>
 
 int main(void) {
     rmk::Window win;
-    rmk::TileGrid grid({400, 300}, {800, 600}, {8, 6});
-    grid.color(rmk::color::gray);
+    rmk::TileGrid grid(win.center(), {800, 600}, {8, 6});
+    grid.color(rmk::color::cyan);
 
     rmk::loop.execute(win, [&](void) {
         win.draw(grid);
@@ -71,6 +64,8 @@ int main(void) {
     rmk::loop.update();
 }
 ```
+
+![tile grid example](assets/maps1.png)
 
 ### Retrieving cells
 
@@ -82,7 +77,7 @@ std::vector<rmk::Area> all = grid.cells();
 ```
 
 !!! info
-    Count returns `cut.x * cut.y`, the total number of cells in the grid.
+    `count` returns `cut.x * cut.y`, the total number of cells in the grid.
 
 ### Modifying a grid
 
@@ -105,5 +100,3 @@ grid.resize({1000, 700});
 
 [:octicons-arrow-left-24: Previous chapter](../physic/physic.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](tilemap.md){ .md-button .md-button--primary }
-
----

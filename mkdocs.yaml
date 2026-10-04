@@ -35,6 +35,7 @@ markdown_extensions:
 
 nav:
   - Home:
+    - Index:             index.md
     - About RE:MAKE 2D : home/about.md
     - Cheatsheet:        home/cheatsheet.md
   - Learn:

@@ -18,7 +18,7 @@ Resource<T, F>::Resource(void) {
 template<typename T, void(*F)(T*)>
 Resource<T, F>::Resource(Resource&& o) noexcept
     : data(o.data), m_refcount(o.m_refcount) {
-    rmk::system.init();
+    rmk::system._init();
     o.data = nullptr;
     o.m_refcount = nullptr;
 }
@@ -26,7 +26,7 @@ Resource<T, F>::Resource(Resource&& o) noexcept
 template<typename T, void(*F)(T*)>
 Resource<T, F>::Resource(const Resource& o)
     : data(o.data), m_refcount(o.m_refcount) {
-    rmk::system.init();
+    rmk::system._init();
     if (m_refcount)
         ++(*m_refcount);
 }

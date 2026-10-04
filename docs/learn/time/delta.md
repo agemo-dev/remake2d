@@ -42,10 +42,11 @@ rmk::f32 fps = (rmk::f32)rmk::delta.FPS();
 
 ### Capping the frame rate
 
-By default the frame rate is capped at **120**. `maxFPS` changes that limit, clamped between **30** and **1440**:
+By default the frame rate is capped at **120**. `maxFPS` changes that limit, clamped between **30** and **1440**, and use `nil` to disable limit:
 
 ```cpp
-rmk::delta.maxFPS(60.0);
+rmk::delta.maxFPS(60.0);     // set limit to 60 FPS
+rmk::delta.maxFPS(rmk::nil); // disable limit
 ```
 
 ### Update
@@ -72,5 +73,5 @@ rmk::delta.update();
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](../maps/parallax.md){ .md-button }
+[:octicons-arrow-left-24: Previous chapter](../scene/scene.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](timer.md){ .md-button .md-button--primary }

@@ -153,8 +153,8 @@ public:
 
     void stop(void);
     void start(void);
-    u32 count(void) const;
-    void reserve(u32);
+    usize count(void) const;
+    void  reserve(usize);
 
 protected:
     void _dispatch(void) override;

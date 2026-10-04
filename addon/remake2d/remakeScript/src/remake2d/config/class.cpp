@@ -307,7 +307,7 @@ void initLuaClass(void) noexcept {
             [](Act& a, std::string_view tag) { a.update(tag); }
         );
         ut["updates"]   = &Act::updates;
-        ut["scene"]     = [](Act& self, std::string_view s) -> Scene& { return self.scene(s); };
+        ut["scene"]     = [](Act& self, std::string_view s) -> Tracker<Scene> { return self.scene(s); };
     });
 
     script._registerEngineType<Sound>("Sound", [](SolState::Type& ut) {

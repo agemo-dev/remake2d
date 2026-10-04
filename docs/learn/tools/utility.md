@@ -107,9 +107,9 @@ namespace level {
 ```
 
 ```cpp
-scene.add(background,  rmk::layer::ground(10)); // -10
-scene.add(player,      rmk::layer::world(0));   // 0
-scene.add(hud,         rmk::layer::ui(200));    // 199 : value is automatically clamped to 49 if is overlimit
+scene.add(background,  rmk::level::ground(10)); // -40
+scene.add(player,      rmk::level::world(0));   // 0
+scene.add(hud,         rmk::level::ui(200));    // 149 : value is automatically clamped to 49 if is overlimit
 ```
 
 !!! info
@@ -124,17 +124,24 @@ fallback locations:
 
 ```cpp
 namespace file {
+void createParentPath(std::string_view)             noexcept;
 std::string jump(std::span<std::string_view> paths) noexcept;
 }
+```
+
+```cpp
+std::string path = "my/full/path.txt";
+rmk::file::createParentPath(path); // create directory my/ and my/full/
+std::ofstream file(path);
 ```
 
 ```cpp
 std::string path1("assets/player.png");
 std::string path2("fallback/player.png");
 
-std::string path = rmk::file::jump(std::Vector{
-    path1, path2
-});
+std::string_view paths [] = { path1, path2 };
+
+std::string path = rmk::file::jump(paths);
 ```
 
 !!! info
@@ -170,7 +177,7 @@ This header also contains enumeration and a function to find out the current ver
 
 enum class version : u8 {
 	major = 0,
-	minor = 1,
+	minor = 3,
 	patch = 0
 };
 

@@ -100,7 +100,7 @@ Adding two colors together using the `+` operator picks the largest RGBA values
 from both. For example:
 
 ```cpp
-// red  = {255, 0, 0, 255} and blue = {0, 0, 255, 0}
+// red  = {255, 0, 0, 255} and blue = {0, 0, 255, 255}
 // gives purple = {255, 0, 255, 255}
 rmk::Color purple = rmk::color::red + rmk::color::blue;
 ```
@@ -119,8 +119,8 @@ The `%` operator computes the average of each RGBA value, resulting in a more
 precise blend that is strictly irreversible in a trivial way. Example:
 
 ```cpp
-// red  = {255, 0, 0, 255} and blue = {0, 0, 255, 0}
-// gives purple = {128, 0, 128, 255}
+// red  = {255, 0, 0, 255} and blue = {0, 0, 255, 255}
+// gives purple = {127, 0, 127, 255}
 rmk::Color purple = rmk::color::red % rmk::color::blue;
 ```
 

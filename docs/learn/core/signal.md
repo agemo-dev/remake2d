@@ -48,14 +48,14 @@ void bindFalling(Condition cond, Args... defaultArgs); // emit once when conditi
 void bindChange(Condition cond, Args... defaultArgs);  // emit on every condition change
 
 // Lifecycle
-void start(void);        // activate the signal
-void stop(void);         // deactivate the signal
-int  count(void) const;  // number of connected slots
-void reserve(int size);  // pre-allocate internal storage
+void  start(void);         // activate the signal
+void  stop(void);          // deactivate the signal
+usize count(void) const;   // number of connected slots
+void  reserve(usize);      // pre-allocate internal storage
 ```
 
 !!! info
-    Priority slots and functions are called before regular ones. Within the same priority level, execution order follows the order of connection.
+    Priority slots and regular ones are called first. Within the same priority level, execution order follows the order of connection.
 
 ---
 
@@ -63,13 +63,13 @@ void reserve(int size);  // pre-allocate internal storage
 
 ### Manual emission
 
-The simplest use case — connect a function and emit manually:
+The simplest use case , connect a function and emit manually:
 
 ```cpp
 rmk::Signal<f32> onHealthChanged;
 
 onHealthChanged.join([](f32 hp) {
-    std::cout << "HP : " << hp << "\n";
+    std::cout << "HP : " << hp << std::endl;
 });
 
 onHealthChanged.emit(75.0f);
@@ -107,7 +107,7 @@ onHealthChanged.join([&](f32 hp) { checkDeath(hp); });         // called after
 
 ```cpp
 onHealthChanged.joinOnce([](f32 hp) {
-    std::cout << "First hit at : " << hp << "\n";
+    std::cout << "First hit at : " << hp << std::endl;
 }); // disconnected automatically after first emission
 ```
 

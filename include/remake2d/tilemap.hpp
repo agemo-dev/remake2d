@@ -64,17 +64,20 @@ private:
     i16                       m_counter_start{0};
     bool                      m_is_built{false};
     std::string               m_path;
+    Dim2d                     m_image_size{0};
     std::vector<Sprite>       m_tileset;
     std::vector<u32>          m_sprite_slot;
     mutable std::future<void> m_build_future;
 
 public:
+    TileMap(TileMap&&) noexcept;
+    TileMap& operator=(TileMap&&) noexcept;
     TileMap(std::string_view, TileMapData);
+
+public:
     TileMap(void)                          = delete;
     TileMap(const TileMap&)                = delete;
-    TileMap(TileMap&&) noexcept            = default;
     TileMap& operator=(const TileMap&)     = delete;
-    TileMap& operator=(TileMap&&) noexcept = default;
 
 public:
     Dim2d  clip(void)      const noexcept;
@@ -115,7 +118,7 @@ public:
     void fill(const Printable&) const noexcept override;
 
 public:
-    ~TileMap(void) = default;
+    ~TileMap(void);
 
 public:
     friend class Window;

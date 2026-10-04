@@ -76,13 +76,12 @@ TileMap(std::string_view tileset_path, TileMapData data);
 ```
 
 ```cpp
-rmk::TileMapData data {
-	.center     = {400, 300},
-	.size       = {800, 600},
-	.clip_start = {0, 0},
-	.clip_size  = {32, 32},
-	.cut        = {10, 8}
-}
+rmk::TileMapData data (
+    {400, 300},    // center
+    {800, 600},    // size
+    {10, 8},       // cut
+    {32, 32}       // clip size
+);
 
 rmk::TileMap map("tileset.png", data);
 ```
@@ -104,36 +103,53 @@ map.load(layout);
 
 ### Drawing a map
 
-```cpp
-// In render loop
-win.draw(map, rmk::color::white);
-```
+To display a `TileMap`, we will use the `fill` method of `Window`.
+We will use an example created with *Pixel Studio*, downloadable [here](assets/tilemap.png), to test it ourselves.
 
 ```cpp
-#include <remake2d/window.hpp>
-#include <remake2d/loop.hpp>
+#include <remake2d/all/graphics.hpp>
 #include <remake2d/tilemap.hpp>
+#include <remake2d/stream.hpp>
+#include <remake2d/loop.hpp>
 
-int main(void) {
+int main (void) {
+
     rmk::Window win;
-    rmk::TileMapData data {
-		.center     = win.center(),
-		.size       = {800, 600},
-		.clip_start = {0, 0},
-		.clip_size  = {32, 32},
-		.cut        = {10, 8}
-	}
+    auto path = "tilemap.png";
 
-    rmk::TileMap map("tileset.png", data);
-    map.load(rmk::TileMap::TileTemplate(80, 0));
+    rmk::TileMapData data(
+        win.center(),   // center
+        {576, 576},     // size
+        {9, 9},         // cut
+        {32, 32}        // clip_size
+    );
 
-    rmk::loop.execute(win, [&](void) {
+    rmk::TileMap map(path, data);
+
+    map.counterStart(0);
+
+    map.load({
+        1, 0, 0, 0, 2, 0, 0, 0, 1,
+        0, 0, 3, 0, 0, 0, 3, 0, 0,
+        0, 0, 0, 0, 1, 0, 0, 0, 0,
+        2, 0, 0, 3, 0, 3, 0, 0, 2,
+        0, 0, 1, 0, 3, 0, 1, 0, 0,
+        2, 0, 0, 3, 0, 3, 0, 0, 2,
+        0, 0, 0, 0, 1, 0, 0, 0, 0,
+        0, 0, 3, 0, 0, 0, 3, 0, 0,
+        1, 0, 0, 0, 2, 0, 0, 0, 1
+    });
+    map.build();
+
+    rmk::loop.execute(win, [&] () {
         win.fill(map);
     });
 
     rmk::loop.update();
 }
 ```
+
+![tilemap example](assets/maps2.png)
 
 ### Tags
 
@@ -172,8 +188,8 @@ configurable exactly like a body created by hand, tags and contact callbacks inc
 rmk::PhysicBody& rock = map.body("rock");
 
 rock.isSolid(true);
-rock.onContactStart.join([](rmk::PhysicBody* self, rmk::PhysicBody* other) {
-    if (other->tag() == "player") std::cout << "player touched a rock\n";
+rock.onContactStart.join([] (rmk::Tracker<rmk::PhysicBody> self, rmk::Tracker<rmk::PhysicBody> other) {
+    if (other->tag() == "player") std::cout << "player touched a " << self->tag() << std::endl;
 });
 ```
 

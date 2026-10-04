@@ -8,11 +8,15 @@
 namespace rmk {
 
 void Printable::color(Color c) noexcept {
-    _inheritData(c, m_layer);
+    if (m_color != c) {
+        m_color       = c;
+        is_draw_dirty = true;
+        is_fill_dirty = true;
+    }
 }
 
 void Printable::layer(i16 l) noexcept {
-    _inheritData(m_color, l);
+    m_layer  = l;
 }
 
 void Printable::from(const Printable& main) const noexcept {
@@ -21,6 +25,9 @@ void Printable::from(const Printable& main) const noexcept {
 }
 
 void Printable::_inheritData(Color c, i16 layer) const noexcept {
+
+    if (overridden) return;
+
     m_layer  = layer;
 
     if (m_color != c) {

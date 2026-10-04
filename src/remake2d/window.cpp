@@ -201,7 +201,7 @@ void Window::resize(Dim2d size) noexcept {
 }
 
 void Window::maxSize(Dim2d size) noexcept {
-    SDL_SetWindowMinimumSize(m_window, (u32)size.w, (u32)size.h);
+    SDL_SetWindowMaximumSize(m_window, (u32)size.w, (u32)size.h);
 }
 
 void Window::rename(std::string_view title) noexcept {
@@ -483,7 +483,7 @@ void Window::disconnectViewport(Viewport& v) noexcept {
 }
 
 void Window::_newCenter(void) noexcept {
-    m_center = { m_pos.x + (m_size.w / 2), m_pos.y + (m_size.h / 2) };
+    m_center = { m_size.w / 2, m_size.h / 2 };
 }
 
 void Window::_applyViewport(SDL_Renderer* renderer, std::stack<Area>& stack, const Area* vp) noexcept {

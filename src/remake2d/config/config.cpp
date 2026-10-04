@@ -1,6 +1,8 @@
 #include <remake2d/config/config.hpp>
 #include <remake2d/all/everything.hpp>
 
+#include <atomic>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
@@ -82,11 +84,17 @@ void initSDL(void) {
 namespace loop {
 
 void init (void) noexcept {
+    static std::atomic<bool> isInit(false);
+
+    if(isInit.load(std::memory_order_relaxed)) return;
+
     rmk::loop.add(event.tracker());
     rmk::loop.add(delta.tracker());
     rmk::loop.add(physics.tracker());
     rmk::loop.add(parallax.tracker());
     rmk::loop.add(animation.tracker());
+
+    isInit.store(true, std::memory_order_relaxed);
 }
 
 } // namespace loop
@@ -95,14 +103,14 @@ void init (void) noexcept {
 namespace sound {
 
 void initQueue(void) noexcept {
-    static bool isInit = false;
+    static std::atomic<bool> isInit(false);
 
-    if(isInit) return;
+    if(isInit.load(std::memory_order_relaxed)) return;
     for(u16 i = 0; i < rmk::system.info.channelCount(); i++) {
         rmk::SFX::m_free_channels.push(i);
         rmk::SFX::m_channel_owners[i] = nil;
     }
-    isInit = true;
+    isInit.store(true, std::memory_order_relaxed);
 }
 
 } //namespace sound

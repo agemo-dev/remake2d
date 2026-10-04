@@ -83,7 +83,7 @@ inline constexpr Color gray      = { 128, 128, 128, 255 };
 inline constexpr Color gold      = { 255, 203,   0, 255 };
 inline constexpr Color darkblue  = {   0, 80,  180, 255 };
 inline constexpr Color darkgreen = {   0, 120,  50, 255 };
-inline constexpr Color lime      = {  34, 182, 212, 255 };
+inline constexpr Color lime      = {   0, 255,   0, 255 };
 inline constexpr Color silver    = { 192, 192, 192, 255 };
 inline constexpr Color maroon    = { 128, 0,   0,   255 };
 inline constexpr Color pink      = { 255, 0,   128, 255 };
@@ -274,10 +274,10 @@ void bindFalling(Condition cond, Args... defaultArgs); // emit once when conditi
 void bindChange(Condition cond, Args... defaultArgs);  // emit on every condition change
 
 // Lifecycle
-void start(void);        // activate the signal
-void stop(void);         // deactivate the signal
-u32  count(void) const;  // number of connected slots
-void reserve(u32 size);  // pre-allocate internal storage
+void  start(void);          // activate the signal
+void  stop(void);           // deactivate the signal
+usize count(void) const;    // number of connected slots
+void  reserve(usize size);  // pre-allocate internal storage
 ```
 
 ---
@@ -999,9 +999,8 @@ void add(Actor&, i16 layer = 0);          // add actor to a layer
 void add(const Frame&, i16 layer = 0);    // add function to a layer
 void remove(Actor&);                      // remove actor from scene
 void update(void);                        // run one frame
-void enable(void) noexcept;               // enable scene updates
-void disable(void) noexcept;              // disable scene updates
-bool isEnabled(void) const noexcept;      // check if scene is enabled
+void active(bool)       noexcept;         // enable/disable active
+bool active(void) const noexcept;         // check if is active
 void setLayerActive(i16 layer, bool);     // enable/disable all actors on a layer
 void setActorActive(Actor&, bool);        // enable/disable a specific actor
 
@@ -1010,9 +1009,11 @@ void add(std::string_view name, Scene&);                               // regist
 void link(std::string_view name, std::span<std::string_view> scenes);  // group scenes under a tag
 void focus(std::string_view);                                          // activate a scene or link
 void update(void) const;                                               // update focused scene(s)
-void update(std::string_view) const;                                   // update a specific scene or link
 void updates(void) const;                                              // update all scenes
-Scene* scene(std::string_view) const;                                  // get scene by tag
+void update(std::string_view) const;                                   // update a specific scene or link
+
+Tracker<Scene>       scene(std::string_view);                          // get scene by tag
+const Tracker<Scene> scene(std::string_view) const;                    // get scene by tag (const)
 ```
 
 ---
@@ -1196,4 +1197,4 @@ Signal<> onFileChanged;                       // emitted when script file change
 ```
 
 !!! info
-    Lua script execution requires the `remakeScript` add-on to be built and linked (`COMPONENTS Script`). See [Installation](../learn/install/install.md#components) for details.
+    Lua script execution requires the `remakeScript` add-on to be built and linked (`COMPONENTS Script`). See [Installation](../learn/introduction/install.md#components) for details.

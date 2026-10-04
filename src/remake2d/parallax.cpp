@@ -28,7 +28,7 @@ Parallax::Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Spr
     }
 
 	if (m_speed_quotients.empty()) m_speed_quotients.push_back(0);
-    m_parse = sprite_count / m_speed_quotients.size();
+    m_parse = std::max<u32>(1, sprite_count / m_speed_quotients.size());
     m_sprite_list = sprites;
 
     _moveAndResize(center, size);
@@ -63,22 +63,20 @@ void Parallax::linkCamera(const Camera& cam) noexcept {
     m_sync_cam = cam.tracker();
 }
 
+// Places the two sprites of a layer from its accumulated offset. The offset is wrapped
+// on x, so scrolling is endless in both directions: sprite_a sits at the offset and
+// sprite_b one width behind it, together they always cover the whole area.
 void Parallax::_tile(Layer& layer) const noexcept {
-    Dim2d size = layer.sprite_a.size();
+    f32 w = layer.sprite_a.size().w;
 
-    if (layer.sprite_a.center().x < -size.w) {
-        layer.sprite_a.move({
-            layer.sprite_b.center().x + size.w,
-            layer.sprite_a.center().y
-        });
+    if (w > 0.0f) {
+        layer.offset.x = std::fmod(layer.offset.x, w);
+        if (layer.offset.x < 0.0f) layer.offset.x += w;
     }
 
-    if (layer.sprite_b.center().x < -size.w) {
-        layer.sprite_b.move({
-            layer.sprite_a.center().x + size.w,
-            layer.sprite_b.center().y
-        });
-    }
+    Vec2d pos_a = { m_center.x + layer.offset.x, m_center.y + layer.offset.y };
+    layer.sprite_a.move(pos_a);
+    layer.sprite_b.move({ pos_a.x - w, pos_a.y });
 }
 
 void Parallax::update(void) noexcept {
@@ -89,20 +87,8 @@ void Parallax::update(void) noexcept {
 
     for (auto& layer : m_layers) {
 
-        Vec2d delta_ = {
-            vel.x * layer.speed * (f32)delta.tick(),
-            vel.y * layer.speed * (f32)delta.tick()
-        };
-
-        layer.sprite_a.move({
-            layer.sprite_a.center().x + delta_.x,
-            layer.sprite_a.center().y + delta_.y
-        });
-        layer.sprite_b.move({
-            layer.sprite_b.center().x + delta_.x,
-            layer.sprite_b.center().y + delta_.y
-        });
-
+        layer.offset.x += vel.x * layer.speed * (f32)delta.tick();
+        layer.offset.y += vel.y * layer.speed * (f32)delta.tick();
 
         _tile(layer);
     }
@@ -142,14 +128,11 @@ void Parallax::_moveAndResize(const Vec2d& center, const Dim2d& size) noexcept {
     m_size = size;
     m_layers.clear();
 
-    u32 group = 0;
     u32 count = 0;
     for (auto& sprite : m_sprite_list) {
-        if (count > 0 && count % m_parse == 0) group++;
-
-        f32 speed = 1.0f;
-        for (u32 i = 0; i <= group && i < m_speed_quotients.size(); i++)
-            speed *= (1.0f - m_speed_quotients[i] / 100.0f);
+        // each quotient is the % of the full velocity this layer LOSES (0 = full speed, 100 = fixed)
+        u32 group = std::min<u32>(count / m_parse, (u32)m_speed_quotients.size() - 1);
+        f32 speed = 1.0f - std::min<u32>(m_speed_quotients[group], 100) / 100.0f;
 
         Sprite a = sprite;
         a.move(center);

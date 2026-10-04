@@ -16,11 +16,13 @@ namespace rmk {
 
 
 class Parallax : public Printable, public Trackable {
+
 private:
     struct Layer {
         Sprite sprite_a;
         Sprite sprite_b;
         f32    speed;
+        Vec2d  offset{0.0f};
     };
 
 private:
