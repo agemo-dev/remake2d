@@ -153,7 +153,7 @@ void Signal<Args...>::disconnect(void (*func)(Args...)) {
         m_connected_funcs.erase(it);
         m_count--;
         _refreshState();
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_nonexistent);
 }
 
 template<typename... Args>
@@ -177,7 +177,7 @@ void Signal<Args...>::disconnect(Slot& slot) {
         m_connected_slots.erase(it);
         m_count--;
         _refreshState();
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_nonexistent);
 }
 
 template<typename... Args>
@@ -223,7 +223,7 @@ void Signal<Args...>::disconnectPriority(void (*func)(Args...)) {
         m_prioritary_funcs.erase(it);
         m_count--;
         _refreshState();
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_nonexistent);
 }
 
 template<typename... Args>
@@ -240,25 +240,25 @@ void Signal<Args...>::disconnectPriority(Slot& slot) {
         m_prioritary_slots.erase(it);
         m_count--;
         _refreshState();
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_nonexistent);
 }
 
 template<typename... Args>
-void Signal<Args...>::unablePriority(void (*func)(Args...)) {
+void Signal<Args...>::enablePriority(void (*func)(Args...)) {
     auto it = std::find(m_connected_funcs.begin(), m_connected_funcs.end(), func);
     if (it != m_connected_funcs.end()) {
         m_prioritary_funcs.emplace_back(*it);
         m_connected_funcs.erase(it);
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_nonexistent);
 }
 
 template<typename... Args>
-void Signal<Args...>::unablePriority(Slot& slot) {
+void Signal<Args...>::enablePriority(Slot& slot) {
     auto it = std::find(m_connected_slots.begin(), m_connected_slots.end(), &slot);
     if (it != m_connected_slots.end()) {
         m_prioritary_slots.emplace_back(*it);
         m_connected_slots.erase(it);
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_nonexistent);
 }
 
 template<typename... Args>
@@ -267,7 +267,7 @@ void Signal<Args...>::disablePriority(void (*func)(Args...)) {
     if (it != m_prioritary_funcs.end()) {
         m_connected_funcs.emplace_back(*it);
         m_prioritary_funcs.erase(it);
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_nonexistent);
 }
 
 template<typename... Args>
@@ -276,7 +276,7 @@ void Signal<Args...>::disablePriority(Slot& slot) {
     if (it != m_prioritary_slots.end()) {
         m_connected_slots.emplace_back(*it);
         m_prioritary_slots.erase(it);
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_nonexistent);
 }
 
 template<typename... Args>

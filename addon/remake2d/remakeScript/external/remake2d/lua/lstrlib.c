@@ -237,7 +237,7 @@ static int str_dump (lua_State *L) {
   lua_settop(L, 1);  /* ensure function is on the top of the stack */
   state.init = 0;
   if (l_unlikely(lua_dump(L, writer, &state, strip) != 0))
-    return luaL_error(L, "unable to dump given function");
+    return luaL_error(L, "enable to dump given function");
   luaL_pushresult(&state.B);
   return 1;
 }

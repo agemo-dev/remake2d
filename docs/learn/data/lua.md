@@ -39,7 +39,7 @@ rmk.loop:update()
 
 ### Shapes and rendering
 
-All shapes (`Circle`, `Square`, `Rectangle`, `Triangle`, `Hexagone`, `Losange`, `Line`, `Point`, `Ellipse`) share the same base interface : `move`,
+All shapes (`Circle`, `Square`, `Rectangle`, `Triangle`, `Hexagon`, `Diamond`, `Line`, `Point`, `Ellipse`) share the same base interface : `move`,
 `resize`, `center`, `size` , etc, and are drawn through `Window::draw`:
 
 ```lua
@@ -56,7 +56,7 @@ win:draw(sqr, rmk.color.orange)
 ### Physics
 
 `StaticBody` and `DynamicBody` are built from an existing shape. `StaticBody` never moves on its own; `DynamicBody` is simulated by the physics world and exposes its
-physical attributes as paired getter/setter methods — calling with no argument reads, calling with one argument writes:
+physical attributes as paired getter/setter methods , calling with no argument reads, calling with one argument writes:
 
 ```lua
 local body = rmk.DynamicBody(sqr)
@@ -73,7 +73,7 @@ body:jump(300)                        -- upward impulse
 body:move(rmk.Vec2d(400, 200))        -- reposition directly (inherited from PhysicBody, absolute)
 ```
 
-`move` is shared with every other shape and texture in the engine and is always **absolute** — it moves the object *to* the given position, not *by* it.
+`move` is shared with every other shape and texture in the engine and is always **absolute** ; it moves the object *to* the given position, not *by* it.
 
 ---
 
@@ -113,10 +113,10 @@ print(loaded:get("level"))
 
 ### Events, timers, and signals
 
-Anything exposed as a `Signal` on the C++ side — contact events, timers, input ; is joined with `bind`/`join` rather than a raw function pointer:
+Anything exposed as a `Signal` on the C++ side : contact events, timers, input ; is joined with `bind`/`join` rather than a raw function pointer:
 
 ```lua
-body.onContactStart:bind(function(self, other)
+body.onContactStart:join(function(self, other)
     print("hit!")
 end)
 

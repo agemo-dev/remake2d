@@ -24,8 +24,8 @@ void append(std::string_view);  // append text to the current content
 void append(fmt);               // append a formatting token
 void clear(void);               // clear the text content
 
-void maxLengh(u16)        noexcept; // set max wrap length, in pixels
-u16  maxLengh(void) const noexcept; // get max wrap length
+void maxLength(u16)        noexcept; // set max wrap length, in pixels
+u16  maxLength(void) const noexcept; // get max wrap length
 ```
 
 ---
@@ -102,10 +102,10 @@ label.anchorY(rmk::anchor::y::middle);
 
 ### Wrapping
 
-`maxLengh` sets a maximum width, in pixels, beyond which the text wraps onto a new line automatically:
+`maxLength` sets a maximum width, in pixels, beyond which the text wraps onto a new line automatically:
 
 ```cpp
-label.maxLengh(200);
+label.maxLength(200);
 ```
 
 ---

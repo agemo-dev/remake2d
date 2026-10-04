@@ -13,7 +13,7 @@
     ---
 
     An object-oriented API designed to be readable and pleasant to use,
-    combinaison of **peformance** and **simplicity** .
+    combination of **performance** and **simplicity** .
 
 - :material-script-text:  Lua Scripting
 
@@ -34,7 +34,7 @@
     ---
 
     Simple save system with `rmk::DataFile` .
-    implement `sdata()` and `ldata()` for save **your owns types**.
+    implement `sdata()` and `ldata()` for save **your own types**.
 
 </div>
 

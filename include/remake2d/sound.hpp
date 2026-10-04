@@ -6,6 +6,7 @@
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/resource.hpp>
 
+#include <queue>
 #include <array>
 #include <memory>
 

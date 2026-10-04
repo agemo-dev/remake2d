@@ -136,12 +136,12 @@ public:
     void connectPriority(Slot&&)    = delete;
     void disconnectPriority(Slot&&) = delete;
 
-    void unablePriority(void (*)(Args...));
-    void unablePriority(Slot&);
+    void enablePriority(void (*)(Args...));
+    void enablePriority(Slot&);
     void disablePriority(void (*)(Args...));
 
     void disablePriority(Slot&);
-    void unablePriority(Slot&&)  = delete;
+    void enablePriority(Slot&&)  = delete;
     void disablePriority(Slot&&) = delete;
 
     void emit(Args...);

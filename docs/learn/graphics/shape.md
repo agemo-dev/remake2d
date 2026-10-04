@@ -204,8 +204,8 @@ win.fill(triangle);
 ```cpp
 // Alias
 using Line      = Shape<2>;   // line segment
-using Losange   = Shape<4>;   // diamond shape
-using Hexagone  = Shape<6>;   // hexagon
+using Diamond   = Shape<4>;   // diamond shape
+using Hexagon  = Shape<6>;   // hexagon
 using Ellipse   = Shape<36>;  // ellipse approximation
 
 // Derived types

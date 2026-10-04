@@ -21,7 +21,7 @@ It is composed of four integers:
 
 ---
 
-##Method
+## Method
 
 The `Area` type own three methods:
 

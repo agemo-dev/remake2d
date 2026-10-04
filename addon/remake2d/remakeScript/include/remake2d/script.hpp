@@ -3,6 +3,7 @@
 
 #include <remake2d/config/script.hpp>
 #include <remake2d/concept.hpp>
+#include <remake2d/tracker.hpp>
 #include <remake2d/signal.hpp>
 #include <remake2d/error.hpp>
 
@@ -103,10 +104,12 @@ private:
 inline SolState& script = SolState::getInstance();
 
 
-class  Script {
+class  Script : Trackable {
+
 private:
-    sol::environment  m_env;
-    std::string       m_file;
+    sol::environment                m_env;
+    std::string                     m_file;
+    std::filesystem::file_time_type m_last_write_time;
 
 public:
     Signal<> onFileChanged;

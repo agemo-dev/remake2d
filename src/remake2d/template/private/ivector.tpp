@@ -1,8 +1,6 @@
 #ifndef REMAKE2D_IVECTOR_TPP_
 #define REMAKE2D_IVECTOR_TPP_
 
-#include <remake2d/private/var.hpp>
-
 #include <memory>
 #include <iterator>
 #include <algorithm>
@@ -80,23 +78,23 @@ bool IVector<T, C>::push_back(const T& value) noexcept {
 
 template <typename T, usize C>
 bool IVector<T, C>::push_back(T&& value) noexcept {
-    if (m_size >= C) return fail;
+    if (m_size >= C) return false;
     ::new (static_cast<void*>(data() + m_size)) T(std::move(value));
     m_size++;
-    return success;
+    return true;
 }
 
 template <typename T, usize C>
 bool IVector<T, C>::push(const T& value) noexcept {
-    if (m_size >= C) return fail;
+    if (m_size >= C) return false;
     ::new (static_cast<void*>(data() + m_size)) T(value);
     m_size++;
-    return success;
+    return true;
 }
 
 template <typename T, usize Capacity>
 bool IVector<T, Capacity>::pushAndSort(const T& value) noexcept {
-    if (m_size >= Capacity) return fail;
+    if (m_size >= Capacity) return false;
     
     pointer ptr = data();
     usize low = 0;
@@ -123,7 +121,7 @@ bool IVector<T, Capacity>::pushAndSort(const T& value) noexcept {
     }
 
     m_size++;
-    return success;
+    return true;
 }
 
 template <typename T, usize C>

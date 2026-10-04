@@ -104,7 +104,7 @@ nav:
         - Change log:
             - v0 (beta):  more/patch/v0.md
         - Versions:       more/version.md
-    - Licence:            more/licence.md
+    - License:            more/licence.md
     - Contributors:       more/contributor.md
 
 extra:

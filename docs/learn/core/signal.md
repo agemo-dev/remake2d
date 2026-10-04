@@ -33,8 +33,8 @@ void connectPriority(void (*func)(Args... args));     // connect a free function
 void disconnectPriority(void (*func)(Args... args));  // disconnect a priority free function
 void connectPriority(Slot& slot);                     // connect a std::function with priority
 void disconnectPriority(Slot& slot);                  // disconnect a priority std::function
-void unablePriority(void (*func)(Args... args));      // promote a normal function to priority
-void unablePriority(Slot& slot);                      // promote a normal slot to priority
+void enablePriority(void (*func)(Args... args));      // promote a normal function to priority
+void enablePriority(Slot& slot);                      // promote a normal slot to priority
 void disablePriority(void (*func)(Args... args));     // demote a priority function to normal
 void disablePriority(Slot& slot);                     // demote a priority slot to normal
 

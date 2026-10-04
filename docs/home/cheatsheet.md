@@ -229,8 +229,8 @@ Shape(const Vec2d& center, const Dim2d& size); // construct a regular polygon
 
 ```cpp
 using Line      = Shape<2>;   // line segment
-using Losange   = Shape<4>;   // diamond shape
-using Hexagone  = Shape<6>;   // hexagon
+using Diamond   = Shape<4>;   // diamond shape
+using Hexagon  = Shape<6>;   // hexagon
 using Ellipse   = Shape<36>;  // ellipse approximation
 
 class Point     : public Shape<1>;  // single point
@@ -259,8 +259,8 @@ void connectPriority(void (*func)(Args...));     // connect a free function with
 void disconnectPriority(void (*func)(Args...));  // disconnect a priority free function
 void connectPriority(Slot& slot);                // connect a std::function with priority
 void disconnectPriority(Slot& slot);             // disconnect a priority std::function
-void unablePriority(void (*func)(Args...));      // promote a normal function to priority
-void unablePriority(Slot& slot);                 // promote a normal slot to priority
+void enablePriority(void (*func)(Args...));      // promote a normal function to priority
+void enablePriority(Slot& slot);                 // promote a normal slot to priority
 void disablePriority(void (*func)(Args...));     // demote a priority function to normal
 void disablePriority(Slot& slot);                // demote a priority slot to normal
 
@@ -466,8 +466,8 @@ void pause(void) noexcept;    // pause without resetting
 void resume(void) noexcept;   // resume after pause
 void repeat(bool) noexcept;   // auto-restart on timeout
 
-bool isActive(void)  const noexcept;   // check if currently running
-bool isElapsed(void) const noexcept;   // check if timeout occurred
+bool active(void)      const noexcept; // check if currently running
+bool elapsed(void)     const noexcept; // check if timeout occurred
 fmax elapsedTime(void) const noexcept; // current elapsed time
 
 _TimerSignal<> onTimeout; // emitted once when the timer elapses
@@ -595,10 +595,10 @@ void        focusAnimation(std::string_view); 	     // focus an animation
 Animation&  animation(std::string_view);             // get animation by name (use focused animation by default)
 void        linkAnimation(std::string_view, const Animation&); // attach an animation (first animation is automatically focused)
 
-// Parameter : PhysicBody *self, PhysicBody *other
-_PhysicSignal<PhysicBody*, PhysicBody*> onContact;       // emitted on contact persist
-_PhysicSignal<PhysicBody*, PhysicBody*> onContactStart;  // emitted on contact begin
-_PhysicSignal<PhysicBody*, PhysicBody*> onContactEnd;    // emitted on contact end
+// Parameter : Tracker<PhysicBody> self, Tracker<PhysicBody> other
+_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>> onContact;       // emitted on contact persist
+_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>> onContactStart;  // emitted on contact begin
+_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>> onContactEnd;    // emitted on contact end
 ```
 
 ---
@@ -651,12 +651,12 @@ Vec2d velocity(void) const noexcept;        // get linear velocity
 void jump(f32) noexcept;                    // apply an upward impulse
 void push(const Vec2d&) noexcept;           // apply a continuous force
 
-// Parameter: DynamicBody* self
-_PhysicSignal<DynamicBody*> onMove;         // emitted while moving
-_PhysicSignal<DynamicBody*> onMoveUp;       // emitted while moving upward
-_PhysicSignal<DynamicBody*> onMoveDown;     // emitted while moving downward
-_PhysicSignal<DynamicBody*> onMoveLeft;     // emitted while moving left
-_PhysicSignal<DynamicBody*> onMoveRight;    // emitted while moving right
+// Parameter: Tracker<DynamicBody> self
+_PhysicSignal<Tracker<DynamicBody>> onMove;         // emitted while moving
+_PhysicSignal<Tracker<DynamicBody>> onMoveUp;       // emitted while moving upward
+_PhysicSignal<Tracker<DynamicBody>> onMoveDown;     // emitted while moving downward
+_PhysicSignal<Tracker<DynamicBody>> onMoveLeft;     // emitted while moving left
+_PhysicSignal<Tracker<DynamicBody>> onMoveRight;    // emitted while moving right
 ```
 
 ---
@@ -745,8 +745,8 @@ void append(std::string_view);  // append text to current content
 void append(fmt);               // append a formatting token (see below)
 void clear(void);               // clear text content
 
-void maxLengh(u16) noexcept;         // set max wrap length (pixels)
-u16  maxLengh(void) const noexcept;  // get max wrap length
+void maxLength(u16) noexcept;         // set max wrap length (pixels)
+u16  maxLength(void) const noexcept;  // get max wrap length
 ```
 
 ```cpp
@@ -848,7 +848,7 @@ TileMapData (Vec2d center, Dim2d size, Grid2d cut, Dim2d clip_size, Vec2d clip_s
 
 TileMap(std::string_view tileset_path, TileMapData data); // create tile map
 
-using TileID       = i16;                          // tile identifier type
+using TileID       = u32;                          // tile identifier type
 using TileTemplate = std::vector<TileID>;          // tile layout type
 
 Vec2d  center(void)    const noexcept;             // get map position
@@ -988,7 +988,7 @@ bool active(void) const noexcept; // check if is active
 PhysicActor(const Geometry&); // create actor with physics body
 P body; // public physics body member
 
-virtual void update(void) override = 0; // update logic (override in derived)
+virtual void update(void) override {}; // update logic (override in derived)
 
 using StaticActor  = PhysicActor<StaticBody>;
 using DynamicActor = PhysicActor<DynamicBody>;
@@ -1111,8 +1111,8 @@ constexpr Nil nil; // universal null/zero placeholder
 
 
 enum class layer : i16 {
-    min   = -50, // minumum layer
-    max   = 249, // maximun layer
+    min   = -50, // minimum layer
+    max   = 249, // maximum layer
 
     size  = 50, // distance between two layers
 

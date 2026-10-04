@@ -261,8 +261,8 @@ public:
     void append(std::string_view);
 
 public:
-    void maxLengh(u16)        noexcept;
-    u16  maxLengh(void) const noexcept;
+    void maxLength(u16)        noexcept;
+    u16  maxLength(void) const noexcept;
 
 private:
     void _textCopy(const Text&);

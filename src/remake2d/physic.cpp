@@ -22,7 +22,7 @@ template<physic::id ID> void PhysicManager::eraseFrom(PhysicBody& body) {
         if (found != m_statics.end()) m_statics.erase(found);
     }
 
-    else if constexpr (ID == physic::id::statics) {
+    else if constexpr (ID == physic::id::dynamics) {
         auto found = std::find_if(m_dynamics.begin(), m_dynamics.end(),
             [&body](Tracker<DynamicBody>& t) { return t.locate() == &body; });
         if (found != m_dynamics.end()) m_dynamics.erase(found);
@@ -87,9 +87,9 @@ bool PhysicManager::useFixedStep(void)   const noexcept { return m_use_fixed_ste
 void PhysicManager::fixedStep(f32 s) noexcept { m_fixed_step = s > 0.0f ? s : 1.0f / 60.0f; }
 f32  PhysicManager::fixedStep(void)  const noexcept { return m_fixed_step; }
 
-std::vector<Tracker<PhysicBody>>   PhysicManager::bodies(void)    noexcept { return m_bodies;   }
-std::vector<Tracker<StaticBody>>   PhysicManager::statics(void)   noexcept { return m_statics;  }
-std::vector<Tracker<DynamicBody>>  PhysicManager::dynamics(void)  noexcept { return m_dynamics; }
+std::vector<Tracker<PhysicBody>>&   PhysicManager::bodies(void)    noexcept { return m_bodies;   }
+std::vector<Tracker<StaticBody>>&   PhysicManager::statics(void)   noexcept { return m_statics;  }
+std::vector<Tracker<DynamicBody>>&  PhysicManager::dynamics(void)  noexcept { return m_dynamics; }
 
 void PhysicManager::world(const Area& area) noexcept {
     if (m_world_size.x == area.x && m_world_size.y == area.y &&

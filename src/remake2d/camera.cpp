@@ -12,7 +12,7 @@ Camera::Camera(void) {
 }
 
 Camera::Camera(const Vec2d& center, const Dim2d& size, const Dim2d& limit)
- :  m_center(center), m_size(size), m_limit(limit), m_ghost(center), m_lasted_point(center) {
+ :  m_center(center), m_size(size), m_limit(limit), m_ghost(center), m_last_point(center) {
     onMove.bind([this](void) { return _hasMove(); });
     onMove.joinPriority([this](void) { _offset();  });
     onMove.joinPriority([this](void) { _replace(); });
@@ -81,7 +81,7 @@ Vec2d Camera::followedPoint(void) const noexcept {
 bool Camera::_hasMove(void) const noexcept {
     if(!m_tracker.locate()) return false;
     Vec2d followed = m_tracker->center();
-    Vec2d lasted   = m_lasted_point;
+    Vec2d lasted   = m_last_point;
 
     return followed.x != lasted.x || followed.y != lasted.y;
 }
@@ -105,12 +105,12 @@ void Camera::_offset(void) noexcept {
 	    m_ghost.y = std::clamp(m_ghost.y, 0.0f, std::max<f32>(0.0f, m_limit.h - m_size.h));
 	}
 
-    Vec2d& last = m_lasted_point;
+    Vec2d& last = m_last_point;
     m_offset = {m_ghost.x - last.x, m_ghost.y - last.y};
 }
 
 void Camera::_replace(void) noexcept {
-    if(m_tracker.locate()) m_lasted_point = m_tracker->center();
+    if(m_tracker.locate()) m_last_point = m_tracker->center();
 }
 
 }//namespace rmk

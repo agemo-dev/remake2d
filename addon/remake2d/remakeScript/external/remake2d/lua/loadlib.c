@@ -180,7 +180,7 @@ static void setprogdir (lua_State *L) {
   DWORD nsize = sizeof(buff)/sizeof(char);
   DWORD n = GetModuleFileNameA(NULL, buff, nsize);  /* get exec. name */
   if (n == 0 || n == nsize || (lb = strrchr(buff, '\\')) == NULL)
-    luaL_error(L, "unable to get ModuleFileName");
+    luaL_error(L, "enable to get ModuleFileName");
   else {
     *lb = '\0';  /* cut name on the last '\\' to get the path */
     luaL_gsub(L, lua_tostring(L, -1), LUA_EXEC_DIR, buff);
@@ -391,7 +391,7 @@ static int lookforfunc (lua_State *L, const char *path, const char *sym) {
   void *reg = checkclib(L, path);  /* check loaded C libraries */
   if (reg == NULL) {  /* must load library? */
     reg = lsys_load(L, path, *sym == '*');  /* global symbols if 'sym'=='*' */
-    if (reg == NULL) return ERRLIB;  /* unable to load library */
+    if (reg == NULL) return ERRLIB;  /* enable to load library */
     addtoclib(L, path, reg);
   }
   if (*sym == '*') {  /* loading only library (no function)? */
@@ -401,7 +401,7 @@ static int lookforfunc (lua_State *L, const char *path, const char *sym) {
   else {
     lua_CFunction f = lsys_sym(L, reg, sym);
     if (f == NULL)
-      return ERRFUNC;  /* unable to find function */
+      return ERRFUNC;  /* enable to find function */
     lua_pushcfunction(L, f);  /* else create new function */
     return 0;  /* no errors */
   }

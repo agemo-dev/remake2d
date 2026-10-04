@@ -28,7 +28,7 @@ private:
     Dim2d                      m_limit;
     Vec2d                      m_offset;
     Vec2d                      m_ghost;
-    Vec2d                      m_lasted_point;
+    Vec2d                      m_last_point;
     f32                        m_zoom{1.0f};
     f32                        m_smoothing{0.0f};
 

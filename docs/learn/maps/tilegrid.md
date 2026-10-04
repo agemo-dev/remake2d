@@ -36,7 +36,7 @@ std::vector<Area> cells(void)   const noexcept; // get all cell areas
 The constructor takes a center, a size, and a `Grid2d` defining the number of columns and rows:
 
 ```cpp
-Grid2d(const Vec2d&, const Dim2d&, const Grid2d&);
+TileGrid(const Vec2d&, const Dim2d&, const Grid2d&);
 ```
 
 ```cpp

@@ -19,14 +19,14 @@ Which allows checking if an event is active during the analysis of another one. 
 
 ```cpp
 rmk::event.onPressS.join([&](void) {
-    if(rmk::event.onPressCtrl.isActive()) save();
+    if(rmk::event.onPressScanCtrl.isActive()) save();
 });
 ```
 
 !!! warning
-    `isActive()` is preferred for key combinations because `event` handles one SDL event at a time. Two keys pressed simultaneously will
-	be processed in separate calls, so a combination like Ctrl+S cannot be detected by connecting both events independently.
-    `isActive()` work with keyboard and console press events only .
+    `isActive` is preferred for key combinations because `event` handles one SDL event at a time. Two keys pressed simultaneously will
+    be processed in separate calls, so a combination like Ctrl+S cannot be detected by connecting both events independently.
+    `isActive` work with keyboard scancode and console press events only .
 
 ---
 
@@ -161,8 +161,8 @@ void wait(void);                        // wait indefinitely for an event
 void wait(time::Second timeout);        // wait for an event with timeout
 void update(void);                      // EventManager::poll alias
 
-void textInput(bool);					// Enable/disable text read mode
-bool textInput(void);   				// check text read mode stat
+void textInput(bool);                   // Enable/disable text read mode
+bool textInput(void);                   // check text read mode stat
 ```
 
 !!! info

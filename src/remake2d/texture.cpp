@@ -316,7 +316,7 @@ Text::Text(std::string_view font_name, Vec2d pos)
     m_anchor_pos = pos;
     auto it = font.m_fonts.find(m_font_name);
     if (it == font.m_fonts.end()) {
-        rmk_dynamicAssert(rmk::TextureError, error::texture::font_unexist);
+        rmk_dynamicAssert(rmk::TextureError, error::texture::font_nonexistent);
     }
     m_font = it->second.font;
 }
@@ -410,11 +410,11 @@ void Text::clear(void) {
     write("");
 }
 
-void Text::maxLengh(u16 l) noexcept {
+void Text::maxLength(u16 l) noexcept {
     m_max_lengh = l;
 }
 
-u16 Text::maxLengh(void) const noexcept {
+u16 Text::maxLength(void) const noexcept {
     return m_max_lengh;
 }
 

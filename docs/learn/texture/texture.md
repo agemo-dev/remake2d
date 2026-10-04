@@ -209,7 +209,7 @@ The same applies to any other shape alias:
 
 ```cpp
 rmk::Image<rmk::Circle>    coin("coin.png", rmk::Circle({400, 300}, 64));
-rmk::Image<rmk::Hexagone>  tile("hex_tile.png", rmk::Hexagone({400, 300}, {96, 96}));
+rmk::Image<rmk::Hexagon>  tile("hex_tile.png", rmk::Hexagon({400, 300}, {96, 96}));
 rmk::Image<rmk::Triangle>  flag("flag.png", rmk::Triangle({400, 300}, {80, 80}));
 ```
 

@@ -21,15 +21,15 @@ public:
     rmk_baseClass(Vec2d);
 
 public:
-    operator Fact2d(void);
-    operator Grid2d(void);
+    operator Fact2d(void) const noexcept;
+    operator Grid2d(void) const noexcept;
 
 public:
     constexpr Vec2d(f32 XY)       : x(XY), y(XY) {}
     constexpr Vec2d(f32 X, f32 Y) : x(X), y(Y)   {}
 
 public:
-    operator SDL_FPoint(void) const;
+    operator SDL_FPoint(void) const noexcept;
     constexpr auto operator<=>(const Vec2d&) const noexcept = default;
 };
 
@@ -63,8 +63,8 @@ public:
     constexpr Fact2d(f32 XY)       : x(XY < 0 ? 0 : XY), y(XY < 0 ? 0 : XY) {}
 
 public:
-    operator SDL_FPoint(void) const;
-    operator Vec2d(void) const { return Vec2d{ x, y }; }
+    operator SDL_FPoint(void) const noexcept;
+    operator Vec2d(void) const noexcept { return Vec2d{ x, y }; }
     constexpr auto operator<=>(const Fact2d&) const noexcept = default;
 };
 
@@ -81,8 +81,8 @@ public:
     constexpr Grid2d(usize X, usize Y) : x(X), y(Y) {}
 
 public:
-    operator Vec2d(void) const { return Vec2d{ (f32)x, (f32)y }; }
-    operator SDL_Point(void) const;
+    operator Vec2d(void) const noexcept { return Vec2d{ (f32)x, (f32)y }; }
+    operator SDL_Point(void) const noexcept;
     constexpr auto operator<=>(const Grid2d&) const noexcept = default;
 };
 

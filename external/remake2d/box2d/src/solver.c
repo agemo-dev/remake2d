@@ -1175,7 +1175,7 @@ void b2Solve( b2World* world, b2StepContext* stepContext )
 		// Each worker receives at most M blocks of work. The workers may receive less than there is not sufficient work.
 		// Each block of work has a minimum number of elements (block size). This in turn may limit number of blocks.
 		// If there are many elements then the block size is increased so there are still at most M blocks of work per worker.
-		// M is a tunable number that has two goals:
+		// M is a tenable number that has two goals:
 		// 1. keep M small to reduce overhead
 		// 2. keep M large enough for other workers to be able to steal work
 		// The block size is a power of two to make math efficient.

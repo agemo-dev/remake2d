@@ -18,7 +18,7 @@ The methods of the `Random` class are as follows:
 
 ```cpp
 u32  seed(void) noexcept;        // get current seed
-void seed(u32)  noexcept;        // set see
+void seed(u32)  noexcept;        // set seed
 
 u32  randSeed(void) noexcept;    // generate a hardware random seed
 void rollSeed(void) noexcept;    // generate and apply a new random seed

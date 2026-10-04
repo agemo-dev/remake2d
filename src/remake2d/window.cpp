@@ -295,11 +295,12 @@ usize Window::_normalise(i16 layer) noexcept {
 }
 
 void Window::_testLayer(i16 layer, UsedLayers& used, ActiveLayers& active) {
-    if (used.test(_normalise(layer))) return;
 
     if (layer < (i16)layer::min || layer > (i16)layer::max) {
         rmk_dynamicAssert(rmk::SceneError, error::scene::layer_is_overlimits);
     }
+
+    if (used.test(_normalise(layer))) return;
 
     active.pushAndSort(layer);
     used.set(_normalise(layer));

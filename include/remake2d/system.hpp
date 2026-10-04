@@ -1,12 +1,14 @@
 #ifndef REMAKE2D_SYSTEM_
 #define REMAKE2D_SYSTEM_
 
+#include <mutex>
 #include <remake2d/clock.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/config.hpp>
 
 #include <span>
+#include <mutex>
 #include <string>
 #include <atomic>
 #include <stdlib.h>
@@ -84,8 +86,9 @@ public:
     Info   info;
 
 private:
+    std::mutex        m_mutex;
 	std::atomic<u32>  m_instance{0};
-    bool              m_is_init{false};
+    std::atomic<bool> m_is_init{false};
     u32               m_channel_count{0};
     bool              m_relative_mouse_mode{false};
 

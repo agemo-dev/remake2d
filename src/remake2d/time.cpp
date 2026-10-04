@@ -151,7 +151,7 @@ void DeltaTime::update(void) {
     m_frame_time.store(wtimer / 1'000'000.0L, std::memory_order_relaxed);
     m_start_point = std::chrono::steady_clock::now();
 
-    if (m_max_fps < 0) {
+    if (m_max_fps > 0) {
         std::this_thread::sleep_until(
             m_start_point + time::Millisecond(umax((1.0 / m_max_fps) * 1'000.0))
         );

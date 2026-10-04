@@ -242,8 +242,8 @@ public:
 
 
 using Line      = Shape<2>;
-using Losange   = Shape<4>;
-using Hexagone  = Shape<6>;
+using Diamond   = Shape<4>;
+using Hexagon   = Shape<6>;
 using Ellipse   = Shape<36>;
 
 template<> Circle Geometry::as(void) const noexcept;

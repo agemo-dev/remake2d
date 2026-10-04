@@ -104,7 +104,7 @@ void Act::link(std::string_view tag, std::span<std::string_view> scenes) {
     for (auto& scene_tag : scenes) {
         std::string s(scene_tag);
         if (!m_scenes.count(s)) {
-            rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
+            rmk_dynamicAssert(rmk::SceneError, error::scene::scene_nonexistent);
         }
         list.emplace_back(s);
     }
@@ -120,7 +120,7 @@ std::vector<std::string> Act::_resolveTag(std::string_view tag) const {
     } else if (m_scenes.count(key)) {
         result.emplace_back(key);
     } else {
-        rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
+        rmk_dynamicAssert(rmk::SceneError, error::scene::scene_nonexistent);
     }
 
     return result;
@@ -172,14 +172,14 @@ Tracker<Scene> Act::scene(std::string_view tag) {
     std::string key(tag);
     auto it = m_scenes.find(key);
     if (it != m_scenes.end()) return it->second;
-    rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
+    rmk_dynamicAssert(rmk::SceneError, error::scene::scene_nonexistent);
 }
 
-const Tacker<Scene> Act::scene(std::string_view tag) const {
+const Tracker<Scene> Act::scene(std::string_view tag) const {
     std::string key(tag);
     auto it = m_scenes.find(key);
     if (it != m_scenes.end()) return it->second;
-    rmk_dynamicAssert(rmk::SceneError, error::scene::scene_unexist);
+    rmk_dynamicAssert(rmk::SceneError, error::scene::scene_nonexistent);
 }
 
 } // namespace rmk

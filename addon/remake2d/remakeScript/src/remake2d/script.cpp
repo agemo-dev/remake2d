@@ -50,14 +50,17 @@ void SolState::_placeInTable(std::string_view path, SolState::Type ut) noexcept 
 
 Script::Script(std::string_view id) : m_file(id) {
     if (!std::filesystem::exists(m_file)) {
-        rmk_dynamicAssert(rmk::ScriptError, std::string(error::script::file_unexist) + " : " + std::string(m_file));
+        rmk_dynamicAssert(rmk::ScriptError, std::string(error::script::file_nonexistent) + " : " + std::string(m_file));
     }
     m_env = sol::environment(script.m_state, sol::create, script.m_state.globals());
 
-    onFileChanged.bindRising([this]() {
-        static auto last = std::filesystem::last_write_time(m_file);
+    m_last_write_time = std::filesystem::last_write_time(m_file);
+
+    Tracker<Script> track = tracker();
+
+    onFileChanged.bindRising([track]() {
         auto current = std::filesystem::last_write_time(m_file);
-        if (current != last) {
+        if (current != track->m_last_write_time) {
             last = current;
             return true;
         }

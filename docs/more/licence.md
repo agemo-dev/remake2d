@@ -1,6 +1,6 @@
-# Licence
+# License
 
-RE:MAKE 2D is on  **MIT Licene**.
+RE:MAKE 2D is on  **MIT License**.
 
 ---
 
@@ -32,7 +32,7 @@ SOFTWARE.
 
 licence of all **RE:MAKE 2D** dependancies :
 
-| Librairy | Licence | Link |
+| Librairy | License | Link |
 |---|---|---|
 | SDL2 | Zlib | [libsdl.org](https://libsdl.org) |
 | SDL2_image | Zlib | [libsdl.org](https://libsdl.org) |
@@ -48,6 +48,6 @@ licence of all **RE:MAKE 2D** dependancies :
 
 licence and version of RE:MAKE 2D Add-ons:
 
-| Add-ons | Licence | Version |
+| Add-ons | License | Version |
 |---|---|---|
 | RE:MAKE-SCRIPT | MIT | 0.2 |

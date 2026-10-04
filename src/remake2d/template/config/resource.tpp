@@ -34,6 +34,7 @@ Resource<T, F>::Resource(const Resource& o)
 template<typename T, void(*F)(T*)>
 Resource<T, F>& Resource<T, F>::operator=(Resource&& o) noexcept {
     if (this != &o) {
+        rmk::system._init();
         release();
         data = o.data;
         m_refcount = o.m_refcount;

@@ -40,9 +40,9 @@ public:
     void fixedStep(f32)                    noexcept;
     f32  fixedStep(void)             const noexcept;
 
-    std::vector<Tracker<PhysicBody>>    bodies(void)    noexcept;
-    std::vector<Tracker<StaticBody>>    statics(void)   noexcept;
-    std::vector<Tracker<DynamicBody>>   dynamics(void)  noexcept;
+    std::vector<Tracker<PhysicBody>>&    bodies(void)    noexcept;
+    std::vector<Tracker<StaticBody>>&    statics(void)   noexcept;
+    std::vector<Tracker<DynamicBody>>&   dynamics(void)  noexcept;
 
     void update(void) override;
 

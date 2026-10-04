@@ -27,7 +27,7 @@ template<IsBasicType T> Text& operator<<(Text& t, const T& value) noexcept;
 
 std::istream& operator>>(std::istream&, Vec2d&);
 std::istream& operator>>(std::istream&, Fact2d&);
-std::istream& operator>>(std::istream&, Gri2d&);
+std::istream& operator>>(std::istream&, Grid2d&);
 std::istream& operator>>(std::istream&, Dim2d&);
 std::istream& operator>>(std::istream&, Color&);
 std::istream& operator>>(std::istream&, HSL&);

@@ -33,9 +33,10 @@ void        focusAnimation(std::string_view); 	     // focus an animation
 Animation&  animation(std::string_view);             // get animation by name (use focused animation by default)
 void        linkAnimation(std::string_view, const Animation&); // attach an animation (first animation is automatically focused
 
-Signal<PhysicBody*, PhysicBody*> onContact;                 // emitted on contact persist
-Signal<PhysicBody*, PhysicBody*> onContactStart;            // emitted on contact begin
-Signal<PhysicBody*, PhysicBody*> onContactEnd;              // emitted on contact end
+// Parameter : Tracker<PhysicBody> self, Tracker<PhysicBody> other
+_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>> onContact;       // emitted on contact persist
+_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>> onContactStart;  // emitted on contact begin
+_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>> onContactEnd;    // emitted on contact end
 ```
 
 `DynamicBody` additionally exposes:
@@ -66,12 +67,13 @@ void push(const Vec2d&) noexcept;           // apply a continuous force
 void velocity(const Vec2d&) noexcept;       // set linear velocity
 Vec2d velocity(void) const noexcept;        // get linear velocity
 
-// Parameter: DynamicBody* self
-_PhysicSignal<DynamicBody*> onMove;         // emitted while moving
-_PhysicSignal<DynamicBody*> onMoveUp;       // emitted while moving upward
-_PhysicSignal<DynamicBody*> onMoveDown;     // emitted while moving downward
-_PhysicSignal<DynamicBody*> onMoveLeft;     // emitted while moving left
-_PhysicSignal<DynamicBody*> onMoveRight;    // emitted while moving right
+
+// Parameter: Tracker<DynamicBody> self
+_PhysicSignal<Tracker<DynamicBody>> onMove;         // emitted while moving
+_PhysicSignal<Tracker<DynamicBody>> onMoveUp;       // emitted while moving upward
+_PhysicSignal<Tracker<DynamicBody>> onMoveDown;     // emitted while moving downward
+_PhysicSignal<Tracker<DynamicBody>> onMoveLeft;     // emitted while moving left
+_PhysicSignal<Tracker<DynamicBody>> onMoveRight;    // emitted while moving right
 ```
 
 ---
@@ -120,8 +122,8 @@ trigger.tag("checkpoint");
 `onContact` fires every frame two bodies are still overlapping, while `onContactStart`/`onContactEnd` fire once, on the frame contact begins or ends:
 
 ```cpp
-player.onContactStart.join([](rmk::PhysicBody* self, rmk::PhysicBody* other) {
-    if (other->tag() == "checkpoint") std::cout << "checkpoint reached\n";
+player.onContactStart.join([](rmk::Tracker<rmk::PhysicBody> self, rmk::Tracker<rmk::PhysicBody> other) {
+    if (other->tag() == "checkpoint") std::cout << "checkpoint reached" << std::endl;
 });
 ```
 
@@ -191,7 +193,7 @@ so its position and rotation automatically follow the physics simulation, with n
 
 ```cpp
 rmk::Animation walk("player_walk.png", {{0, 0}, {32, 48}}, 6, {32, 48});
-player.linkAnimation({"walk", walk});
+player.linkAnimation("walk", walk);
 player.focusAnimation("walk");
 
 player.animation().play(-1, 10);

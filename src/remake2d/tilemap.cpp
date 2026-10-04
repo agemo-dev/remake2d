@@ -108,7 +108,7 @@ void TileMap::counterStart(i16 start) noexcept {
 void TileMap::load(TileTemplate map_template) {
     usize expected = m_data.cut.x * m_data.cut.y;
     if(map_template.size() != expected) {
-        rmk_dynamicAssert(rmk::TileMapError, error::tilemap::unexcepted_tile_template);
+        rmk_dynamicAssert(rmk::TileMapError, error::tilemap::unexpected_tile_template);
     }
     m_id_count.clear();
     m_template = std::move(map_template);

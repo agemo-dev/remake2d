@@ -82,8 +82,8 @@ offsets computed from a base "wall" value:
 
 ```cpp
 enum class layer : i16 {
-    min   = -50, // minumum layer
-    max   = 249, // maximun layer
+    min   = -50, // minimum layer
+    max   = 249, // maximum layer
 
     size  = 50, // distance between two layers
 

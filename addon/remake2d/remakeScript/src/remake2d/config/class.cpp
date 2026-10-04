@@ -120,9 +120,9 @@ void initLuaClass(void) noexcept {
 
     script._registerEngineType<Ellipse, Ellipse(), Ellipse(const Vec2d&, const Dim2d&)>("Ellipse", nullptr, type::base<Geometry>);
 
-    script._registerEngineType<Losange, Losange(), Losange(const Vec2d&, const Dim2d&)>("Losange", nullptr, type::base<Geometry>);
+    script._registerEngineType<Diamond, Diamond(), Diamond(const Vec2d&, const Dim2d&)>("Diamond", nullptr, type::base<Geometry>);
 
-    script._registerEngineType<Hexagone, Hexagone(), Hexagone(const Vec2d&, const Dim2d&)>("Hexagone", nullptr, type::base<Geometry>);
+    script._registerEngineType<Hexagon, Hexagon(), Hexagon(const Vec2d&, const Dim2d&)>("Hexagon", nullptr, type::base<Geometry>);
 
     script._registerEngineType<TextureBase>("TextureBase", [](SolState::Type& ut) {
         ut["move"]     = &TextureBase::move;
@@ -166,9 +166,9 @@ void initLuaClass(void) noexcept {
         ut["anchorX"]         = &Text::anchorX;
         ut["anchorY"]         = &Text::anchorY;
         ut["text"]            = &Text::text;
-        ut["maxLengh"]     = sol::overload(
-            [](Text& self)        { return self.maxLengh(); },
-            [](Text& self, u16 l) { self.maxLengh(l); }
+        ut["maxLength"]     = sol::overload(
+            [](Text& self)        { return self.maxLength(); },
+            [](Text& self, u16 l) { self.maxLength(l); }
         );
     }, type::base<TextureBase>);
 
@@ -240,7 +240,7 @@ void initLuaClass(void) noexcept {
         Data(fmax),   Data(bool),
         Data(Vec2d),  Data(Dim2d),
         Data(Grid2d), Data(Fact2d),
-        Data(Fact2d), Data(Color),
+        Data(Color),
         Data(Area),   Data(std::string_view)
     >("Data", [](SolState::Type& ut) {
         ut["get"] = sol::overload(
@@ -324,8 +324,8 @@ void initLuaClass(void) noexcept {
         );
         ut["playFor"]  = &Sound::playFor;
     }, type::base<Trackable>,
-        "onFinish" , &SFX::onFinish,
-        "onRepeat" , &SFX::onRepeat
+        "onFinish" , &Sound::onFinish,
+        "onRepeat" , &Sound::onRepeat
     );
 
     script._registerEngineType<Music, Music(std::string_view, u8)>("Music", nullptr, type::base<Sound>);

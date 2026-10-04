@@ -44,8 +44,8 @@ rmk::Sprite sky("sky.png", {{400, 300}, {800, 600}});
 rmk::Sprite hills("hills.png", {{400, 300}, {800, 600}});
 rmk::Sprite ground("ground.png", {{400, 300}, {800, 600}});
 
-rmk::Sprite sprites[] = { sky, hills, ground };
-rmk::u8     quotients[] = { 80, 40, 0 };
+std::vector<rmk::Sprite> sprites   = { sky, hills, ground };
+std::vector<rmk::u8>     quotients = { 80, 40, 0 };
 
 rmk::Parallax bg({400, 300}, {800, 600}, sprites, quotients);
 ```
@@ -85,7 +85,7 @@ int main (void) {
         rmk::Sprite("Layers/5.png", rect),
         rmk::Sprite("Layers/6.png", rect)
     };
-    std::vector<rmk::u8> quotients = { 100, 75, 50, 25, 10, 2 };
+    std::vector<rmk::u8> quotients = { 100, 75, 50, 25, 10, 0 };
 
     rmk::Parallax bg(win.center(), win.size(), sprites, quotients);
 
