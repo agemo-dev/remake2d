@@ -104,25 +104,25 @@ void initLuaClass(void) noexcept {
         ut["size"]           = &Geometry::size;
         ut["points"]         = &Geometry::points;
         ut["hasIntersected"] = &Geometry::hasIntersected;
-    }, type::base<Followable, Printable>);
+    }, type::base<Followable, Printable, Trackable>);
 
-    script._registerEngineType<Point, Point(), Point(const Vec2d&)>("Point", nullptr, type::base<Geometry>);
+    script._registerEngineType<Point, Point(), Point(const Vec2d&)>("Point", nullptr, type::base<Geometry, Followable, Printable, Trackable>);
 
-    script._registerEngineType<Line, Line(), Line(const Vec2d&, const Dim2d&)>("Line", nullptr, type::base<Geometry>);
+    script._registerEngineType<Line, Line(), Line(const Vec2d&, const Dim2d&)>("Line", nullptr, type::base<Geometry, Followable, Printable, Trackable>);
 
-    script._registerEngineType<Triangle, Triangle(), Triangle(const Vec2d&, const Dim2d&)>("Triangle", nullptr, type::base<Geometry>);
+    script._registerEngineType<Triangle, Triangle(), Triangle(const Vec2d&, const Dim2d&)>("Triangle", nullptr, type::base<Geometry, Followable, Printable, Trackable>);
 
-    script._registerEngineType<Rectangle, Rectangle(), Rectangle(const Vec2d&, const Dim2d&)>("Rectangle", nullptr, type::base<Geometry>);
+    script._registerEngineType<Rectangle, Rectangle(), Rectangle(const Vec2d&, const Dim2d&)>("Rectangle", nullptr, type::base<Geometry, Followable, Printable, Trackable>);
 
-    script._registerEngineType<Square, Square(), Square(const Vec2d&, f32)>("Square", nullptr, type::base<Geometry>);
+    script._registerEngineType<Square, Square(), Square(const Vec2d&, f32)>("Square", nullptr, type::base<Geometry, Followable, Printable, Trackable>);
 
-    script._registerEngineType<Circle, Circle(), Circle(const Vec2d&, f32)>("Circle", nullptr, type::base<Geometry>);
+    script._registerEngineType<Circle, Circle(), Circle(const Vec2d&, f32)>("Circle", nullptr, type::base<Geometry, Followable, Printable, Trackable>);
 
-    script._registerEngineType<Ellipse, Ellipse(), Ellipse(const Vec2d&, const Dim2d&)>("Ellipse", nullptr, type::base<Geometry>);
+    script._registerEngineType<Ellipse, Ellipse(), Ellipse(const Vec2d&, const Dim2d&)>("Ellipse", nullptr, type::base<Geometry, Followable, Printable, Trackable>);
 
-    script._registerEngineType<Diamond, Diamond(), Diamond(const Vec2d&, const Dim2d&)>("Diamond", nullptr, type::base<Geometry>);
+    script._registerEngineType<Diamond, Diamond(), Diamond(const Vec2d&, const Dim2d&)>("Diamond", nullptr, type::base<Geometry, Followable, Printable, Trackable>);
 
-    script._registerEngineType<Hexagon, Hexagon(), Hexagon(const Vec2d&, const Dim2d&)>("Hexagon", nullptr, type::base<Geometry>);
+    script._registerEngineType<Hexagon, Hexagon(), Hexagon(const Vec2d&, const Dim2d&)>("Hexagon", nullptr, type::base<Geometry, Followable, Printable, Trackable>);
 
     script._registerEngineType<TextureBase>("TextureBase", [](SolState::Type& ut) {
         ut["move"]     = &TextureBase::move;
@@ -138,9 +138,9 @@ void initLuaClass(void) noexcept {
             [](const TextureBase& self, const Geometry& g)    -> bool { return self.hasIntersected(g); },
             [](const TextureBase& self, const TextureBase& o) -> bool { return self.hasIntersected(o); }
         );
-    }, type::base<Printable>);
+    }, type::base<Printable, Trackable>);
 
-    script._registerEngineType<Sprite, Sprite(std::string_view, Rectangle)>("Sprite", nullptr, type::base<TextureBase>);
+    script._registerEngineType<Sprite, Sprite(std::string_view, Rectangle)>("Sprite", nullptr, type::base<TextureBase, Printable, Trackable>);
 
     script._registerEngineType<Animation, Animation(std::string_view, Rectangle, u8, Dim2d, Vec2d, u8)>("Animation", [](SolState::Type& ut) {
         ut["play"]      = sol::overload(
@@ -151,7 +151,7 @@ void initLuaClass(void) noexcept {
         ut["pause"]     = &Animation::pause;
         ut["resume"]    = &Animation::resume;
         ut["stop"]      = &Animation::stop;
-    }, type::base<Sprite, Trackable>,
+    }, type::base<Sprite, TextureBase, Printable, Trackable>,
         "onFinish" , &Animation::onFinish,
         "onRepeat" , &Animation::onRepeat
     );
@@ -170,7 +170,7 @@ void initLuaClass(void) noexcept {
             [](Text& self)        { return self.maxLength(); },
             [](Text& self, u16 l) { self.maxLength(l); }
         );
-    }, type::base<TextureBase>);
+    }, type::base<TextureBase, Printable, Trackable>);
 
     script._registerEngineType<TileMapData, TileMapData(), TileMapData(Vec2d, Dim2d, Grid2d, Dim2d), TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d), TileMapData(Vec2d, Dim2d, Grid2d, Dim2d, Vec2d, Vec2d)>("TileMapData", nullptr, type::base<>,
         "center",     &TileMapData::center,
@@ -218,7 +218,7 @@ void initLuaClass(void) noexcept {
         ut["size"]   = &TileGrid::size;
         ut["center"] = &TileGrid::center;
         ut["cell"]   = &TileGrid::cell;
-        ut["cells"]  = &TileGrid::cells;
+        ut["cells"]  = [](TileGrid& self) -> std::vector<Area>& { return self.cells(); };
     }, type::base<Printable>);
 
     script._registerEngineType<Parallax, Parallax(const Vec2d&, const Dim2d&, const std::vector<Sprite>&, const std::vector<u8>&)>("Parallax", [](SolState::Type& ut) {
@@ -232,7 +232,7 @@ void initLuaClass(void) noexcept {
         ut["size"]       = &Parallax::size;
         ut["update"]     = &Parallax::update;
         ut["linkCamera"] = &Parallax::linkCamera;
-    }, type::base<Printable>);
+    }, type::base<Printable, Trackable>);
 
     script._registerEngineType<Data,
         Data(),       Data(byte),
@@ -294,7 +294,7 @@ void initLuaClass(void) noexcept {
         );
         ut["setLayerActive"]  = &Scene::setLayerActive;
         ut["setActorActive"]  = &Scene::setActorActive;
-    });
+    }, type::base<Trackable>);
 
     script._registerEngineType<Act, Act()>("Act", [](SolState::Type& ut) {
         ut["add"]    = &Act::add;
@@ -308,7 +308,7 @@ void initLuaClass(void) noexcept {
         );
         ut["updates"]   = &Act::updates;
         ut["scene"]     = [](Act& self, std::string_view s) -> Tracker<Scene> { return self.scene(s); };
-    });
+    }, type::base<Trackable>);
 
     script._registerEngineType<Sound>("Sound", [](SolState::Type& ut) {
         ut["play"]     = sol::overload(
@@ -328,11 +328,11 @@ void initLuaClass(void) noexcept {
         "onRepeat" , &Sound::onRepeat
     );
 
-    script._registerEngineType<Music, Music(std::string_view, u8)>("Music", nullptr, type::base<Sound>);
+    script._registerEngineType<Music, Music(std::string_view, u8)>("Music", nullptr, type::base<Sound, Trackable>);
 
     script._registerEngineType<SFX, SFX(std::string_view, u8)>("SFX", [](SolState::Type& ut) {
         ut["stopAll"]    = &SFX::stopAll;
-    }, type::base<Sound>);
+    }, type::base<Sound, Trackable>);
 
     script._registerEngineType<Date, Date(), Date(u8, u8, i32)>("Date", [](SolState::Type& ut) {
         ut["day"]    = sol::overload(

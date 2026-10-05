@@ -39,7 +39,9 @@ public:
     Grid2d cut(void)                 const noexcept;
     Vec2d  center(void)              const noexcept;
     Area   cell(const Grid2d&)       const noexcept;
-    std::vector<Area> cells(void)    const noexcept;
+
+    std::vector<Area>& cells(void) noexcept;
+    const std::vector<Area>& cells(void) const noexcept;
 
 private:
     void _build(void)  noexcept;

@@ -351,7 +351,7 @@ void initLuaEvent(sol::table& rmk) noexcept {
         ut["onRenderReset"]       = &event.onRenderReset;
 
         ut["onEventNone"] = &event.onEventNone;
-    });
+    }, type::base<Updatable, Trackable>);
 
     rmk["event"] = &event;
 }

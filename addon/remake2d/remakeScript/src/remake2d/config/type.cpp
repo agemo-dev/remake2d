@@ -55,7 +55,7 @@ void initLuaType(void) noexcept {
 	    ut["pos"]    = &Area::pos;
 	    ut["size"]   = &Area::size;
 	    ut["center"] = &Area::center;
-	}, type::base<>,
+	}, type::base<Printable>,
 	    "x", &Area::x,
 	    "y", &Area::y,
 	    "w", &Area::w,

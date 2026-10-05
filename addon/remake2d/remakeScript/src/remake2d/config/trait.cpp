@@ -24,10 +24,21 @@ void initLuaTrait(void) noexcept {
         ut["ldata"] = &Savable::ldata;
     });
 
-    script._registerEngineType<Printable>      ("Printable", nullptr, rmk::type::base<>,
+    script._registerEngineType<Printable>      ("Printable", [](SolState::Type& ut) {
+        ut["color"] = sol::overload(
+            [](Printable& self)          { return self.color(); },
+            [](Printable& self, Color c) { self.color(c); }
+        );
+        ut["layer"] = sol::overload(
+            [](Printable& self)          { return self.layer(); },
+            [](Printable& self, i16 l)   { self.layer(l); }
+        );
+    }, rmk::type::base<>,
 
         "filled", &Printable::filled,
         "drawn" , &Printable::drawn,
+
+        "overridden", &Printable::overridden,
 
         "is_draw_dirty" , &Printable::is_draw_dirty,
         "is_fill_dirty" , &Printable::is_fill_dirty
@@ -45,11 +56,11 @@ void initLuaTrait(void) noexcept {
         );
     }, rmk::type::base<Trackable>);
 
-    script._registerEngineType<StaticActor, StaticActor(const Geometry&)>("StaticActor", nullptr, type::base<Actor>,
+    script._registerEngineType<StaticActor, StaticActor(const Geometry&)>("StaticActor", nullptr, type::base<Actor, Trackable>,
         "body", &StaticActor::body
     );
 
-    script._registerEngineType<DynamicActor, DynamicActor(const Geometry&)>("DynamicActor", nullptr, type::base<Actor>,
+    script._registerEngineType<DynamicActor, DynamicActor(const Geometry&)>("DynamicActor", nullptr, type::base<Actor, Trackable>,
         "body", &DynamicActor::body
     );
 }

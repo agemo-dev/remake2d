@@ -28,11 +28,14 @@ SolState& SolState::getInstance(void) noexcept {
 }
 
 void SolState::_placeInTable(std::string_view path, SolState::Type ut) noexcept {
-    sol::table current = m_table;
+    usize sep = path.find("::");
+    if (sep == std::string_view::npos) return;
+
+    sol::table current = m_state.globals();
     usize      start   = 0;
 
     while (true) {
-        usize sep = path.find("::", start);
+        sep = path.find("::", start);
         std::string segment = (sep == std::string_view::npos)
             ? std::string(path.substr(start))
             : std::string(path.substr(start, sep - start));
@@ -46,6 +49,8 @@ void SolState::_placeInTable(std::string_view path, SolState::Type ut) noexcept 
         current = next;
         start   = sep + 2;
     }
+
+    m_state[std::string(path)] = sol::lua_nil;
 }
 
 Script::Script(std::string_view id) : m_file(id) {

@@ -19,7 +19,7 @@ Which allows checking if an event is active during the analysis of another one. 
 
 ```cpp
 rmk::event.onPressS.join([&](void) {
-    if(rmk::event.onPressScanCtrl.isActive()) save();
+    if(rmk::event.onPressCtrl.isActive()) save();
 });
 ```
 

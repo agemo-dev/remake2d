@@ -810,7 +810,7 @@ void  smoothing(f32)       noexcept;         // set smoothing factor (0.0 – 1.
 f32   zoom(void)       const noexcept;       // get zoom
 Dim2d size(void)       const noexcept;       // get viewport size
 Vec2d center(void)     const noexcept;       // get camera position
-Vec2d viewCenter(void) const noexcept;       // get offset between followed point and camera (affected by smoothing)
+Vec2d viewCenter(void) const noexcept;       // get the smoothed point the view is centered on (trails the followed point, clamped by limit)
 Dim2d limit(void)      const noexcept;       // get world boundaries
 Vec2d offset(void)     const noexcept;       // get last frame offset
 f32   smoothing(void)  const noexcept;       // get smoothing factor
@@ -889,7 +889,9 @@ Dim2d         size(void)          const noexcept;   // grid size
 Grid2d        cut(void)           const noexcept;   // current grid divisions
 Vec2d         center(void)        const noexcept;   // grid center
 Area          cell(const Grid2d&) const noexcept;   // get a specific cell area by (col, row)
-std::vector<Area> cells(void)     const noexcept;   // get all cell areas
+
+std::vector<Area>& cells(void)             noexcept; // get all cell areas
+const std::vector<Area>& cells(void) const noexcept; // get all cell areas (const)
 ```
 
 ---
@@ -904,6 +906,7 @@ void  velocity(const Vec2d&) noexcept;  // set scroll speed
 Vec2d velocity(void)   const noexcept;  // get scroll speed
 Dim2d size(void)       const noexcept;  // get size
 Vec2d center(void)     const noexcept;  // get center
+void  linkCamera(const Camera&) noexcept; // scroll with a camera's movement
 ```
 
 ---

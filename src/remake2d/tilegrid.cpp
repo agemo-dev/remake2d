@@ -43,25 +43,36 @@ Area TileGrid::cell(const Grid2d& coo) const noexcept {
     return m_cells[coo.y * m_cut.x + coo.x];
 }
 
-std::vector<Area> TileGrid::cells(void) const noexcept {
+std::vector<Area>& TileGrid::cells(void) noexcept {
+    return m_cells;
+}
+
+const std::vector<Area>& TileGrid::cells(void) const noexcept {
     return m_cells;
 }
 
 void TileGrid::_build(void) noexcept {
-    int count = int(m_cut.x * m_cut.y);
-    m_cells.clear();
-    Vec2d vlast = { 0, 0 };
-    Dim2d csize = { m_size.w / m_cut.x, m_size.h / m_cut.y };
-    Vec2d start = { m_center.x - m_size.w / 2, m_center.y - m_size.h / 2 };
+    const usize count = m_cut.x * m_cut.y;
+    const Dim2d csize = { m_size.w / m_cut.x, m_size.h / m_cut.y };
+    const Vec2d start = { m_center.x - m_size.w / 2, m_center.y - m_size.h / 2 };
 
-    for(int i = 0; i < count; i++) {
-        vlast.x = i % m_cut.x;
-        vlast.y = i / m_cut.x;
-        Area cell = {   i32(start.x + vlast.x * csize.w),
-                        i32(start.y + vlast.y * csize.h),
-                        i32(csize.w), i32(csize.h)
-                    };
-        m_cells.push_back(cell);
+    if (m_cells.size() != count) {
+        m_cells.clear();
+        m_cells.resize(count);
+    }
+
+    for (usize i = 0; i < count; i++) {
+        Area& cell = m_cells[i];
+        const i32 cx = i % m_cut.x;
+        const i32 cy = i / m_cut.x;
+
+        cell.x = i32(start.x + cx * csize.w);
+        cell.y = i32(start.y + cy * csize.h);
+        cell.w = i32(csize.w);
+        cell.h = i32(csize.h);
+
+        cell.is_draw_dirty = true;
+        cell.is_fill_dirty = true;
     }
 
     is_draw_dirty = true;

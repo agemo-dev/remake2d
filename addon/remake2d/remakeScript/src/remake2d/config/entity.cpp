@@ -29,13 +29,13 @@ void initLuaEntity(void) noexcept {
             [](PhysicBody& self)                     { return self.animation();  },
             [](PhysicBody& self, std::string_view t) { return self.animation(t); }
         );
-    }, type::base<Trackable>,
+    }, type::base<Trackable, Printable>,
         "onContact"       , &PhysicBody::onContact,
         "onContactEnd"    , &PhysicBody::onContactEnd,
         "onContactStart"  , &PhysicBody::onContactStart
     );
 
-    script._registerEngineType<StaticBody, StaticBody(Geometry&)>("StaticBody", nullptr, type::base<PhysicBody>);
+    script._registerEngineType<StaticBody, StaticBody(Geometry&)>("StaticBody", nullptr, type::base<PhysicBody, Trackable, Printable>);
 
     script._registerEngineType<DynamicBody, DynamicBody(Geometry&)>("DynamicBody", [](SolState::Type& ut) {
         ut["mass"]             = sol::overload(
@@ -85,7 +85,7 @@ void initLuaEntity(void) noexcept {
             [](DynamicBody& self) { return self.velocity(); },
             [](DynamicBody& self, const Vec2d& v) { self.velocity(v); }
         );
-    }, type::base<PhysicBody>,
+    }, type::base<PhysicBody, Trackable, Printable>,
         "onMove"      , &DynamicBody::onMove,
         "onMoveUp"    , &DynamicBody::onMoveUp,
         "onMoveDown"  , &DynamicBody::onMoveDown,

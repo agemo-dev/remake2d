@@ -24,7 +24,9 @@ Dim2d  size(void)               const noexcept; // grid size
 Grid2d cut(void)                const noexcept; // current grid divisions
 Vec2d  center(void)             const noexcept; // grid center
 Area   cell(const Grid2d&)      const noexcept; // get a specific cell area by (col, row)
-std::vector<Area> cells(void)   const noexcept; // get all cell areas
+
+std::vector<Area>& cells(void)             noexcept; // get all cell areas
+const std::vector<Area>& cells(void) const noexcept; // get all cell areas (const)
 ```
 
 ---

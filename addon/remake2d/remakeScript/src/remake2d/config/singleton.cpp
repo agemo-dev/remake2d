@@ -14,7 +14,7 @@ void initLuaSingleton(sol::table& rmk) noexcept {
             [](DeltaTime& self)   { return self.maxFPS(); },
             [](DeltaTime& self, fmax v) { self.maxFPS(v); }
         );
-    }, rmk::type::base<Updatable>);
+    }, rmk::type::base<Updatable, Trackable>);
     rmk["delta"] = &delta;
 
     script._registerEngineType<PhysicManager>("PhysicManager", [](SolState::Type& ut) {
@@ -42,7 +42,7 @@ void initLuaSingleton(sol::table& rmk) noexcept {
             [](PhysicManager& self) { return self.fixedStep(); },
             [](PhysicManager& self, f32 s) { self.fixedStep(s); }
         );
-    }, rmk::type::base<Updatable>);
+    }, rmk::type::base<Updatable, Trackable>);
     rmk["physics"] = &physics;
 
     script._registerEngineType<Random>("Random", [](SolState::Type& ut) {
@@ -102,6 +102,14 @@ void initLuaSingleton(sol::table& rmk) noexcept {
     });
     rmk["xwindow"] = &xwindow;
 
+    script._registerEngineType<System>("System", [&](SolState::Type& ut) {
+        ut["init"]    = &System::init;
+        ut["quit"]    = &System::quit;
+        ut["isInit"]  = &System::isInit;
+        ut["info"]    = &rmk::system.info;
+        ut["toggle"]  = &rmk::system.toggle;
+        ut["setup"]   = &rmk::system.setup;
+    });
     script._registerEngineType<System::Info>("System::Info", [](SolState::Type& ut) {
         ut["platform"]     = &System::Info::platform;
         ut["cpuCount"]     = &System::Info::cpuCount;
@@ -135,14 +143,6 @@ void initLuaSingleton(sol::table& rmk) noexcept {
 		};
     });
 
-    script._registerEngineType<System>("System", [&](SolState::Type& ut) {
-        ut["init"]    = &System::init;
-        ut["quit"]    = &System::quit;
-        ut["isInit"]  = &System::isInit;
-        ut["info"]    = &rmk::system.info;
-        ut["toggle"]  = &rmk::system.toggle;
-        ut["setup"]   = &rmk::system.setup;
-    });
     rmk["system"] = &rmk::system;
 }
 

@@ -37,6 +37,21 @@ concept _HasOS = requires(std::ostream& os, const T& a) { { os << a } -> std::co
 
 } // namespace type
 
+namespace detail {
+    template<typename T, typename M> struct RebindMember { using type = M; };
+
+    template<typename T, typename R, typename C, typename... A>
+    struct RebindMember<T, R (C::*)(A...)>                { using type = R (T::*)(A...); };
+    template<typename T, typename R, typename C, typename... A>
+    struct RebindMember<T, R (C::*)(A...) noexcept>       { using type = R (T::*)(A...) noexcept; };
+    template<typename T, typename R, typename C, typename... A>
+    struct RebindMember<T, R (C::*)(A...) const>          { using type = R (T::*)(A...) const; };
+    template<typename T, typename R, typename C, typename... A>
+    struct RebindMember<T, R (C::*)(A...) const noexcept> { using type = R (T::*)(A...) const noexcept; };
+
+    template<typename T, typename M>
+    constexpr auto bindTo(M m) { return static_cast<typename RebindMember<T, M>::type>(m); }
+}
 
 template<typename T, typename... Ctors, typename B, typename... Fields>
 void SolState::registerType(std::string_view name, std::function<void(SolState::Type&)> init, B base_tuple, Fields... fields) {
@@ -77,19 +92,18 @@ template<typename T>
 void SolState::_generateSpecialType(SolState::Type& ut) noexcept {
 
 	if constexpr (IsSignal<T>) {
-        ut["join"]             = &T::join;
-        ut["joinOnce"]         = &T::joinOnce;
-        ut["joinPriority"]     = &T::joinPriority;
-        ut["emit"]             = &T::emit;
-        ut["bind"]             = &T::bind;
-        ut["bindRising"]       = &T::bindRising;
-        ut["bindFalling"]      = &T::bindFalling;
-        ut["bindChange"]       = &T::bindChange;
-        ut["start"]            = &T::start;
-        ut["stop"]             = &T::stop;
-        ut["count"]            = &T::count;
-        ut["reserve"]          = &T::reserve;
-
+        ut["join"]        = detail::bindTo<T>(&T::join);
+        ut["joinOnce"]    = detail::bindTo<T>(&T::joinOnce);
+        ut["joinPriority"]= detail::bindTo<T>(&T::joinPriority);
+        ut["emit"]        = detail::bindTo<T>(&T::emit);
+        ut["bind"]        = detail::bindTo<T>(&T::bind);
+        ut["bindRising"]  = detail::bindTo<T>(&T::bindRising);
+        ut["bindFalling"] = detail::bindTo<T>(&T::bindFalling);
+        ut["bindChange"]  = detail::bindTo<T>(&T::bindChange);
+        ut["start"]       = detail::bindTo<T>(&T::start);
+        ut["stop"]        = detail::bindTo<T>(&T::stop);
+        ut["count"]       = detail::bindTo<T>(&T::count);
+        ut["reserve"]     = detail::bindTo<T>(&T::reserve);
     } else if constexpr (IsTracker<T>) {
 		ut["locate"] = [](T& self) { return self.locate(); };
 	}

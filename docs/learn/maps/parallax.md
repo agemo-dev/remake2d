@@ -18,6 +18,8 @@ of speed quotients, one per layer, expressed as a percentage speed reduction rel
 void move(const Vec2d&)     noexcept; // move background
 void resize(const Dim2d&)   noexcept; // resize background
 void velocity(const Vec2d&) noexcept; // set scroll speed
+void linkCamera(const Camera&) noexcept; // scroll with a camera's movement
+void update(void)           noexcept; // advance the scrolling by one frame
 
 Dim2d size(void)     const noexcept; // get size
 Vec2d center(void)   const noexcept; // get center
@@ -65,6 +67,10 @@ bg.velocity({-150, 0});
 Each layer tiles itself automatically once it scrolls off-screen, giving an endless scrolling effect 
 without ever having to reposition anything manually.
 
+!!! info
+    Every `Parallax` is registered in the engine's main loop, so `update` is called automatically each frame. Calling it by hand is
+    only needed outside of `rmk::loop`.
+
 ### Drawing a parallax
 
 ```cpp
@@ -106,11 +112,73 @@ int main (void) {
 
 ---
 
+## Linking a camera
+
+A `Parallax` can read the movement of a `Camera` and scroll on its own, so the background follows the view without any manual velocity
+update. `linkCamera` takes the camera to watch:
+
+```cpp
+void linkCamera(const Camera&) noexcept;
+```
+
+Each frame, the camera's `offset` (how far the view shifted since the last frame) is added to the parallax's own velocity, then scaled
+by every layer's speed factor. A layer with a quotient of `0` follows the camera at full speed, and a layer with a quotient of `100`
+stays fixed.
+
+```cpp
+rmk::Camera cam({400, 300}, {800, 600}, {4000, 600});
+rmk::Parallax bg({400, 300}, {800, 600}, sprites, { 80, 40, 0 });
+
+bg.linkCamera(cam);
+cam.follow(playerShape);
+
+rmk::loop.execute(win, [&](void) {
+    win.fill(bg);
+});
+```
+
+!!! info
+    The link is additive: a velocity set with `bg.velocity(...)` still applies, so a parallax can drift on its own (clouds, for instance)
+    while also reacting to the camera. Keep the camera alive for as long as the parallax is linked to it.
+
+---
+
+## Lua
+
+The parallax is available in Lua as `rmk.Parallax`. The sprites and the quotients are given as plain Lua tables, and `velocity` is both
+the getter and the setter, depending on whether an argument is passed.
+
+```lua
+local win = rmk.Window()
+
+local rect = rmk.Rectangle(win:center(), win:size())
+local sprites = {
+    rmk.Sprite("Layers/1.png", rect),
+    rmk.Sprite("Layers/2.png", rect),
+    rmk.Sprite("Layers/3.png", rect)
+}
+
+local bg = rmk.Parallax(win:center(), win:size(), sprites, { 80, 40, 0 })
+
+bg:velocity(rmk.Vec2d(-150, 0))
+print(bg:velocity().x)       -- -150
+
+local cam = rmk.Camera(win:center(), win:size(), rmk.Dim2d(4000, 600))
+bg:linkCamera(cam)
+
+rmk.loop:execute(win, function()
+    win:fill(bg)
+end)
+rmk.loop:update()
+```
+
+---
+
 ## Property
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| Parallax | Yes | Yes | Printable |
+| Parallax | Yes | Yes | Printable, Trackable |
 
 ---
 

@@ -33,7 +33,7 @@ void  smoothing(f32)       noexcept;   // set how smoothly the camera catches up
 f32   zoom(void)       const noexcept;       // get zoom
 Dim2d size(void)       const noexcept;       // get viewport size
 Vec2d center(void)     const noexcept;       // get camera position
-Vec2d viewCenter(void) const noexcept;       // get offset between followed point and camera (affected by smoothing)
+Vec2d viewCenter(void) const noexcept;       // get the smoothed point the view is centered on (trails the followed point, clamped by limit)
 Dim2d limit(void)      const noexcept;       // get world boundaries
 Vec2d offset(void)     const noexcept;       // get last frame offset
 f32   smoothing(void)  const noexcept;       // get smoothing factor
