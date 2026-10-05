@@ -109,7 +109,7 @@ game.update();
 
 | Type | Copiable | Movable | Bases and Traits |
 |---|---|---|---|
-| Script | No | Yes | None |
+| Script | No | Yes | Trackable |
 
 ---
 

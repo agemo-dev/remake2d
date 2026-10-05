@@ -44,7 +44,7 @@ template <typename... Args> inline auto overload(Args&&... args) {
 
 } // namespace type
 
-class  SolState {
+class RMK_SCRIPT_API SolState {
 public:
     using Type = sol::table;
 
@@ -104,7 +104,7 @@ private:
 inline SolState& script = SolState::getInstance();
 
 
-class  Script : Trackable {
+class RMK_SCRIPT_API Script : public Trackable {
 
 private:
     sol::environment                m_env;

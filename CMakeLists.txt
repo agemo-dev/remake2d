@@ -210,18 +210,18 @@ else()
 endif()
 
 if(TERMUX_BUILD)
-    file(READ ${CMAKE_SOURCE_DIR}/external/remake2d/box2d/src/core.h B2_CORE_CONTENT)
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/box2d/src/core.h B2_CORE_CONTENT)
     string(REPLACE "#error Unsupported CPU"
         "#define B2_CPU_ARM"
         B2_CORE_CONTENT "${B2_CORE_CONTENT}")
-    file(WRITE ${CMAKE_SOURCE_DIR}/external/remake2d/box2d/src/core.h "${B2_CORE_CONTENT}")
+    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/box2d/src/core.h "${B2_CORE_CONTENT}")
 
-    file(READ ${CMAKE_SOURCE_DIR}/external/remake2d/box2d/src/allocate.c B2_ALLOC_CONTENT)
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/box2d/src/allocate.c B2_ALLOC_CONTENT)
     string(REPLACE
         "void* ptr = aligned_alloc( B2_ALIGNMENT, size32 );"
         "void* ptr = NULL; posix_memalign(&ptr, B2_ALIGNMENT, size32);"
         B2_ALLOC_CONTENT "${B2_ALLOC_CONTENT}")
-    file(WRITE ${CMAKE_SOURCE_DIR}/external/remake2d/box2d/src/allocate.c "${B2_ALLOC_CONTENT}")
+    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/box2d/src/allocate.c "${B2_ALLOC_CONTENT}")
 endif()
 
 set(BOX2D_BUILD_TESTBED    OFF CACHE BOOL "" FORCE)
@@ -249,10 +249,10 @@ endif()
 target_include_directories(
     remake2d
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/assets>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/external>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/assets>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external>
         $<BUILD_INTERFACE:$<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
@@ -311,7 +311,7 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-    ${CMAKE_SOURCE_DIR}/cmake/remake2dConfig.cmake.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/remake2dConfig.cmake.in
     ${CMAKE_BINARY_DIR}/remake2dConfig.cmake
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
 )
@@ -336,12 +336,12 @@ install(
 )
 
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/include/remake2d
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/remake2d
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/external/remake2d/
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/remake2d
     FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
     PATTERN "*.c" EXCLUDE
@@ -349,7 +349,7 @@ install(
 )
 
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/src/remake2d/template
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/remake2d/template
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/remake2d
     FILES_MATCHING PATTERN "*.tpp"
 )

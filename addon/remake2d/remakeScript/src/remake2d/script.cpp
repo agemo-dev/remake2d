@@ -49,6 +49,7 @@ void SolState::_placeInTable(std::string_view path, SolState::Type ut) noexcept 
 }
 
 Script::Script(std::string_view id) : m_file(id) {
+
     if (!std::filesystem::exists(m_file)) {
         rmk_dynamicAssert(rmk::ScriptError, std::string(error::script::file_nonexistent) + " : " + std::string(m_file));
     }
@@ -58,13 +59,15 @@ Script::Script(std::string_view id) : m_file(id) {
 
     Tracker<Script> track = tracker();
 
-    onFileChanged.bindRising([track]() {
-        auto current = std::filesystem::last_write_time(m_file);
-        if (current != track->m_last_write_time) {
-            last = current;
-            return true;
-        }
-        return false;
+    onFileChanged.bindRising([track]() mutable {
+        if (!track) return false;
+
+        std::error_code ec;
+        auto current = std::filesystem::last_write_time(track->m_file, ec);
+        if (ec || current == track->m_last_write_time) return false;   // file momentarily missing, or unchanged
+
+        track->m_last_write_time = current;
+        return true;
     });
 }
 
