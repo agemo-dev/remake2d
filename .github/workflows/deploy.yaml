@@ -42,4 +42,4 @@ jobs:
       - name: Deploy with mike
         run: |
           mike deploy --push --update-aliases "${{ steps.version.outputs.short }}" latest
-          mike set-default --push latest
+          mike set-default --push --template redirect.html latest
