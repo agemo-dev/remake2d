@@ -7,12 +7,17 @@
 #include <fstream>
 
 namespace rmk {
-    
+
 std::ostream& operator<<(std::ostream& os, const Vec2d& vec) noexcept {
     os << "[ x : " << vec.x << "  |  y : " << vec.y << " ]";
     return os;
 }
-    
+
+std::ostream& operator<<(std::ostream& os, const Grid2d& grid) noexcept {
+    os << "[ x : " << grid.x << "  |  y : " << grid.y << " ]";
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const Fact2d& fac) noexcept {
     os << "[ x : " << fac.x << "  |  y : " << fac.y << " ]";
     return os;
@@ -28,7 +33,11 @@ std::ostream& operator<<(std::ostream& os, const Color& c) noexcept {
     return os;
 }
 
-    
+std::ostream& operator<<(std::ostream& os, const HSL& hsl) noexcept {
+    os << "[ h : " << hsl.h << "  |  s : " << hsl.s  << "  |  l : " << hsl.l  << " ]";
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const Area& a) noexcept {
     os << "[ x : " << a.x << "  |  y : " << a.y  << "  |  w : " << a.w  << "  |  h : " << a.h << " ]";
     return os;
@@ -43,7 +52,7 @@ Text& operator<<(Text& tx, const std::string_view s) noexcept {
     tx.append(s);
     return tx;
 }
-	
+
 Text& operator<<(Text& tx, const fmt t) noexcept {
     tx.append(t);
     return tx;
@@ -58,12 +67,21 @@ std::istream& operator>>(std::istream& is, Vec2d& vec) {
     return is;
 }
 
+std::istream& operator>>(std::istream& is, Grid2d& grid) {
+    std::string str;
+    std::getline(is, str);
+    auto pos = str.find(',') + 1;
+    grid.x = std::stoi(str.substr(0));
+    grid.y = std::stoi(str.substr(pos));
+    return is;
+}
+
 std::istream& operator>>(std::istream& is, Fact2d& fac) {
     std::string str;
     std::getline(is, str);
     auto pos = str.find(',') + 1;
-    fac.x = (u32)std::stoi(str.substr(0));
-    fac.y = (u32)std::stoi(str.substr(pos));
+    fac.x = std::max<f32>(0, std::stof(str.substr(0)));
+    fac.y = std::max<f32>(0, std::stof(str.substr(pos)));
     return is;
 }
 
@@ -86,6 +104,17 @@ std::istream& operator>>(std::istream& is, Color& c) {
     c.g = std::stof(str.substr(pos1));
     c.b = std::stof(str.substr(pos2));
     c.a = std::stof(str.substr(pos3));
+    return is;
+}
+
+std::istream& operator>>(std::istream& is, HSL& hsl) {
+    std::string str;
+    std::getline(is, str);
+    auto pos1 = str.find(',') + 1;
+    auto pos2 = str.find(',', pos1) + 1;
+    hsl.h = std::stof(str);
+    hsl.s = std::stof(str.substr(pos1));
+    hsl.l = std::stof(str.substr(pos2));
     return is;
 }
 

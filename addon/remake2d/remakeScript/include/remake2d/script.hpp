@@ -3,6 +3,7 @@
 
 #include <remake2d/config/script.hpp>
 #include <remake2d/concept.hpp>
+#include <remake2d/tracker.hpp>
 #include <remake2d/signal.hpp>
 #include <remake2d/error.hpp>
 
@@ -10,19 +11,31 @@
 #include <string>
 #include <filesystem>
 
+namespace sol {
+    template <typename T>
+    struct unique_usertype_traits<rmk::UnsafeTracker<T>> {
+        static const bool value = false;
+    };
+
+    template <rmk::IsTrackable T>
+    struct unique_usertype_traits<rmk::Tracker<T>> {
+        static const bool value = false;
+    };
+}
+
 namespace rmk {
 
 namespace type {
 
 template<typename... Bases> inline constexpr auto base = [] {
-	if constexpr (sizeof...(Bases) == 0) {
-		return std::tuple<>{};
-	} else {
-		return std::tuple{
-			sol::base_classes,
-			sol::bases<Bases...>()
-		};
-	}
+    if constexpr (sizeof...(Bases) == 0) {
+        return std::tuple<>{};
+    } else {
+        return std::tuple{
+            sol::base_classes_tag{},
+            sol::bases<Bases...>()
+        };
+    }
 }();
 
 template <typename... Args> inline auto overload(Args&&... args) {
@@ -31,7 +44,7 @@ template <typename... Args> inline auto overload(Args&&... args) {
 
 } // namespace type
 
-class  SolState {
+class RMK_SCRIPT_API SolState {
 public:
     using Type = sol::table;
 
@@ -43,7 +56,9 @@ private:
 
 private:
     SolState(void);
+    SolState(SolState&&)                    = default;
     SolState(const SolState&)               = delete;
+    SolState& operator=(SolState&&)         = default;
     SolState& operator=(const SolState&)    = delete;
 
 private:
@@ -51,12 +66,17 @@ private:
 
 public:
 	template<typename T, typename... Ctors, typename B = const std::tuple<>, typename... Fields>
+	void registerType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
+    template<typename T> void loadVar(std::string_view id, T&) noexcept;
+
+private:
+    template<typename T> void _generateOperator(Type&)    noexcept;
+    template<typename T> void _generateSpecialType(Type&) noexcept;
+
+private:
+	template<typename T, typename... Ctors, typename B = const std::tuple<>, typename... Fields>
 	void _registerEngineType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
 
-	template<typename T, typename... Ctors, typename B = const std::tuple<>, typename... Fields>
-	void registerType(std::string_view, std::function<void(SolState::Type&)> = nullptr, B = rmk::type::base<>, Fields...);
-
-    template<typename T> void loadVar(std::string_view id, T&) noexcept;
 
 public:
     std::string loadedTypes(void) 		const noexcept;
@@ -70,9 +90,11 @@ private:
     friend class System;
     friend void config::solstat::initLua(void) 				   noexcept;
     friend void config::solstat::initLuaType(void) 			   noexcept;
+    friend void config::solstat::initLuaTrait(void) 		   noexcept;
     friend void config::solstat::initLuaClass(void)			   noexcept;
     friend void config::solstat::initLuaEntity(void) 		   noexcept;
     friend void config::solstat::initLuaSignal(void) 		   noexcept;
+    friend void config::solstat::initLuaTracker(void) 		   noexcept;
     friend void config::solstat::initLuaEvent(sol::table&)     noexcept;
     friend void config::solstat::initLuaGlobal(sol::table&)    noexcept;
     friend void config::solstat::initLuaUtility(sol::table&)   noexcept;
@@ -82,10 +104,12 @@ private:
 inline SolState& script = SolState::getInstance();
 
 
-class  Script {
+class RMK_SCRIPT_API Script : public Trackable {
+
 private:
-    sol::environment    m_env;
-    std::string         m_file;
+    sol::environment                m_env;
+    std::string                     m_file;
+    std::filesystem::file_time_type m_last_write_time;
 
 public:
     Signal<> onFileChanged;

@@ -2,8 +2,8 @@
 #define REMAKE2D_SCENE_
 
 #include <remake2d/actor.hpp>
-#include <remake2d/window.hpp>
 #include <remake2d/numeric.hpp>
+#include <remake2d/private/layer.hpp>
 
 #include <map>
 #include <span>
@@ -13,60 +13,60 @@
 
 namespace rmk {
 
-class Scene {
-    
+class Scene : public Trackable {
+
 public:
     using Frame = std::function<void(void)>;
 
 private:
-    std::multimap<i16, ActorBase*>  m_actors_map;
-    std::multimap<i16, Frame>       m_layers_map;
-    std::vector<ActorBase*>         m_actors_cache;
-    std::vector<Frame>              m_layers_cache;
-    Frame                           m_main;
-    bool                            m_cache_dirty{true};
-    bool                            m_enabled{true};
+    std::multimap<i16, Tracker<Actor>>      m_actors_map;
+    std::multimap<i16, Frame>               m_layers_map;
+    mutable std::vector<Tracker<Actor>>     m_actors_cache;
+    mutable std::vector<Frame>              m_layers_cache;
+    Frame                                   m_main;
+    mutable bool                            m_cache_dirty{true};
+    bool                                    m_is_active{true};
 
 public:
-    Scene(void)						= default;
-    Scene(Scene&&)					= default;
-    Scene(const Scene&)				= delete;
-    Scene& operator=(Scene&&)		= default;
-    Scene& operator=(const Scene&)	= delete;
+    Scene(void)                        = default;
+    Scene(const Scene&)                = delete;
+    Scene(Scene&&) noexcept            = default;
+    Scene& operator=(const Scene&)     = delete;
+    Scene& operator=(Scene&&) noexcept = default;
 
 public:
-    void update(void);
-    void remove(ActorBase&);
+    void update(void) const;
+    void remove(Actor&);
+    void add(Actor&, i16 = 0);
     void execute(const Frame&);
-    void add(ActorBase&, i16 = 0);
     void add(const Frame&, i16 = 0);
 
 public:
     void setLayerActive(i16, bool);
-    void enable(void) 		   noexcept;
-    void disable(void) 		   noexcept;
-    bool isEnabled(void) const noexcept;
-    void setActorActive(ActorBase&, bool);
+    void active(bool)         noexcept;
+    bool active(void)   const noexcept;
+    void setActorActive(Actor&, bool);
 
 private:
-    void _rebuildCache(void);
+    void _rebuildCache(void) const;
 };
 
 
-class Act {
+class Act : public Trackable {
+
 private:
-    std::map<std::string, Scene*>               m_scenes;
     std::map<std::string, std::vector<std::string>> m_links;
-    std::vector<std::string>                    m_focused_tags;
-    std::vector<Scene*>                         m_focused_cache;
-    bool                                        m_focus_dirty{true};
+    std::map<std::string, Tracker<Scene>>           m_scenes;
+    std::vector<std::string>                        m_focused_tags;
+    mutable std::vector<Tracker<Scene>>             m_focused_cache;
+    mutable bool                                    m_focus_dirty{true};
 
 public:
-    Act(void)					= default;
-    Act(Act&&)					= default;
-    Act(const Act&)				= delete;
-    Act& operator=(Act&&)		= default;
-    Act& operator=(const Act&)	= delete;
+    Act(void)                    = default;
+    Act(Act&&)                   = default;
+    Act(const Act&)              = delete;
+    Act& operator=(Act&&)        = default;
+    Act& operator=(const Act&)   = delete;
 
 public:
     void focus(std::string_view);
@@ -74,15 +74,16 @@ public:
     void link(std::string_view, std::span<std::string_view>);
 
 public:
-    void update(void)				const;
-    void updates(void)				const;
-    void update(std::string_view)	const;
+    void update(void)                const;
+    void updates(void)               const;
+    void update(std::string_view)    const;
 
 public:
-    Scene* scene(std::string_view) const;
+    Tracker<Scene>       scene(std::string_view);
+    const Tracker<Scene> scene(std::string_view) const;
 
 private:
-    void _rebuildFocusCache(void);
+    void _rebuildFocusCache(void) const;
     std::vector<std::string> _resolveTag(std::string_view) const;
 };
 

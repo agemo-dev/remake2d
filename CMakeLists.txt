@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.32)
 
 project(
 	remake2d
-	VERSION 0.2.0
+	VERSION 0.3.0
 	DESCRIPTION "A cross-plateform 2D game engine"
 	LANGUAGES CXX C
 )
@@ -25,10 +25,16 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O2 -DNDEBUG")
+if(MSVC)
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " /W4")
+else()
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " -Wall -Wextra -Werror")
+endif()
 
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(USE_NATIVE_OPT "Enable -march=native optimizations" OFF)
+option(USE_NATIVE_OPT      "Enable -march=native optimizations" OFF)
+option(BUILD_SHARED_LIBS   "Build shared libraries"              ON)
+option(BUILD_REMAKE_SCRIPT "Build add-on remakeScript"           ON)
 
 if(USE_NATIVE_OPT)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
@@ -48,6 +54,7 @@ set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(TERMUX_BUILD)
     find_package(SDL2 QUIET)
+
     if(NOT SDL2_FOUND)
         execute_process(
             COMMAND pkg install -y x11-repo
@@ -70,14 +77,22 @@ if(TERMUX_BUILD)
     find_package(SDL2_ttf   REQUIRED)
     find_package(SDL2_image REQUIRED)
     find_package(SDL2_mixer REQUIRED)
+
 else()
     set(USER_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
     set(BUILD_SHARED_LIBS OFF)
 
-    set(SDL2_DISABLE_INSTALL   OFF CACHE BOOL "" FORCE)
-    set(SDL2IMAGE_INSTALL      ON  CACHE BOOL "" FORCE)
-    set(SDL2MIXER_INSTALL      ON  CACHE BOOL "" FORCE)
-    set(SDL2TTF_INSTALL        ON  CACHE BOOL "" FORCE)
+    if(USER_BUILD_SHARED_LIBS)
+        set(SDL2_DISABLE_INSTALL   ON   CACHE BOOL "" FORCE)
+        set(SDL2IMAGE_INSTALL      OFF  CACHE BOOL "" FORCE)
+        set(SDL2MIXER_INSTALL      OFF  CACHE BOOL "" FORCE)
+        set(SDL2TTF_INSTALL        OFF  CACHE BOOL "" FORCE)
+    else()
+        set(SDL2_DISABLE_INSTALL   OFF  CACHE BOOL "" FORCE)
+        set(SDL2IMAGE_INSTALL      ON   CACHE BOOL "" FORCE)
+        set(SDL2MIXER_INSTALL      ON   CACHE BOOL "" FORCE)
+        set(SDL2TTF_INSTALL        ON   CACHE BOOL "" FORCE)
+    endif()
 
     set(SDL2IMAGE_VENDORED ON CACHE BOOL "" FORCE)
     set(SDL2MIXER_VENDORED ON CACHE BOOL "" FORCE)
@@ -195,18 +210,18 @@ else()
 endif()
 
 if(TERMUX_BUILD)
-    file(READ ${CMAKE_SOURCE_DIR}/external/remake2d/box2d/src/core.h B2_CORE_CONTENT)
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/box2d/src/core.h B2_CORE_CONTENT)
     string(REPLACE "#error Unsupported CPU"
         "#define B2_CPU_ARM"
         B2_CORE_CONTENT "${B2_CORE_CONTENT}")
-    file(WRITE ${CMAKE_SOURCE_DIR}/external/remake2d/box2d/src/core.h "${B2_CORE_CONTENT}")
+    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/box2d/src/core.h "${B2_CORE_CONTENT}")
 
-    file(READ ${CMAKE_SOURCE_DIR}/external/remake2d/box2d/src/allocate.c B2_ALLOC_CONTENT)
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/box2d/src/allocate.c B2_ALLOC_CONTENT)
     string(REPLACE
         "void* ptr = aligned_alloc( B2_ALIGNMENT, size32 );"
         "void* ptr = NULL; posix_memalign(&ptr, B2_ALIGNMENT, size32);"
         B2_ALLOC_CONTENT "${B2_ALLOC_CONTENT}")
-    file(WRITE ${CMAKE_SOURCE_DIR}/external/remake2d/box2d/src/allocate.c "${B2_ALLOC_CONTENT}")
+    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/box2d/src/allocate.c "${B2_ALLOC_CONTENT}")
 endif()
 
 set(BOX2D_BUILD_TESTBED    OFF CACHE BOOL "" FORCE)
@@ -234,9 +249,10 @@ endif()
 target_include_directories(
     remake2d
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/external>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/assets>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external>
         $<BUILD_INTERFACE:$<$<NOT:$<BOOL:${TERMUX_BUILD}>>:${SDL2_SHIM_DIR}>>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
@@ -259,17 +275,29 @@ target_compile_definitions(
         SDL_MAIN_HANDLED
 )
 
-target_link_libraries(
-    remake2d
-    PUBLIC
-        SDL2::SDL2
-        SDL2_ttf::SDL2_ttf
-        SDL2_image::SDL2_image
-        SDL2_mixer::SDL2_mixer
-    PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:atomic>
-        ${CMAKE_DL_LIBS}
-)
+if (BUILD_SHARED_LIBS)
+    target_link_libraries(
+        remake2d
+        PRIVATE
+            $<BUILD_INTERFACE:SDL2::SDL2>
+            $<BUILD_INTERFACE:SDL2_ttf::SDL2_ttf>
+            $<BUILD_INTERFACE:SDL2_image::SDL2_image>
+            $<BUILD_INTERFACE:SDL2_mixer::SDL2_mixer>
+            $<$<CXX_COMPILER_ID:GNU>:atomic>
+            ${CMAKE_DL_LIBS}
+    )
+else()
+    target_link_libraries(
+        remake2d
+        PRIVATE
+            SDL2::SDL2
+            SDL2_ttf::SDL2_ttf
+            SDL2_image::SDL2_image
+            SDL2_mixer::SDL2_mixer
+            $<$<CXX_COMPILER_ID:GNU>:atomic>
+            ${CMAKE_DL_LIBS}
+    )
+endif()
 
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_link_options(remake2d PRIVATE "-Wl,--exclude-libs,ALL")
@@ -283,7 +311,7 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-    ${CMAKE_SOURCE_DIR}/cmake/remake2dConfig.cmake.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/remake2dConfig.cmake.in
     ${CMAKE_BINARY_DIR}/remake2dConfig.cmake
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/remake2d
 )
@@ -308,12 +336,12 @@ install(
 )
 
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/include/remake2d
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/remake2d
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/external/remake2d/
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/remake2d
     FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
     PATTERN "*.c" EXCLUDE
@@ -321,7 +349,7 @@ install(
 )
 
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/src/remake2d/template
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/remake2d/template
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/remake2d
     FILES_MATCHING PATTERN "*.tpp"
 )

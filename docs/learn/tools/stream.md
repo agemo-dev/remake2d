@@ -8,7 +8,7 @@ Printing a `Vec2d` for debugging, or building up a `Text` piece by piece as game
 
 **RE:MAKE 2D** extends the standard C++ streams so its own types behave naturally with them. This lives in the header **"remake2d/stream.hpp"**,
 covering two cases: printing/parsing base types through `std::ostream`/`std::istream`, and building up a `Text` through chained `<<`. `DataFile`
-also gets dedicated `<<`/`>>` overloads for any type implementing `ISavable`.
+also gets dedicated `<<`/`>>` overloads for any type implementing `Savable`.
 
 ---
 
@@ -19,6 +19,7 @@ also gets dedicated `<<`/`>>` overloads for any type implementing `ISavable`.
 ```cpp
 std::ostream& operator<<(std::ostream&, const Vec2d&)  noexcept;
 std::ostream& operator<<(std::ostream&, const Fact2d&) noexcept;
+std::ostream& operator<<(std::ostream&, const Grid2d&) noexcept;
 std::ostream& operator<<(std::ostream&, const Dim2d&)  noexcept;
 std::ostream& operator<<(std::ostream&, const Color&)  noexcept;
 std::ostream& operator<<(std::ostream&, const Area&)   noexcept;
@@ -34,13 +35,14 @@ The reverse works too, reading a comma-separated line from a `std::istream`:
 ```cpp
 std::istream& operator>>(std::istream&, Vec2d&);
 std::istream& operator>>(std::istream&, Fact2d&);
+std::istream& operator>>(std::istream&, Grid2d&);
 std::istream& operator>>(std::istream&, Dim2d&);
 std::istream& operator>>(std::istream&, Color&);
 std::istream& operator>>(std::istream&, Area&);
 ```
 
 ```cpp
-std::istringstream iss("100,200");
+std::istringstream iss("100, 200");
 rmk::Vec2d pos;
 iss >> pos; // { 100, 200 }
 ```
@@ -95,7 +97,7 @@ iss >> label;
 
 ## Saving and loading with `DataFile`
 
-The same idea applies to saving: any type implementing `ISavable` can be saved or reloaded with `<<`/`>>`, as a shorthand for `save`/`load`:
+The same idea applies to saving: any type implementing `Savable` can be saved or reloaded with `<<`/`>>`, as a shorthand for `save`/`load`:
 
 ```cpp
 template<IsSavable T> DataFile& operator<<(DataFile&, const T&);
@@ -103,7 +105,7 @@ template<IsSavable T> DataFile& operator>>(DataFile&, T&);
 ```
 
 ```cpp
-rmk::DataFile file("save1");
+rmk::DataFile file("player");
 
 file << player; // equivalent to file.save
 file >> player; // equivalent to file.load
@@ -111,5 +113,5 @@ file >> player; // equivalent to file.load
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](../data/loadtype.md){ .md-button }
+[:octicons-arrow-left-24: Previous chapter](math.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](concept.md){ .md-button .md-button--primary }

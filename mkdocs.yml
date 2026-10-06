@@ -1,9 +1,11 @@
 site_name: RE:MAKE 2D
-site_description: full code game engine for 2D game in C++
+site_url: https://agemo-dev.github.io/remake2d/
+site_description: A cross-platform 2D engine
 site_author: agemo-dev
 
 theme:
   name: material
+  custom_dir: overrides
   palette:
     scheme:  slate
     primary: indigo
@@ -31,62 +33,75 @@ markdown_extensions:
   - pymdownx.details
   - attr_list
   - md_in_html
-  
+
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
 
 nav:
   - Home:
+    - Index:             index.md
     - About RE:MAKE 2D : home/about.md
     - Cheatsheet:        home/cheatsheet.md
   - Learn:
-    - Install:
-        - Installation & compilation : learn/install/install.md
-    - Basics types:
+    - Introduction:
+        - Installation & compilation: learn/introduction/install.md
+    - Basic types:
         - Numeric:            learn/types/numeric.md
         - Vector & dimension: learn/types/vector.md
         - Area:               learn/types/area.md
         - Color:              learn/types/color.md
+        - Traits:             learn/types/trait.md
     - Graphics:
-        - Window:   learn/graphics/window.md
-        - Loop:     learn/graphics/loop.md
-        - Shape:    learn/graphics/shape.md
-        - Viewport: learn/graphics/viewport.md
+        - Window:          learn/graphics/window.md
+        - Loop:            learn/graphics/loop.md
+        - Shape:           learn/graphics/shape.md
+        - Viewport:        learn/graphics/viewport.md
+        - Printable trait: learn/graphics/draw.md
+        - Camera:          learn/graphics/camera.md
     - Texture:
         - Texture:   learn/texture/texture.md
         - Text:      learn/texture/text.md
         - Animation: learn/texture/animation.md
     - Sound:
         - Play sound: learn/sound/sound.md
-    - physic:
+    - Physic:
         - Physic entity:   learn/physic/body.md
         - Advanced physic: learn/physic/physic.md
     - Maps:
         - Tile grid: learn/maps/tilegrid.md
         - Tile map:  learn/maps/tilemap.md
         - Parallax:  learn/maps/parallax.md
-    - time:
+    - Scene:
+        - Actor:       learn/scene/actor.md
+        - Scene & act: learn/scene/scene.md
+    - Time:
         - Delta time:  learn/time/delta.md
         - Timer:       learn/time/timer.md
         - Chronometer: learn/time/chrono.md
         - Date:        learn/time/date.md
         - Clock:       learn/time/clock.md
     - Tools:
-        - Math:        learn/tools/math.md
-        - Stream:      learn/tools/stream.md
-        - Concept:     learn/tools/concept.md
-        - Utility:     learn/tools/utility.md
-        - Random:      learn/tools/random.md
-        - Scene & act: learn/tools/scene.md
+        - Math:              learn/tools/math.md
+        - Stream:            learn/tools/stream.md
+        - Concept:           learn/tools/concept.md
+        - Utility:           learn/tools/utility.md
+        - Random:            learn/tools/random.md
+        - Interface Headers: learn/tools/headers.md
     - Data & Script:
         - Save & load data:    learn/data/data.md
         - Data file:           learn/data/datafile.md
-        - Custom savable type: learn/data/isavable.md
-        - lua hot-loading:     learn/data/script.md
+        - Custom savable type: learn/data/savable.md
+        - Lua hot-loading:     learn/data/script.md
         - Load custom type:    learn/data/loadtype.md
         - Coding in Lua:       learn/data/lua.md
-    - core:
+    - Core:
         - Error:    learn/core/error.md
         - Signal:   learn/core/signal.md
         - Event:    learn/core/event.md
+        - Tracker:  learn/core/tracker.md
         - Croutine: learn/core/croutine.md
         - System:   learn/core/system.md
   - Examples:
@@ -95,15 +110,17 @@ nav:
     - Versions:
         - Change log:
             - v0 (beta):  more/patch/v0.md
-        - Versions:       more/version.md
-    - Licence:            more/licence.md
+        - Releases:       more/version.md
+    - License:            more/licence.md
     - Contributors:       more/contributor.md
 
 extra:
+  version:
+    provider: mike
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/agemo-dev
     - icon: fontawesome/brands/discord
-      link: https://discord.gg/agemo405
+      link: https://discord.com/users/agemo405
     - icon: fontawesome/solid/envelope
       link: mailto:my.agemo.dev@email.com

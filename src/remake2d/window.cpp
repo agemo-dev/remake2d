@@ -1,35 +1,102 @@
+#include <remake2d/data.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/event.hpp>
 #include <remake2d/window.hpp>
 #include <remake2d/physic.hpp>
 #include <remake2d/camera.hpp>
 #include <remake2d/utility.hpp>
-#include <remake2d/tilemap.hpp>
-#include <remake2d/tilegrid.hpp>
-#include <remake2d/parallax.hpp>
 
 #include <map>
 #include <string>
+#include <cstddef>
 #include <stdlib.h>
 #include <algorithm>
 #include <filesystem>
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+
 namespace rmk {
 
-Window::Viewport::Viewport(const Area& z) : zone(z) {}
-Window::Viewport::Viewport(const Area& z, Camera& cam) : zone(z), camera(&cam) {}
+Window::Viewport::Viewport(const Area& z) : m_zone(z), m_camera(Vec2d(0), z.size()) {}
+
+Camera& Window::Viewport::camera(void) noexcept {
+    return m_camera;
+}
+
+void Window::Viewport::area(const Area& area) noexcept {
+    m_zone = area;
+    m_camera.resize(area.size());
+}
+
+Area Window::Viewport::area(void) const noexcept {
+    return m_zone;
+}
+
+const Camera& Window::Viewport::camera(void) const noexcept {
+    return m_camera;
+}
+
+void Window::Viewport::clear(Color color) noexcept {
+    Window* win = m_window.locate();
+    if (!win) return;
+
+    Area a = m_zone;
+    std::stack<Area> stack;
+    Window::_applyViewport(win->m_renderer, stack, &a);
+    SDL_SetRenderDrawColor(win->m_renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderClear(win->m_renderer);
+    Window::_restoreViewport(win->m_renderer, stack);
+}
+
+void Window::Viewport::draw(const Printable& obj) noexcept {
+    Window* win = m_window.locate();
+    if (!win) return;
+    Window::_testLayer(obj.layer(), m_used_layers, m_active_layers);
+    xwindow._setLastDrawnWindow(win);
+    Window::_pushDraw(obj._draw_(), obj.layer(), m_camera, m_zone.size(), m_draw_layers);
+}
+
+void Window::Viewport::fill(const Printable& obj) noexcept {
+    Window* win = m_window.locate();
+    if (!win) return;
+    Window::_testLayer(obj.layer(), m_used_layers, m_active_layers);
+    xwindow._setLastDrawnWindow(win);
+    Window::_pushFill(obj._fill_(), obj.layer(), m_camera, m_zone.size(), m_fill_layers);
+}
+
+void Window::Viewport::_present(SDL_Renderer* renderer) noexcept {
+    Area a = m_zone;
+    std::stack<Area> stack;
+    Window::_applyViewport(renderer, stack, &a);
+
+    for (auto layer : m_active_layers) Window::_flushLayer(renderer, layer, m_draw_layers, m_fill_layers);
+
+    m_used_layers.reset();
+    m_active_layers.clear();
+
+    Window::_restoreViewport(renderer, stack);
+}
 
 Window::Window(void) : Window("RE:MAKE 2D") {}
-Window::Window(std::string_view name, Vec2d pos, Dim2d size) : m_title(name), m_size(size) {
+Window::Window(std::string_view name, Vec2d pos, Dim2d size)
+    : m_size(size), m_title(name), m_camera({0, 0}, size) {
     int x, y;
 
     rmk::system._init();
+    xwindow._init();
 
-    m_window = SDL_CreateWindow(name.data(), pos.x, pos.y, size.w, size.h, SDL_WINDOW_SHOWN);
-    if(!m_window) rmk_dynamicAssert(rmk::WindowError, (std::string(error::window::window_no_create) + " : " + SDL_GetError()));
+    switch((i32)pos.x) {
+        case -1: pos = { SDL_WINDOWPOS_CENTERED };  break;
+        case -2: pos = { SDL_WINDOWPOS_UNDEFINED }; break;
+        default: break;
+    }
+
+    m_window = SDL_CreateWindow(std::string(name).c_str(), pos.x, pos.y, size.w, size.h, SDL_WINDOW_SHOWN);
+    if (!m_window) rmk_dynamicAssert(rmk::WindowError, (std::string(error::window::window_no_create) + " : " + SDL_GetError()));
 
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
-    if(!m_renderer) rmk_dynamicAssert(rmk::WindowError, (std::string(error::window::renderer_no_create) + " : " + SDL_GetError()));
+    if (!m_renderer) rmk_dynamicAssert(rmk::WindowError, (std::string(error::window::renderer_no_create) + " : " + SDL_GetError()));
 
     SDL_GetWindowPosition(m_window, &x, &y);
     m_pos = { (f32)x, (f32)y };
@@ -37,24 +104,62 @@ Window::Window(std::string_view name, Vec2d pos, Dim2d size) : m_title(name), m_
     m_window_id = (u32)SDL_GetWindowID(m_window);
     SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 
-    event.onWindowClose.joinPriority([this] (u32 id) {
-        if(id == this->m_window_id) this->close();
-    });
-    event.onWindowMoved.joinPriority([this] (u32 id, Vec2d pos) { 
-        if(id == this->m_window_id) {
-            this->m_pos = pos;
-            this->_newCenter();
-        }
-    });
-    event.onWindowResized.joinPriority([this] (u32 id, Dim2d size) { 
-        if(id == this->m_window_id) {
-            this->m_size = size;
-            this->_newCenter();
-        } 
-    });
-	
     _newCenter();
     xwindow._registerWindow(this);
+}
+
+Window::Window(Window&& other) noexcept
+    : Trackable(std::move(other))
+    , m_window_id(other.m_window_id)
+    , m_window(other.m_window)
+    , m_renderer(other.m_renderer)
+    , m_is_resizable(other.m_is_resizable)
+    , m_is_open(other.m_is_open)
+    , m_pos(other.m_pos)
+    , m_size(other.m_size)
+    , m_center(other.m_center)
+    , m_title(std::move(other.m_title))
+    , m_camera(std::move(other.m_camera))
+    , m_draw_layers(std::move(other.m_draw_layers))
+    , m_fill_layers(std::move(other.m_fill_layers))
+    , m_viewports(std::move(other.m_viewports))
+{
+    other.m_window   = nullptr;
+    other.m_renderer = nullptr;
+    other.m_is_open  = false;
+    other.m_window_id = 0;
+
+    relocate();
+}
+
+Window& Window::operator=(Window&& other) noexcept {
+    if (this != &other) {
+        close();
+
+        Trackable::operator=(std::move(other));
+
+        m_window_id         = other.m_window_id;
+        m_window            = other.m_window;
+        m_renderer          = other.m_renderer;
+        m_is_resizable      = other.m_is_resizable;
+        m_is_open           = other.m_is_open;
+        m_pos               = other.m_pos;
+        m_size              = other.m_size;
+        m_center            = other.m_center;
+        m_title             = std::move(other.m_title);
+        m_camera            = std::move(other.m_camera);
+        m_draw_layers       = std::move(other.m_draw_layers);
+        m_fill_layers       = std::move(other.m_fill_layers);
+        m_viewports         = std::move(other.m_viewports);
+
+        other.m_window   = nullptr;
+        other.m_renderer = nullptr;
+        other.m_is_open  = false;
+        other.m_window_id = 0;
+
+        relocate();
+    }
+    return *this;
 }
 
 u32 Window::ID(void) const noexcept {
@@ -73,8 +178,12 @@ Vec2d Window::center(void) const noexcept {
     return m_center;
 }
 
+SDL_Renderer* Window::renderer(void) const noexcept {
+    return m_renderer;
+}
+
 Area Window::area(void) const noexcept {
-	return Area(Vec2d(0), m_size);
+    return Area(Vec2d(0), m_size);
 }
 
 void Window::move(Vec2d pos) noexcept {
@@ -86,16 +195,18 @@ void Window::move(Vec2d pos) noexcept {
 void Window::resize(Dim2d size) noexcept {
     resizable(true);
     m_size = size;
+    m_camera.resize(size);
     _newCenter();
     SDL_SetWindowSize(m_window, (u32)size.w, (u32)size.h);
 }
 
 void Window::maxSize(Dim2d size) noexcept {
-    SDL_SetWindowMinimumSize(m_window, (u32)size.w, (u32)size.h);
+    SDL_SetWindowMaximumSize(m_window, (u32)size.w, (u32)size.h);
 }
 
 void Window::rename(std::string_view title) noexcept {
-    SDL_SetWindowTitle(m_window, title.data());
+    m_title = title;
+    SDL_SetWindowTitle(m_window, m_title.c_str());
 }
 
 void Window::icon(std::string_view path) {
@@ -106,10 +217,30 @@ void Window::icon(std::string_view path) {
 }
 
 void Window::blendMode(window::blendmode mode) noexcept {
-    SDL_SetRenderDrawBlendMode(m_renderer, (SDL_BlendMode)mode);
+    SDL_BlendMode bm;
+    switch (mode) {
+        case window::blendmode::normal:
+            bm = SDL_BLENDMODE_BLEND;
+            break;
+        case window::blendmode::add:
+            bm = SDL_BLENDMODE_ADD;
+            break;
+        case window::blendmode::mod:
+            bm = SDL_BLENDMODE_MOD;
+            break;
+        case window::blendmode::mul:
+            bm = SDL_BLENDMODE_MUL;
+            break;
+        case window::blendmode::none:
+        default:
+            bm = SDL_BLENDMODE_NONE;
+            break;
+    }
+    SDL_SetRenderDrawBlendMode(m_renderer, bm);
 }
 
 void Window::resizable(bool stat) noexcept {
+    m_is_resizable = stat;
     SDL_SetWindowResizable(m_window, stat ? SDL_TRUE : SDL_FALSE);
 }
 
@@ -122,7 +253,198 @@ void Window::border(bool stat) noexcept {
 }
 
 void Window::present(void) noexcept {
+    for (auto layer : m_active_layers) _flushLayer(m_renderer, layer, m_draw_layers, m_fill_layers);
+
+    m_used_layers.reset();
+    m_active_layers.clear();
+
+    for (auto& t : m_viewports) {
+        Viewport* vp = t.locate();
+        if (vp) vp->_present(m_renderer);
+    }
+
     SDL_RenderPresent(m_renderer);
+}
+
+Camera& Window::camera(void) noexcept {
+    return m_camera;
+}
+
+const Camera& Window::camera(void) const noexcept {
+    return m_camera;
+}
+
+void Window::draw(const Printable& obj) noexcept {
+    _testLayer(obj.layer(), m_used_layers, m_active_layers);
+    xwindow._setLastDrawnWindow(this);
+    _pushDraw(obj._draw_(), obj.layer(), m_camera, m_size, m_draw_layers);
+}
+
+void Window::fill(const Printable& obj) noexcept {
+    _testLayer(obj.layer(), m_used_layers, m_active_layers);
+    xwindow._setLastDrawnWindow(this);
+    _pushFill(obj._fill_(), obj.layer(), m_camera, m_size, m_fill_layers);
+}
+
+bool Window::_isUI(i16 layer) noexcept {
+    return layer >= (i16) layer::ui;
+}
+
+usize Window::_normalise(i16 layer) noexcept {
+    return layer - (i16)layer::min;
+}
+
+void Window::_testLayer(i16 layer, UsedLayers& used, ActiveLayers& active) {
+
+    if (layer < (i16)layer::min || layer > (i16)layer::max) {
+        rmk_dynamicAssert(rmk::SceneError, error::scene::layer_is_overlimits);
+    }
+
+    if (used.test(_normalise(layer))) return;
+
+    active.pushAndSort(layer);
+    used.set(_normalise(layer));
+}
+
+void Window::_pushDraw(const std::vector<DrawPack>& pack, i16 layer, const Camera& cam, Dim2d bounds, DrawLayers& layers) noexcept {
+    Vec2d origin = cam.viewCenter();
+    f32   zoom   = cam.zoom();
+
+    auto& dst = layers[_normalise(layer)];
+
+    for (const auto& dp : pack) {
+        DrawPack segment;
+        segment.color = dp.color;
+        f32 minx = 0, miny = 0, maxx = 0, maxy = 0;
+        bool first = true;
+
+        auto flushSegment = [&](void) {
+            if (!segment.points.empty() && !(maxx < 0 || maxy < 0 || minx > bounds.w || miny > bounds.h)) {
+                dst.push_back(segment);
+                dst.back().points.push_back(contour::breaker());
+            }
+            segment.points.clear();
+            first = true;
+        };
+
+        for (auto p : dp.points) {
+            if (contour::isBreak(p)) { flushSegment(); continue; }
+            if (!_isUI(layer)) p = (p - origin) * zoom;
+            segment.points.push_back(p);
+            if (first) { minx = maxx = p.x; miny = maxy = p.y; first = false; }
+            else {
+                minx = std::min(minx, p.x); maxx = std::max(maxx, p.x);
+                miny = std::min(miny, p.y); maxy = std::max(maxy, p.y);
+            }
+        }
+        flushSegment();
+    }
+}
+
+void Window::_pushFill(const std::vector<VertexBatch>& batches, i16 layer, const Camera& cam, Dim2d bounds, FillLayers& layers) noexcept {
+    Vec2d origin = cam.viewCenter();
+    f32   zoom   = cam.zoom();
+
+    auto& dst = layers[_normalise(layer)];
+    for (const auto& batch : batches) {
+        if (batch.vertices.empty()) continue;
+
+        VertexBatch transformed;
+        transformed.texture = batch.texture;
+        transformed.vertices = batch.vertices;
+
+        f32 minx = 0, miny = 0, maxx = 0, maxy = 0;
+        bool first = true;
+        for (auto& v : transformed.vertices) {
+
+            if (!_isUI(layer)) {
+                v.x = (v.x - origin.x) * zoom;
+                v.y = (v.y - origin.y) * zoom;
+            }
+
+            if (first) { minx = maxx = v.x; miny = maxy = v.y; first = false; }
+            else {
+                minx = std::min(minx, v.x); maxx = std::max(maxx, v.x);
+                miny = std::min(miny, v.y); maxy = std::max(maxy, v.y);
+            }
+        }
+
+        if (maxx < 0 || maxy < 0 || minx > bounds.w || miny > bounds.h) continue;
+        dst.push_back(std::move(transformed));
+    }
+}
+
+void Window::_flushLayer(SDL_Renderer* renderer, i16 layer, DrawLayers& drawLayers, FillLayers& fillLayers) noexcept {
+    auto& dr = drawLayers[_normalise(layer)];
+    auto& fl = fillLayers[_normalise(layer)];
+
+    if (!dr.empty()) {
+        static_assert(sizeof(Vec2d) == sizeof(SDL_FPoint), "Vec2d/SDL_FPoint layout mismatch");
+
+        for (const auto& dp : dr) {
+            SDL_SetRenderDrawColor(renderer, dp.color.r, dp.color.g, dp.color.b, dp.color.a);
+
+            const SDL_FPoint* base = reinterpret_cast<const SDL_FPoint*>(dp.points.data());
+            usize start = 0;
+
+            for (usize i = 0; i < dp.points.size(); i++) {
+                if (contour::isBreak(dp.points[i])) {
+                    usize count = i - start;
+                    if (count >= 2) SDL_RenderDrawLinesF(renderer, base + start, (int)count);
+                    start = i + 1;
+                }
+            }
+            usize count = dp.points.size() - start;
+            if (count >= 2) SDL_RenderDrawLinesF(renderer, base + start, (int)count);
+        }
+
+        dr.clear();
+    }
+
+    if (!fl.empty()) {
+        static_assert(sizeof(Vertex) == sizeof(SDL_Vertex), "Vertex/SDL_Vertex layout mismatch");
+        static_assert(offsetof(Vertex, x)     == offsetof(SDL_Vertex, position),
+            "Vertex/SDL_Vertex layout mismatch");
+        static_assert(offsetof(Vertex, color) == offsetof(SDL_Vertex, color),
+            "Vertex/SDL_Vertex layout mismatch");
+        static_assert(offsetof(Vertex, u)     == offsetof(SDL_Vertex, tex_coord),
+            "Vertex/SDL_Vertex layout mismatch");
+
+        for (auto& batch : fl) {
+            const SDL_Vertex* sdlVerts = reinterpret_cast<const SDL_Vertex*>(batch.vertices.data());
+            SDL_RenderGeometry(renderer, batch.texture, sdlVerts, (int)batch.vertices.size(), nullptr, 0);
+        }
+
+        fl.clear();
+    }
+}
+
+void Window::screenshot(std::string_view path) noexcept {
+    int w = 0, h = 0;
+    SDL_GetRendererOutputSize(m_renderer, &w, &h);
+    if (w <= 0 || h <= 0) return;
+
+    std::filesystem::path p = data.root() + "/screenshot";
+    p /= std::string(path) + ".png";
+
+    file::createParentPath(p.string());
+
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_RGBA32);
+    if (!surf) return;
+
+    if (SDL_RenderReadPixels(m_renderer, nullptr, SDL_PIXELFORMAT_RGBA32, surf->pixels, surf->pitch) == 0) {
+        IMG_SavePNG(surf, p.string().c_str());
+    }
+
+    SDL_FreeSurface(surf);
+}
+
+bool Window::resizable(void) const noexcept {
+    return m_is_resizable;
+}
+
+std::string Window::title(void) noexcept {
+    return m_title;
 }
 
 bool Window::isOpen(void) const noexcept {
@@ -130,7 +452,7 @@ bool Window::isOpen(void) const noexcept {
 }
 
 bool Window::isFocus(void) const noexcept {
-    return SDL_GetWindowFlags(m_window) & SDL_WINDOW_INPUT_FOCUS;
+    return (SDL_GetWindowFlags(m_window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 }
 
 void Window::close(void) noexcept {
@@ -139,209 +461,60 @@ void Window::close(void) noexcept {
     m_window   = nullptr;
     m_renderer = nullptr;
     m_is_open  = false;
-	xwindow._unregisterWindow(this);
+    xwindow._unregisterWindow(this);
 }
 
 Window::~Window(void) {
     close();
-	rmk::system._quit();
+    rmk::system._quit();
 }
 
-
-void Window::addViewport(std::string_view name, Viewport v) noexcept {
-    m_viewports[std::string(name)] = v;
+void Window::connectViewport(Viewport& v) noexcept {
+    v.m_window = tracker();
+    auto track = v.tracker();
+    for (auto& t : m_viewports) if (t == track) return;
+    m_viewports.push_back(track);
 }
 
-void Window::linkCamera(std::string_view viewport, Camera& cam) noexcept {
-    auto it = m_viewports.find(std::string(viewport));
-    if (it != m_viewports.end()) it->second.camera = &cam;
-}
-
-void Window::unlinkCamera(std::string_view viewport) noexcept {
-    auto it = m_viewports.find(std::string(viewport));
-    if (it != m_viewports.end()) it->second.camera = nullptr;
-}
-
-void Window::removeViewport(std::string_view name) noexcept {
-    m_viewports.erase(std::string(name));
-    if (m_active_viewport == name) m_active_viewport = {};
-}
-
-void Window::useViewport(std::string_view name) noexcept {
-    m_active_viewport = std::string(name);
-}
-
-void Window::resetViewport(void) noexcept {
-    m_active_viewport = {};
-    SDL_RenderSetViewport(m_renderer, nullptr);
+void Window::disconnectViewport(Viewport& v) noexcept {
+    auto track = v.tracker();
+    auto it = std::find(m_viewports.begin(), m_viewports.end(), track);
+    if (it != m_viewports.end()) m_viewports.erase(it);
+    v.m_window = nil;
 }
 
 void Window::_newCenter(void) noexcept {
-    m_center = { m_pos.x + (m_size.w / 2), m_pos.y + (m_size.h / 2) };
+    m_center = { m_size.w / 2, m_size.h / 2 };
 }
 
-const Window::Viewport* Window::_resolveViewport(std::string_view viewport) const noexcept {
-    std::string key = viewport.empty() ? m_active_viewport : std::string(viewport);
-    if (key.empty()) return nullptr;
-    auto it = m_viewports.find(key);
-    return (it != m_viewports.end()) ? &it->second : nullptr;
-}
-
-void Window::_applyViewport(const Viewport* vp) noexcept {
+void Window::_applyViewport(SDL_Renderer* renderer, std::stack<Area>& stack, const Area* vp) noexcept {
     SDL_Rect c{};
-    SDL_RenderGetViewport(m_renderer, &c);
-    m_viewport_stack.push({c.x, c.y, c.w, c.h});
+    SDL_RenderGetViewport(renderer, &c);
+    Area rect (c.x, c.y, c.w, c.h);
+    stack.push(rect);
     if (vp) {
-        SDL_Rect v = vp->zone;
-        SDL_RenderSetViewport(m_renderer, &v);
+        SDL_Rect v = *vp;
+        SDL_RenderSetViewport(renderer, &v);
     }
 }
 
-void Window::_restoreViewport(void) noexcept {
-    if (m_viewport_stack.empty()) return;
-    Area previous = m_viewport_stack.top();
-    m_viewport_stack.pop();
+void Window::_restoreViewport(SDL_Renderer* renderer, std::stack<Area>& stack) noexcept {
+    if (stack.empty()) return;
+    Area previous = stack.top();
+    stack.pop();
 
     if (previous.x == 0 && previous.y == 0 && previous.w == 0 && previous.h == 0) {
-        SDL_RenderSetViewport(m_renderer, nullptr);
+        SDL_RenderSetViewport(renderer, nullptr);
     } else {
         SDL_Rect p{ (int)previous.x, (int)previous.y, (int)previous.w, (int)previous.h };
-        SDL_RenderSetViewport(m_renderer, &p);
+        SDL_RenderSetViewport(renderer, &p);
     }
 }
 
-void Window::clear(Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
+void Window::clear(Color color) noexcept {
     SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
     SDL_RenderClear(m_renderer);
-    _restoreViewport();
 }
-
-void Window::draw(const TextureBase& tex, Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-
-    SDL_Texture* t = tex._ownerTexture(m_renderer);
-    if (t) {
-        auto verts = tex.vertices();
-        for (auto& v : verts) {
-            v.color.r = color.r;
-            v.color.g = color.g;
-            v.color.b = color.b;
-            v.color.a = color.a;
-        }
-        SDL_RenderGeometry(m_renderer, t, verts.data(), (int)verts.size(), nullptr, 0);
-    }
-
-    _restoreViewport();
-}
-
-void Window::draw(const Parallax& para, Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-    para._draw(*this, color);
-    _restoreViewport();
-}
-
-void Window::draw(const TileMap& tile, Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-    if(vp && vp->camera) tile._draw(*this, color, *vp->camera);
-    else tile._draw(*this, color);
-    _restoreViewport();
-}
-
-void Window::draw(const Area& area, Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-    SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
-    SDL_Rect rect = area;
-    SDL_RenderDrawRect(m_renderer, &rect);
-    _restoreViewport();
-}
-
-void Window::draw(const TileGrid& grid, Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-    SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
-    grid._draw(*this);
-    _restoreViewport();
-}
-
-void Window::fill(const Area& area, Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-    SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
-    SDL_Rect rect = area;
-    SDL_RenderFillRect(m_renderer, &rect);
-    _restoreViewport();
-}
-
-void Window::draw(const Geometry& shape, Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-    auto contour = shape._toContour();
-    SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderDrawLinesF(m_renderer, contour.data(), (int)contour.size());
-    _restoreViewport();
-}
-
-void Window::fill(const Geometry& shape, Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-    auto verts = shape._toVertices();
-    for (auto& v : verts) {
-        v.color.r = color.r;
-        v.color.g = color.g;
-        v.color.b = color.b;
-        v.color.a = color.a;
-    }
-    SDL_RenderGeometry(m_renderer, nullptr, verts.data(), (int)verts.size(), nullptr, 0);
-    _restoreViewport();
-}
-
-void Window::draw(const PhysicBody& body, Color color, std::string_view viewport) noexcept {
-    if (body.m_focused_anim != nil) {
-		draw(body.animation(), color, viewport);
-		return;
-	}
-
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-
-	auto& contour = body.m_cached_contour;
-    SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderDrawLinesF(m_renderer, contour.data(), (int)contour.size());
-    _restoreViewport();
-}
-
-void Window::fill(const PhysicBody& body, Color color, std::string_view viewport) noexcept {
-    const Viewport* vp = _resolveViewport(viewport);
-    _applyViewport(vp);
-    auto verts = body.m_cached_vertices;
-
-    for (auto& v : verts) {
-        v.color.r = color.r;
-        v.color.g = color.g;
-        v.color.b = color.b;
-        v.color.a = color.a;
-    }
-
-	SDL_RenderGeometry(m_renderer, nullptr, verts.data(), verts.size(), nullptr, 0);
-	_restoreViewport();
-}
-
-void Window::_buildScreenVertices(const TextureBase& tex, const Camera& cam) noexcept {
-    Vec2d origin = cam.center();
-    f32   zoom   = cam.zoom();
-    m_screen_vertices = tex.vertices();
-    for (auto& v : m_screen_vertices) {
-        v.position.x = (v.position.x - origin.x) * zoom;
-        v.position.y = (v.position.y - origin.y) * zoom;
-    }
-}
-
 
 XWindow& XWindow::getInstance(void) noexcept {
     static XWindow instance;
@@ -349,15 +522,59 @@ XWindow& XWindow::getInstance(void) noexcept {
  }
 
 void XWindow::_registerWindow(Window* win) noexcept {
-	auto& vec = m_windows;
-	auto it   = std::find(vec.begin(), vec.end(), win);
-    if(it == vec.end()) vec.push_back(win);
+    for (auto& t : m_windows) if (t.locate() == win) return;
+    auto track = win->tracker();
+    m_windows.push_back(track);
 }
 
 void XWindow::_unregisterWindow(Window* win) noexcept {
-	auto& vec = m_windows;
-	auto it   = std::find(vec.begin(), vec.end(), win);
-    if(it != vec.end()) vec.erase(it);
+    auto it = std::find_if(m_windows.begin(), m_windows.end(),
+        [win](Tracker<Window>& t) { return t.locate() == win; });
+    if (it != m_windows.end()) m_windows.erase(it);
+    if (m_last_drawn_window.locate() == win) m_last_drawn_window = nil;
+}
+
+void XWindow::_setLastDrawnWindow(Window* win) noexcept {
+    m_last_drawn_window = win->tracker();
+}
+
+void XWindow::_init(void) noexcept {
+
+    if (m_is_init) return;
+
+    event.onWindowClose.joinPriority([&] (u32 id) {
+        for (auto& t : m_windows) {
+            Window* w = t.locate();
+            if (w && w->m_window_id == id) { w->close(); return; }
+        }
+    });
+    event.onWindowMoved.joinPriority([this] (u32 id, Vec2d pos) {
+        for (auto& t : m_windows) {
+            Window* w = t.locate();
+            if (w && w->m_window_id == id) {
+                w->m_pos = pos;
+                w->_newCenter();
+                return;
+            }
+        }
+    });
+    event.onWindowResized.joinPriority([this] (u32 id, Dim2d size) {
+        for (auto& t : m_windows) {
+            Window* w = t.locate();
+            if (w && w->m_window_id == id) {
+                w->m_size = size;
+                w->m_camera.resize(size);
+                w->_newCenter();
+                return;
+            }
+        }
+    });
+
+    m_is_init = true;
+}
+
+const Tracker<Window>& XWindow::lastDrawnWindow(void) const noexcept {
+    return m_last_drawn_window;
 }
 
 } // namespace rmk

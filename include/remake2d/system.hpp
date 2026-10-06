@@ -1,13 +1,16 @@
 #ifndef REMAKE2D_SYSTEM_
 #define REMAKE2D_SYSTEM_
 
+#include <mutex>
 #include <remake2d/clock.hpp>
 #include <remake2d/vector.hpp>
 #include <remake2d/numeric.hpp>
 #include <remake2d/config/config.hpp>
 
 #include <span>
+#include <mutex>
 #include <string>
+#include <atomic>
 #include <stdlib.h>
 #include <algorithm>
 
@@ -20,6 +23,15 @@ class System {
 
 public:
     struct Info {
+
+    public:
+        Info(void)                   = default;
+        Info(Info&&)                 = delete;
+        Info(const Info&)            = delete;
+        Info& operator=(Info&&)      = delete;
+        Info& operator=(const Info&) = delete;
+
+    public:
         u32 ramMB(void);
         u8 cpuCount(void);
         u8 displayCount(void);
@@ -31,39 +43,60 @@ public:
     };
 
     struct Setup {
+
+    public:
+        Setup(void)                    = default;
+        Setup(Setup&&)                 = delete;
+        Setup(const Setup&)            = delete;
+        Setup& operator=(Setup&&)      = delete;
+        Setup& operator=(const Setup&) = delete;
+
+    public:
         void allocateChannels(u16);
-        void backend(std::string_view);
-        void audioMode(std::string_view);
-        void scalingMode(std::string_view);
-        void audioCategory(std::string_view);
-        void mouseRelativeMode(std::string_view);
-        void mobileOrientation(std::span<std::string_view>);
+        bool backend(std::string_view);
+        bool audioMode(std::string_view);
+        bool scalingMode(std::string_view);
+        bool audioCategory(std::string_view);
+        bool mouseRelativeMode(std::string_view);
+        bool mobileOrientation(std::span<std::string_view>);
     };
 
     struct Toggle {
-        void vsync(bool);
-        void blockOnPause(bool);
+
+    public:
+        Toggle(void)                     = default;
+        Toggle(Toggle&&)                 = delete;
+        Toggle(const Toggle&)            = delete;
+        Toggle& operator=(Toggle&&)      = delete;
+        Toggle& operator=(const Toggle&) = delete;
+
+    public:
+        bool vsync(bool);
+        bool blockOnPause(bool);
         void gameController(bool);
-        void hideHomeIndicator(bool);
+        bool hideHomeIndicator(bool);
         void relativeMouseMode(bool);
-        void materialAcceleration(bool);
-        void accelerometerAsJoystick(bool);
+        bool materialAcceleration(bool);
+        bool accelerometerAsJoystick(bool);
     };
 
 public:
-    Setup setup;
+    Setup  setup;
     Toggle toggle;
-    Info info;
+    Info   info;
 
 private:
-    bool        m_is_init{false};
-	u32			m_instance{0};
-    u32         m_channel_count{0};
-    SDL_bool    m_relative_mouse_mode{SDL_FALSE};
+    std::mutex        m_mutex;
+	std::atomic<u32>  m_instance{0};
+    std::atomic<bool> m_is_init{false};
+    u32               m_channel_count{0};
+    bool              m_relative_mouse_mode{false};
 
 private:
     System(void)                        = default;
+    System(System&&)                    = delete;
     System(const System &)              = delete;
+    System &operator=(System&&)         = delete;
     System &operator=(const System &)   = delete;
 
 public:
@@ -73,7 +106,7 @@ public:
 
 public:
     static System &getInstance(void) noexcept;
-    
+
 private:
     void _init(void);
     void _quit(void);
@@ -82,9 +115,9 @@ public:
     ~System(void) = default;
 
 public:
-    friend class Setup;
-    friend class Toggle;
-    friend class Info;
+    friend struct Setup;
+    friend struct Toggle;
+    friend struct Info;
     friend class Window;
     friend class SFX;
     friend class Timer;

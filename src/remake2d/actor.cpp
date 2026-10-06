@@ -1,52 +1,66 @@
 #include <remake2d/actor.hpp>
+#include <remake2d/vector.hpp>
+#include <remake2d/utility.hpp>
+#include <remake2d/math.hpp>
 
 namespace rmk {
 
-void ActorBase::addChild(ActorBase* child) noexcept {
-    if (child->m_parent) {
-        child->m_parent->removeChild(child);
-    }
-	
-    child->m_parent = this;
-    m_children.push_back(child);
+Actor::Actor(const Actor& other) : Trackable(other), m_children() , m_parent(nil) {
+    (void) other;
 }
 
-void ActorBase::removeChild(ActorBase* child) noexcept {
-    auto it = std::find(m_children.begin(), m_children.end(), child);
-	
-    if (it != m_children.end()) {
-        child->m_parent = nullptr;
-        m_children.erase(it);
-    }
+Actor& Actor::operator=(const Actor& other) {
+    if (this != &other) Trackable::operator=(other);
+    return *this;
 }
 
-void ActorBase::active(bool stat) noexcept {
+void Actor::addChild(Actor& child) noexcept {
+    if (child.m_parent) child.m_parent->removeChild(child);
+    child.m_parent = tracker();
+    m_children.push_back(child.tracker());
+}
+
+void Actor::removeChild(Actor& child) noexcept {
+    auto it = std::find(m_children.begin(), m_children.end(), child.tracker());
+    if (it == m_children.end()) return;
+
+	child.m_parent = nil;
+	m_children.erase(it);
+}
+
+void Actor::active(bool stat) noexcept {
     m_active = stat;
 }
 
-bool ActorBase::active(void) const noexcept {
+bool Actor::active(void) const noexcept {
     return m_active;
 }
 
-ActorBase* ActorBase::parent(void) const noexcept {
+UnsafeTracker<Actor>& Actor::parent(void) noexcept {
     return m_parent;
 }
 
-const std::vector<ActorBase*>& ActorBase::children(void) const noexcept {
+const UnsafeTracker<Actor>& Actor::parent(void) const noexcept {
+    return m_parent;
+}
+
+std::vector<UnsafeTracker<Actor>>& Actor::children(void) noexcept {
     return m_children;
 }
 
-void ActorBase::_updates(void) {
-    for (auto* child : m_children) {
-        child->update();
-        child->_updates();
+const std::vector<UnsafeTracker<Actor>>& Actor::children(void) const noexcept {
+    return m_children;
+}
+
+void Actor::_updates(void) {
+    for (auto& child : m_children) {
+        if (child) child->update();
+        if (child) child->_updates();
     }
 }
 
-ActorBase::~ActorBase(void) {
-    for (auto* child : m_children) {
-        child->m_parent = nullptr;
-    }
+Actor::~Actor(void) {
+    for (auto& child : m_children) child->m_parent = nil;
 }
 
 } // namespace rmk

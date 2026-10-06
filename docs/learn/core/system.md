@@ -8,9 +8,9 @@ The system module allows modifying the engine's internal behavior in order to op
 
 The `system` singleton of type `System` is the central tool for controlling the engine at a low level. It is organized around three sub-classes:
 
-- `Setup` — engine behavior configuration at startup
-- `Toggle` — enabling or disabling system-level features
-- `Info` — access to host platform information
+- `Setup`  : engine behavior configuration at startup
+- `Toggle` : enabling or disabling system-level features
+- `Info`   : access to host platform information
 
 ---
 
@@ -22,13 +22,13 @@ The `Setup` sub-class, accessible via `system.setup`, allows configuring how **R
 
 ```cpp
 struct Setup {
-    void scalingMode(std::string_view);                  // set render scaling quality
-    void backend(std::string_view);                      // set render backend
-    void audioMode(std::string_view);                    // set audio resampling mode
-    void audioCategory(std::string_view);                // set audio category
-    void mouseRelativeMode(std::string_view);            // set mouse relative mode
-    void mobileOrientation(std::span<std::string_view>); // set allowed orientations
-    void allocateChannels(u16);                          // set number of audio channels
+    void allocateChannels(u16);                  // set number of audio channels
+    bool backend(std::string_view);              // set render backend
+    bool audioMode(std::string_view);            // set audio resampling mode
+    bool scalingMode(std::string_view);          // set render scaling quality
+    bool audioCategory(std::string_view);        // set audio category
+    bool mouseRelativeMode(std::string_view);    // set mouse relative mode
+    bool mobileOrientation(std::span<std::string_view>); // set allowed orientations
 };
 ```
 
@@ -129,13 +129,13 @@ The `Toggle` sub-class, accessible via `system.toggle`, allows enabling or disab
 
 ```cpp
 struct Toggle {
-    void vsync(bool);                   // enable/disable vertical synchronization
-    void relativeMouseMode(bool);       // enable/disable relative mouse mode
+    bool vsync(bool);                   // enable/disable vsync
+    bool blockOnPause(bool);            // block on pause (Android)
     void gameController(bool);          // enable/disable game controller support
-    void blockOnPause(bool);            // enable/disable blocking on pause (Android)
-    void hideHomeIndicator(bool);       // enable/disable home indicator (iOS)
-    void materialAcceleration(bool);    // enable/disable hardware acceleration
-    void accelerometerAsJoystick(bool); // enable/disable accelerometer as joystick (mobile)
+    bool hideHomeIndicator(bool);       // hide home indicator (iOS)
+    void relativeMouseMode(bool);       // enable/disable relative mouse mode
+    bool materialAcceleration(bool);    // enable/disable framebuffer acceleration
+    bool accelerometerAsJoystick(bool); // use accelerometer as joystick
 };
 ```
 
@@ -219,8 +219,19 @@ Calling `init` is mandatory before using any module of **RE:MAKE 2D**. It become
 
 !!! info
     Some methods of the `Setup` and `Toggle` sub-classes may have no effect depending on the host system, as their behavior is contingent
-    on the features available on the target platform.
-	
+    on the features available on the target platform. Check the return value of methods which return a **boolean** to determine if it was activated or not.
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| System | No | No | None |
+| Setup | No | No | None |
+| Toggle | No | No | None |
+| Info | No | No | None |
+
 ---
 
 [:octicons-arrow-left-24: Previous chapter](croutine.md){ .md-button }

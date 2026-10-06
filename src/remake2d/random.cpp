@@ -19,6 +19,7 @@ u32 Random::seed(void) noexcept {
 }
 
 void Random::seed(u32 s) noexcept {
+    _ensureSeeded();
     m_seed = s;
     return m_gen.seed(s);
 }

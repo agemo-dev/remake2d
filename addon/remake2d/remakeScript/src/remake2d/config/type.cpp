@@ -52,8 +52,10 @@ void initLuaType(void) noexcept {
 	    Area(i32, i32, i32, i32),
 	    Area(const Vec2d&, const Dim2d&)
 	>("Area", [](SolState::Type& ut) {
+	    ut["pos"]    = &Area::pos;
+	    ut["size"]   = &Area::size;
 	    ut["center"] = &Area::center;
-	}, type::base<>,
+	}, type::base<Printable>,
 	    "x", &Area::x,
 	    "y", &Area::y,
 	    "w", &Area::w,

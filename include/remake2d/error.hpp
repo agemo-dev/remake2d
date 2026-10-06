@@ -1,7 +1,6 @@
 #ifndef REMAKE2D_ERROR_
 #define REMAKE2D_ERROR_
 
-
 #include <iostream>
 #include <exception>
 #include <source_location>
@@ -23,15 +22,24 @@
 namespace rmk {
 
 class Error : public std::exception {
+
 private:
     std::string m_msg;
 
 public:
     mutable std::source_location info;
- 
+
+public:
+    Error(void)                    = delete;
+    Error(Error&&)                 = default;
+    Error(const Error&)            = default;
+    Error& operator=(Error&&)      = default;
+    Error& operator=(const Error&) = default;
+
 public:
     Error(std::string_view msg) : m_msg(msg) {}
-    
+
+public:
     const char *what() const noexcept override { return m_msg.c_str(); }
 };
 
@@ -69,7 +77,7 @@ class DataError : public Error {
     using Error::Error;
 };
 
-class DateError  : public Error { 
+class DateError  : public Error {
     using Error::Error;
 };
 
@@ -113,8 +121,6 @@ class SignalError : public OutOfRangeError {
     using OutOfRangeError::OutOfRangeError;
 };
 
-
-
 namespace error {
 
 namespace window {
@@ -125,9 +131,9 @@ inline static constexpr const char *texture_unlinked   = "texture is not linked 
 
 namespace scene {
 inline static constexpr const char *any_focus               = "any focus scene or link found — please choose a focus scene or link with Act::focus(std::string_view)";
-inline static constexpr const char *scene_unexist           = "scene don\'t exist";
+inline static constexpr const char *scene_nonexistent           = "scene don\'t exist";
 inline static constexpr const char *multiple_scene_declared = "cannot initialize multiple scene with same name";
-inline static constexpr const char *layer_is_overlimits     = "cannot place function in a invalid layer, please respect a layers range (-256, 1023) or range of layers function if used (0, 255)";
+inline static constexpr const char *layer_is_overlimits     = "cannot place function in a invalid layer, please respect a layers range (-50, 249) or range of layers function if used (0, 49)";
 }//namespace scene
 
 namespace croutine {
@@ -145,7 +151,7 @@ inline static constexpr const char *sdl_init_fail           = "SDL initializatio
 inline static constexpr const char *sdl_ttf_init_fail       = "SDL ttf initialization failed";
 inline static constexpr const char *sdl_image_init_fail     = "SDL image initialization failed";
 inline static constexpr const char *sdl_mixer_init_fail     = "SDL mixer initialization failed";
-inline static constexpr const char *channel_overflow        = "you have allocate so more chanel (max == 32)";
+inline static constexpr const char *channel_overflow        = "you have allocated too many channels (max == 32)";
 }//namespace system
 
 namespace texture {
@@ -153,11 +159,12 @@ inline static constexpr const char *font_no_load    = "font no load — initiali
 inline static constexpr const char *glyph_no_load   = "glyph no load — initialization failed";
 inline static constexpr const char *texture_no_load = "texture no load — initialization failed";
 inline static constexpr const char *surface_no_load = "surface no load — initialization failed";
-inline static constexpr const char *font_unexist    = "font don\'t exist";
+inline static constexpr const char *atlas_no_build  = "atlas no build — initialization failed";
+inline static constexpr const char *font_nonexistent    = "font don\'t exist";
 }//namespace texture
 
 namespace script {
-inline static constexpr const char *file_unexist                = "this file don't exist";
+inline static constexpr const char *file_nonexistent                = "this file don't exist";
 inline static constexpr const char *type_already_registered     = "type already registered";
 } // namespace script
 
@@ -172,21 +179,22 @@ namespace tilemap {
 inline static constexpr const char *undefined_id                = "this ID don\'t exist in this tile map";
 inline static constexpr const char *undefined_tag               = "this tag don\'t exist in this tile map";
 inline static constexpr const char *not_built                   = "TileMap::buildMap() must be called before Window::draw()";
-inline static constexpr const char *unexcepted_tile_template    = "size of tile template must be egal to matrix's area (W * H)";
+inline static constexpr const char *unexpected_tile_template    = "size of tile template must be equal to matrix's area (W * H)";
 } // namespace tilemap
 
 namespace signal {
-inline static constexpr const char *slot_unexist     = "Slot not found in connected slots";
-inline static constexpr const char *function_unexist = "Function not found in connected funcs";
+inline static constexpr const char *slot_nonexistent     = "Slot not found in connected slots";
+inline static constexpr const char *function_nonexistent = "Function not found in connected funcs";
 inline static constexpr const char *invalid_slot     = "Invalid slot passed to connectOnce";
 } //namespace signal
 
 namespace data {
-inline static constexpr const char *file_not_found  = "DataFile not found — please call DataFile::write() before DataFile::read()";
-inline static constexpr const char *invalid_field   = "field does not exist in DataFile";
-inline static constexpr const char *invalid_type    = "field type mismatch in DataFile";
-inline static constexpr const char *root_not_init   = "SaveManager not initialized — call data._init() first";
-inline static constexpr const char *type_unsavable  = "type must implement rmk::ISavable (sdata/ldata)";
+inline static constexpr const char *file_not_found       = "DataFile not found — please call DataFile::write() before DataFile::read()";
+inline static constexpr const char *invalid_field        = "field does not exist in DataFile";
+inline static constexpr const char *invalid_type         = "field type mismatch in DataFile";
+inline static constexpr const char *root_not_init        = "SaveManager not initialized — call data._init() first";
+inline static constexpr const char *type_unsavable       = "type must implement rmk::ISavable (sdata/ldata)";
+inline static constexpr const char *directory_no_create  = "directory no create";
 } //namespace data
 
 namespace date {
@@ -201,7 +209,6 @@ inline static constexpr const char *invalid_format    = "invalid format — use 
 inline static constexpr const char *invalid_time      = "invalid time string — cannot parse";
 inline static constexpr const char *invalid_separator = "invalid separator — use ':', '-' or '*'";
 }
-
 
 } // namespace error
 } // namespace rmk

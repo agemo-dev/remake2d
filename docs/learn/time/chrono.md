@@ -67,5 +67,13 @@ runTime.reset();
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Chronometer | Yes | Yes | ClockBase |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](timer.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](date.md){ .md-button .md-button--primary }

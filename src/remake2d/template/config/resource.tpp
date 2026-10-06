@@ -4,6 +4,12 @@
 namespace rmk {
 
 template<typename T, void(*F)(T*)>
+Resource<T, F>::Resource(T* d) : data(d) {
+    rmk::system._init();
+    m_refcount = new u32(1);
+}
+
+template<typename T, void(*F)(T*)>
 Resource<T, F>::Resource(void) {
     rmk::system._init();
     m_refcount = new u32(1);
@@ -12,7 +18,7 @@ Resource<T, F>::Resource(void) {
 template<typename T, void(*F)(T*)>
 Resource<T, F>::Resource(Resource&& o) noexcept
     : data(o.data), m_refcount(o.m_refcount) {
-    rmk::system.init();
+    rmk::system._init();
     o.data = nullptr;
     o.m_refcount = nullptr;
 }
@@ -20,7 +26,7 @@ Resource<T, F>::Resource(Resource&& o) noexcept
 template<typename T, void(*F)(T*)>
 Resource<T, F>::Resource(const Resource& o)
     : data(o.data), m_refcount(o.m_refcount) {
-    rmk::system.init();
+    rmk::system._init();
     if (m_refcount)
         ++(*m_refcount);
 }
@@ -28,6 +34,7 @@ Resource<T, F>::Resource(const Resource& o)
 template<typename T, void(*F)(T*)>
 Resource<T, F>& Resource<T, F>::operator=(Resource&& o) noexcept {
     if (this != &o) {
+        rmk::system._init();
         release();
         data = o.data;
         m_refcount = o.m_refcount;

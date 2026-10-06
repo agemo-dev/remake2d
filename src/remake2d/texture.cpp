@@ -5,6 +5,9 @@
 #include <remake2d/color.hpp>
 #include <remake2d/time.hpp>
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+
 #include <cstdio>
 #include <memory>
 #include <string>
@@ -18,22 +21,191 @@ bool TextureBase::hasIntersected(const TextureBase& other) const noexcept {
     return hasIntersected(other.shape());
 }
 
+void TextureBase::draw(const Printable& main) const noexcept {
+    bool toRoot = (&main == static_cast<const Printable*>(this));
+
+    if (!is_draw_dirty && !toRoot && _draw_id_ >= 0 && _main_id_ == main._mainId()) {
+        main._draw_deep_ += _last_point_count_;
+        return;
+    }
+    if (!is_draw_dirty && toRoot) {
+        main._draw_deep_ += _last_point_count_;
+        return;
+    }
+
+    auto& cache     = _draw_cache_;
+    auto& mainCache = main._draw_cache_;
+
+    u32  deep        = main._draw_deep_;
+    bool isFirstTime = _draw_id_ < 0 || _main_id_ != main._mainId();
+
+    if (!toRoot) {
+        main.drawn = true;
+        _inheritData(main.color(), main.layer());
+
+        if (_main_id_ != main._mainId()) {
+            _main_id_          = main._mainId();
+            _draw_id_          = -1;
+            _last_point_count_ = 0;
+        }
+
+        if (!isFirstTime && deep < (u32)_draw_id_) {
+            mainCache.erase(mainCache.begin() + deep, mainCache.begin() + _draw_id_);
+        }
+    }
+
+    if (is_draw_dirty) {
+        cache.clear();
+
+        const auto& s = shape();
+        std::vector<Vec2d> pts(s.pointsPos(), s.pointsPos() + s.points());
+        pts.push_back(pts[0]);
+        cache.push_back(DrawPack{ color(), pts });
+
+        is_draw_dirty = false;
+    }
+
+    _current_point_count_ = (u32)cache.size();
+
+    if (!toRoot) {
+        if (isFirstTime) {
+            mainCache.insert(mainCache.begin() + deep, cache.begin(), cache.end());
+        } else {
+            u32 overlap = std::min(_last_point_count_, _current_point_count_);
+            std::copy(
+                cache.begin(), cache.begin() + overlap,
+                mainCache.begin() + deep
+            );
+
+            if (_last_point_count_ < _current_point_count_) {
+                mainCache.insert(
+                    mainCache.begin() + deep + _last_point_count_,
+                    cache.begin() + _last_point_count_, cache.end()
+                );
+            } else if (_last_point_count_ > _current_point_count_) {
+                mainCache.erase(
+                    mainCache.begin() + deep + _current_point_count_,
+                    mainCache.begin() + deep + _last_point_count_
+                );
+            }
+        }
+
+        _draw_id_ = (i32)deep;
+    }
+
+    _last_point_count_ = _current_point_count_;
+    main._draw_deep_   = (toRoot ? 0 : deep) + _current_point_count_;
+
+    drawn = true;
+}
+
+void TextureBase::fill(const Printable& main) const noexcept {
+    bool toRoot = (&main == static_cast<const Printable*>(this));
+
+    // win must be checked before anything below touches main's cache or bookkeeping .
+    // if it's absent, this call must be a complete no-op, not a partial/incoherent one.
+    const auto& win = xwindow.lastDrawnWindow();
+    if (!win) return;
+
+    if (!is_fill_dirty && !toRoot && _fill_id_ >= 0 && _main_fill_id_ == main._mainId()) {
+        main._fill_deep_ += _last_vertex_count_;
+        return;
+    }
+    if (!is_fill_dirty && toRoot) {
+        main._fill_deep_ += _last_vertex_count_;
+        return;
+    }
+
+    auto& cache     = _fill_cache_;
+    auto& mainCache = main._fill_cache_;
+
+    u32  deep        = main._fill_deep_;
+    bool isFirstTime = _fill_id_ < 0 || _main_fill_id_ != main._mainId();
+
+    if (!toRoot) {
+        main.filled = true;
+        _inheritData(main.color(), main.layer());
+
+        if (_main_fill_id_ != main._mainId()) {
+            _main_fill_id_      = main._mainId();
+            _fill_id_           = -1;
+            _last_vertex_count_ = 0;
+        }
+
+        if (!isFirstTime && deep < (u32)_fill_id_) {
+            mainCache.erase(mainCache.begin() + deep, mainCache.begin() + _fill_id_);
+        }
+    }
+
+    if (is_fill_dirty) {
+        cache.clear();
+
+        VertexBatch batch;
+        batch.texture  = _ownerTexture(win->renderer());
+        batch.vertices = vertices();
+
+        for (auto& v : batch.vertices) v.color = color();
+
+        cache.push_back(std::move(batch));
+        is_fill_dirty = false;
+    }
+
+    _current_vertex_count_ = (u32)cache.size();
+
+    if (!toRoot) {
+        if (isFirstTime) {
+            mainCache.insert(mainCache.begin() + deep, cache.begin(), cache.end());
+        } else {
+            u32 overlap = std::min(_last_vertex_count_, _current_vertex_count_);
+            std::copy(
+                cache.begin(), cache.begin() + overlap,
+                mainCache.begin() + deep
+            );
+
+            if (_last_vertex_count_ < _current_vertex_count_) {
+                mainCache.insert(
+                    mainCache.begin() + deep + _last_vertex_count_,
+                    cache.begin() + _last_vertex_count_, cache.end()
+                );
+            } else if (_last_vertex_count_ > _current_vertex_count_) {
+                mainCache.erase(
+                    mainCache.begin() + deep + _current_vertex_count_,
+                    mainCache.begin() + deep + _last_vertex_count_
+                );
+            }
+        }
+
+        _fill_id_ = (i32)deep;
+    }
+
+    _last_vertex_count_ = _current_vertex_count_;
+    main._fill_deep_    = (toRoot ? 0 : deep) + _current_vertex_count_;
+
+    filled = true;
+}
+
+void TextureBase::_dirty(bool stat) const noexcept {
+    m_verts_dirty = stat;
+    is_fill_dirty = stat;
+    is_draw_dirty = stat;
+}
+
 Sprite::Sprite(std::string_view path, const Rectangle& shape)
     : Texture<Rectangle>(path, shape) {}
 
 GlyphAtlas::~GlyphAtlas(void) {
-	for (auto& [renderer, data] : textures) {
-		if (data.texture) SDL_DestroyTexture(data.texture);
-	}
+    for (auto& [renderer, data] : textures) {
+        if (data.texture) sdl.destroyTexture(data.texture);
+    }
 }
 
 void FontManager::load(std::string_view tag, std::string_view path, u8 size) {
     std::string key(tag);
     if (m_fonts.count(key)) return;
 
-    TTF_Font* f = TTF_OpenFont(std::string(path).c_str(), size);
+    TTF_Font* f = sdl.openFont(path, size);
     if (!f) {
-        rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::font_no_load) + " : " + TTF_GetError()));
+        rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::font_no_load) + " : " + sdl.getFontError()));
     }
 
     FontEntry entry;
@@ -58,8 +230,17 @@ void FontManager::_buildAtlas(FontEntry& entry, SDL_Renderer* renderer) {
 
     for (int c = firstChar; c <= lastChar; ++c) {
         char ch = static_cast<char>(c);
-        SDL_Surface* surf = TTF_RenderGlyph_Blended(font, ch, color::white._data());
-        if (!surf) continue;
+        SDL_Surface* surf = nullptr;
+        int tryCount = 0;
+
+        do {
+            surf = sdl.renderGlyphBlended(font, ch, color::white);
+        } while (!surf && tryCount++ < 3);
+
+        if (!surf) {
+            rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::atlas_no_build) + " : " + sdl.getFontError()));
+        }
+
         surfaces.push_back(surf);
         maxWidth = std::max(maxWidth, surf->w);
     }
@@ -71,47 +252,47 @@ void FontManager::_buildAtlas(FontEntry& entry, SDL_Renderer* renderer) {
 
     int atlasWidth = maxWidth * numChars;
 
-    SDL_Texture* atlasTex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, atlasWidth, atlasHeight);
-	
+    SDL_Texture* atlasTex = sdl.createTexture(renderer, (u32)SDL_PIXELFORMAT_RGBA32, (i32)SDL_TEXTUREACCESS_TARGET, atlasWidth, atlasHeight);
+
     if (!atlasTex) {
-        for (auto* s : surfaces) SDL_FreeSurface(s);
+        for (auto* s : surfaces) sdl.freeSurface(s);
         return;
     }
-	
-    SDL_SetTextureBlendMode(atlasTex, SDL_BLENDMODE_BLEND);
-    SDL_Texture* oldTarget = SDL_GetRenderTarget(renderer);
-    SDL_SetRenderTarget(renderer, atlasTex);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
+
+    sdl.setTextureBlendMode(atlasTex, (i32)SDL_BLENDMODE_BLEND);
+    SDL_Texture* oldTarget = sdl.getRenderTarget(renderer);
+    sdl.setRenderTarget(renderer, atlasTex);
+    sdl.setRenderDrawColor(renderer, 0, 0, 0, 0);
+    sdl.renderClear(renderer);
 
     int xOffset = 0;
     for (size_t i = 0; i < surfaces.size(); ++i) {
         SDL_Surface* surf = surfaces[i];
-        SDL_Texture* tempTex = SDL_CreateTextureFromSurface(renderer, surf);
+        SDL_Texture* tempTex = sdl.createTextureFromSurface(renderer, surf);
         if (tempTex) {
             SDL_Rect dest = {xOffset, 0, surf->w, surf->h};
-            SDL_RenderCopy(renderer, tempTex, nullptr, &dest);
-            SDL_DestroyTexture(tempTex);
+            sdl.renderCopy(renderer, tempTex, nullptr, &dest);
+            sdl.destroyTexture(tempTex);
         }
         char ch = static_cast<char>(firstChar + i);
-        entry.atlas.glyphs[ch] = {xOffset, 0, surf->w, surf->h};
+        Area rect(xOffset, 0, surf->w, surf->h);
+        entry.atlas.glyphs[ch] = rect;
         xOffset += surf->w;
-        SDL_FreeSurface(surf);
+        sdl.freeSurface(surf);
     }
 
-    SDL_SetRenderTarget(renderer, oldTarget);
+    sdl.setRenderTarget(renderer, oldTarget);
 
     GlyphAtlas::AtlasData ad;
     ad.texture = atlasTex;
     entry.atlas.textures[renderer] = ad;
     entry.atlas.glyph_height = atlasHeight;
-    entry.atlas.baseline = TTF_FontAscent(font);
+    entry.atlas.baseline = sdl.fontAscent(font);
 }
 
 const GlyphAtlas* FontManager::atlas(std::string_view tag) const noexcept {
     auto it = m_fonts.find(std::string(tag));
     if (it != m_fonts.end()) return &it->second.atlas;
-	
     return nullptr;
 }
 
@@ -122,7 +303,7 @@ FontManager& FontManager::getInstance(void) {
 
 FontManager::~FontManager(void) {
     for (auto& pair : m_fonts) {
-        TTF_CloseFont(pair.second.font);
+        sdl.closeFont(pair.second.font);
     }
     m_fonts.clear();
 }
@@ -135,7 +316,7 @@ Text::Text(std::string_view font_name, Vec2d pos)
     m_anchor_pos = pos;
     auto it = font.m_fonts.find(m_font_name);
     if (it == font.m_fonts.end()) {
-        rmk_dynamicAssert(rmk::TextureError, error::texture::font_unexist);
+        rmk_dynamicAssert(rmk::TextureError, error::texture::font_nonexistent);
     }
     m_font = it->second.font;
 }
@@ -153,21 +334,22 @@ void Text::write(std::string_view text) {
 
     m_current_text  = txt;
 
-    m_surface.data = TTF_RenderUTF8_Blended_Wrapped(m_font, txt.c_str(), color::white._data(), (int)m_max_lengh);
+    m_surface = Surface(sdl.renderUTF8BlendedWrapped(m_font, txt, color::white, (u32)m_max_lengh));
     if (!m_surface.data) {
-        rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + TTF_GetError()));
+        rmk_dynamicAssert(rmk::TextureError, (std::string(error::texture::texture_no_load) + " : " + sdl.getFontError()));
     }
 
     m_real_size = { (f32)m_surface.data->w, (f32)m_surface.data->h };
 
     float x = m_anchor_pos.x;
     float y = m_anchor_pos.y;
-	
+
     switch (m_anchor_x) {
         case anchor::x::left:   x += m_surface.data->w / 2.0f; break;
         case anchor::x::center: break;
         case anchor::x::right:  x -= m_surface.data->w / 2.0f; break;
     }
+
     switch (m_anchor_y) {
         case anchor::y::top:    y += m_surface.data->h / 2.0f; break;
         case anchor::y::middle: break;
@@ -178,12 +360,13 @@ void Text::write(std::string_view text) {
     m_shape.resize({(f32)m_surface.data->w, (f32)m_surface.data->h});
 
     for (auto& [renderer, data] : m_textures) {
-        if (data.texture) SDL_DestroyTexture(data.texture);
+        if (data.texture) sdl.destroyTexture(data.texture);
     }
+
     m_textures.clear();
 
     for (auto& win : xwindow.m_windows) {
-        SDL_Texture* tex = SDL_CreateTextureFromSurface(win->m_renderer, m_surface.data);
+        SDL_Texture* tex = sdl.createTextureFromSurface(win->m_renderer, m_surface.data);
         if (tex) {
             TextureData td;
             td.texture = tex;
@@ -191,47 +374,48 @@ void Text::write(std::string_view text) {
         }
     }
     m_use_clip = false;
-	m_erase    = false;
-	m_verts_dirty = true;
+    m_erase    = false;
+
+    _dirty(true);
     _calculateVertices();
 }
 
 void Text::append(fmt txt) {
-	switch (txt) {
+    switch (txt) {
 
-		case fmt::nl :
-			append("\n");
-			break;
+        case fmt::nl :
+            append("\n");
+            break;
 
-		case fmt::tab :
-			append("    ");
-			break;
+        case fmt::tab :
+            append("    ");
+            break;
 
-		case fmt::endl :
-			m_erase = true;
-			break;
+        case fmt::endl :
+            m_erase = true;
+            break;
 
-		case fmt::flush :
-			clear();
-			break;
-	}
+        case fmt::flush :
+            clear();
+            break;
+    }
 }
 
 void Text::append(std::string_view text) {
     if (!m_erase) write(m_current_text + std::string(text));
-	else 		  write(text);
+    else          write(text);
 }
 
 void Text::clear(void) {
     write("");
 }
 
-void Text::maxLengh(u16 l) noexcept {
-	m_max_lengh = l;
+void Text::maxLength(u16 l) noexcept {
+    m_max_lengh = l;
 }
 
-u16 Text::maxLengh(void) const noexcept {
-	return m_max_lengh;
+u16 Text::maxLength(void) const noexcept {
+    return m_max_lengh;
 }
 
 Text::Text(const Text& other) : Texture<Rectangle>(other) {
@@ -247,12 +431,12 @@ Text& Text::operator=(const Text& other) {
 }
 
 void Text::_textCopy(const Text& other) {
-    m_font_name		= other.m_font_name;
-    m_current_text	= other.m_current_text;
-    m_anchor_pos	= other.m_anchor_pos;
-    m_anchor_x		= other.m_anchor_x;
-    m_anchor_y		= other.m_anchor_y;
-    m_font			= other.m_font;
+    m_font_name        = other.m_font_name;
+    m_current_text    = other.m_current_text;
+    m_anchor_pos    = other.m_anchor_pos;
+    m_anchor_x        = other.m_anchor_x;
+    m_anchor_y        = other.m_anchor_y;
+    m_font            = other.m_font;
 }
 
 void Text::_updateWidth(const GlyphAtlas& atlas) noexcept {
@@ -272,17 +456,20 @@ Animation& Animation::operator=(const Animation& other) {
 }
 
 void Animation::_animationCopy(const Animation& other) noexcept {
-    m_spacing 			= other.m_spacing;
-    m_total_clips 		= other.m_total_clips;
-    m_clip_size 		= other.m_clip_size;
-    m_start_pos 		= other.m_start_pos;
-    m_current_clip 		= other.m_current_clip;
-    m_loops_remaining	= other.m_loops_remaining;
-    m_is_playing 		= other.m_is_playing;
-    m_is_paused 		= other.m_is_paused;
-    m_timer 			= other.m_timer;
-    m_clip_duration 	= other.m_clip_duration;
-}Animation::Animation(std::string_view path, const Rectangle& shape, u8 total_clips, Dim2d clip_size, Vec2d start_pos, u8 spacing)
+    m_spacing             = other.m_spacing;
+    m_total_clips         = other.m_total_clips;
+    m_clip_size         = other.m_clip_size;
+    m_start_pos         = other.m_start_pos;
+    m_current_clip         = other.m_current_clip;
+    m_loops_remaining    = other.m_loops_remaining;
+    m_is_playing         = other.m_is_playing;
+    m_is_paused         = other.m_is_paused;
+    m_timer             = other.m_timer;
+    m_clip_duration     = other.m_clip_duration;
+    relocate();
+}
+
+Animation::Animation(std::string_view path, const Rectangle& shape, u8 total_clips, Dim2d clip_size, Vec2d start_pos, u8 spacing)
     : Sprite(path, shape) {
     this->m_clip_size = clip_size;
     this->m_start_pos = start_pos;
@@ -308,8 +495,8 @@ void Animation::_advance(void) {
     m_timer += delta.tick();
 
     if (m_timer >= m_clip_duration) {
-        m_timer 	 = 0.0;
-        i8 next 	 = m_current_clip + 1;
+        m_timer      = 0.0;
+        i8 next      = m_current_clip + 1;
         i8 remaining = m_loops_remaining;
 
         if (next >= m_total_clips) {
@@ -317,10 +504,10 @@ void Animation::_advance(void) {
             if (remaining > 0) m_loops_remaining--;
             else if (remaining == 0) {
                 m_is_playing = false;
-				onFinish.emit();
+                onFinish.emit();
                 return;
             }
-			if (!next) onRepeat.emit();
+            if (!next) onRepeat.emit();
         }
         m_current_clip = next;
     }
@@ -341,7 +528,7 @@ void Animation::stop(void) noexcept {
     m_is_playing   = false;
     m_is_paused    = false;
     m_current_clip = 0;
-    m_timer 	   = 0.0;
+    m_timer        = 0.0;
     clip(m_start_pos, m_clip_size);
     animation._unregisterAnimation(this);
 }
@@ -356,17 +543,17 @@ AnimationManager& AnimationManager::getInstance(void) noexcept {
 }
 
 void AnimationManager::_registerAnimation(Animation* a) noexcept {
-    auto it = std::find(m_animations.begin(), m_animations.end(), a);
-    if (it == m_animations.end()) m_animations.push_back(a);
+    auto it = std::find(m_animations.begin(), m_animations.end(), a->tracker());
+    if (it == m_animations.end()) m_animations.push_back(a->tracker());
 }
 
 void AnimationManager::_unregisterAnimation(Animation* a) noexcept {
-    auto it = std::find(m_animations.begin(), m_animations.end(), a);
+    auto it = std::find(m_animations.begin(), m_animations.end(), a->tracker());
     if (it != m_animations.end()) m_animations.erase(it);
 }
 
 void AnimationManager::update(void) {
-    for (auto* a : m_animations) a->_advance();
+    for (auto& a : m_animations) a->_advance();
 }
 
 } // namespace rmk

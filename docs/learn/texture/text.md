@@ -6,7 +6,7 @@ Drawing a score counter or a dialogue box means rendering actual characters on s
 
 ## Overview
 
-`Text` is contained in the header **"remake2d/texture.hpp"**, inheriting from `Texture<Rectangle>`. It renders a string using a font previously loaded through 
+`Text` is contained in the header **"remake2d/texture.hpp"**, inheriting from `Texture<Rectangle>`. It renders a string using a font previously loaded through
 `FontManager`, exposed through the singleton `font`, and regenerates its underlying image whenever its content changes.
 
 ---
@@ -19,13 +19,13 @@ void anchorY(anchor::y) noexcept; // set vertical anchor (top, middle, bottom)
 
 std::string text(void) const noexcept; // get current text content
 
-void write(std::string_view);  // replace the text content
-void append(std::string_view); // append text to the current content
-void append(fmt);              // append a formatting token
+void write(std::string_view);   // replace the text content
+void append(std::string_view);  // append text to the current content
+void append(fmt);               // append a formatting token
 void clear(void);               // clear the text content
 
-void maxLengh(u16)       noexcept; // set max wrap length, in pixels
-u16  maxLengh(void) const noexcept; // get max wrap length
+void maxLength(u16)        noexcept; // set max wrap length, in pixels
+u16  maxLength(void) const noexcept; // get max wrap length
 ```
 
 ---
@@ -37,13 +37,17 @@ u16  maxLengh(void) const noexcept; // get max wrap length
 Before a `Text` can be created, its font must be loaded once through the singleton `font`:
 
 ```cpp
+void load(std::string_view tag, std::string_view path, u8 font_size);
+```
+
+```cpp
 rmk::font.load("arial", "arial.ttf", 24);
 ```
 
 ### Creating text
 
 ```cpp
-Text(std::string_view font, Vec2d pos);
+Text(std::string_view font_tag, Vec2d pos);
 ```
 
 ```cpp
@@ -55,7 +59,7 @@ label.write("Score : 0");
 
 ```cpp
 // In render loop
-win.draw(label);
+win.fill(label);
 ```
 
 ### Updating content
@@ -73,10 +77,10 @@ Append also accepts an `fmt` token instead of a string, for control characters t
 
 ```cpp
 enum fmt : u8 {
-	nl,     // insert a newline
-	tab,    // insert a tab
-	endl,   // mark the next append as a fresh write, erasing current content first
-	flush   // clear the text immediately
+    nl,     // insert a newline
+    tab,    // insert a tab
+    endl,   // mark the next append as a fresh write, erasing current content first
+    flush   // clear the text immediately
 };
 ```
 
@@ -98,11 +102,20 @@ label.anchorY(rmk::anchor::y::middle);
 
 ### Wrapping
 
-`maxLengh` sets a maximum width, in pixels, beyond which the text wraps onto a new line automatically:
+`maxLength` sets a maximum width, in pixels, beyond which the text wraps onto a new line automatically:
 
 ```cpp
-label.maxLengh(200);
+label.maxLength(200);
 ```
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| FontManager | No | Yes | None |
+| Text | Yes | Yes | `Texture<Rectangle>` |
 
 ---
 

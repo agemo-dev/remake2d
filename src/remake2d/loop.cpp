@@ -4,6 +4,8 @@
 #include <remake2d/event.hpp>
 #include <remake2d/window.hpp>
 #include <remake2d/physic.hpp>
+#include <remake2d/parallax.hpp>
+#include <remake2d/config/config.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -12,18 +14,14 @@ namespace rmk {
 
 void MainRenderLoop::update(void) noexcept {
     m_is_running = true;
-    
+
     auto cond = m_condition;
-    auto exec = m_execute ? m_execute : [](){};
+    auto exec = m_execute;
 
-	if(!cond) return;
-	
+	if(!cond || !exec) return;
+
     while (cond()) {
-        event.poll();
-        delta.update();
-        physics.update();
-        animation.update();
-
+        for (auto& update : m_updatables) if (update) update->update();
         for (auto& win : xwindow.m_windows) win->clear();
         exec();
         for (auto& win : xwindow.m_windows) win->present();
@@ -32,15 +30,21 @@ void MainRenderLoop::update(void) noexcept {
     m_is_running = false;
 }
 
+void MainRenderLoop::add(Tracker<Updatable> obj) noexcept {
+    m_updatables.push_back(obj);
+}
+
 void MainRenderLoop::execute(Window& win, const std::function<void(void)>& body) noexcept {
     const auto func = [&win](void) { return win.isOpen(); };
     m_condition = func;
     m_execute   = body;
+    config::loop::init();
 }
 
 void MainRenderLoop::execute(const std::function<bool(void)>& condition, const std::function<void(void)>& body) noexcept {
     m_condition = condition;
     m_execute   = body;
+    config::loop::init();
 }
 
 bool MainRenderLoop::isRunning(void) const noexcept {

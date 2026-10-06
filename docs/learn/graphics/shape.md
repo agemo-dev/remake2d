@@ -38,113 +38,10 @@ Numbers limit point are reprenseted by following enumeration:
 
 ```cpp
 enum class point : u8 {
-	min = 0,
-	max = 50
+    min = 0,
+    max = 50
 };
 ```
-
-### Drawing a shape
-
-Now we can display our triangle on screen thanks to the `draw` method of the
-`Window` class:
-
-```cpp
-void draw(const Geometry& shape, Color color = rmk::color::white, std::string_view viewport = "") noexcept;
-```
-
-- shape    : shape to draw
-- color    : color of the shape's outline
-- viewport : targeted viewport (optional, empty = global viewport)
-
-Let's place ourselves in the game loop and write:
-
-```cpp
-//In render loop
-win.draw(triangle, rmk::color::red);
-```
-
-```cpp
-#include <remake2d/window.hpp>
-#include <remake2d/loop.hpp>
-#include <remake2d/shape.hpp>
-
-int main(void) {
-    rmk::Window win;
-    rmk::Triangle triangle({200, 200}, {50, 50});
-
-    rmk::loop.execute(win, [&](void) {
-        win.draw(triangle, rmk::color::red);
-    });
-
-    rmk::loop.update();
-}
-```
-
-![drew triangle](assets/graphics1.png)
-
-It is also possible to **fill** the shape with the `fill` method, similar to `draw`:
-
-```cpp
-void fill(const Geometry& shape, Color color = rmk::color::white, std::string_view viewport = "") noexcept;
-```
-
-```cpp
-win.fill(triangle, rmk::color::red);
-```
-
-![filled triangle](assets/graphics2.png)
-
-### Transparency
-
-It is possible to make shapes somewhat transparent. By reducing the *alpha* value of `Color`,
-we also reduce **the opacity** of the shape drawn on screen.
-
-example:
-
-without transparency:
-```cpp
-win.clear(rmk::color::green);
-win.fill(triangle, {255, 0, 0, 128}); // semi-transparent red triangle
-```
-
-![opaque triangle](assets/graphics3.png)
-
-with transparency:
-```cpp
-win.clear(rmk::color::green);
-win.fill(triangle, {255, 0, 0, 128}); // semi-transparent red triangle
-```
-
-![semi-transparent triangle](assets/graphics4.png)
-
-You can change the transparency mode via the `blendMode` method of the `Window` class, which can take
-three distinct values:
-
-```cpp
-namespace window {
-
-enum class blendmode : u8 {
-	none		= (u8)SDL_BLENDMODE_NONE,
-	normal		= (u8)SDL_BLENDMODE_BLEND,
-	add			= (u8)SDL_BLENDMODE_ADD
-};
-
-}
-```
-
-- `none`   : disable transparency on the window
-- `normal` : default transparency mode
-- `add`    : additive mode with the background color
-
-example:
-
-```cpp
-win.blendMode(rmk::window::blendmode::add);
-win.clear(rmk::color::green);
-win.fill(triangle, {255, 0, 0, 128});
-```
-
-![additive semi-transparent triangle](assets/graphics5.png)
 
 ---
 
@@ -154,9 +51,9 @@ The `Geometry` class has several **pure virtual methods** that `Shape` inherits 
 Among these, we have:
 
 ```cpp
-virtual u8 points(void)   			 const noexcept = 0; // number of points
-virtual Dim2d size(void)   			 const noexcept = 0; // shape size
-virtual Vec2d center(void) 			 const noexcept = 0; // center position
+virtual u8 points(void)              const noexcept = 0; // number of points
+virtual Dim2d size(void)             const noexcept = 0; // shape size
+virtual Vec2d center(void)           const noexcept = 0; // center position
 virtual const Vec2d* pointsPos(void) const noexcept = 0; // raw points array
 
 virtual void move(const Vec2d& center) noexcept = 0;     // translate shape
@@ -171,6 +68,135 @@ virtual bool           hasIntersected(const Geometry& other) const noexcept = 0;
 
 ---
 
+## Drawing a shape
+
+Now we can display our triangle on screen thanks to the `draw` method of the
+`Window` class and the `color` method of `Geometry` :
+
+```cpp
+void  Geometry::color(Color color) noexcept; // set color
+Color Geometry::color(void)  const noexcept; // get current color
+
+void Window::draw(const Printable& object) noexcept;
+```
+
+- color     : draw color
+- object    : drawable object
+
+Your question is probably this:
+
+> The `object` parameter is of type `Printable`, but my figure is of type `Triangle`!
+> Furthermore, Geometry does not have any `color` methods!
+
+This is perfectly normal, and the answer is simply that the `geometry` class inherits
+from the `Printable` trait class, which makes it drawable on the screen.
+Note that the `color` method actually belongs to the `Printable` class, but this will
+be covered in another lesson.
+
+Let's place ourselves in the game loop and write:
+
+```cpp
+triangle.color(rmk::color::red); // set draw color to red
+
+//In render loop
+win.draw(triangle);
+```
+
+```cpp
+#include <remake2d/window.hpp>
+#include <remake2d/shape.hpp>
+#include <remake2d/loop.hpp>
+
+int main(void) {
+    rmk::Window win;
+    rmk::Triangle triangle({200, 200}, {50, 50});
+    triangle.color(rmk::color::red);
+
+    rmk::loop.execute(win, [&](void) {
+        win.draw(triangle);
+    });
+
+    rmk::loop.update();
+}
+```
+
+![drew triangle](assets/graphics1.png)
+
+It is also possible to **fill** the shape with the `fill` method, similar to `draw`:
+
+```cpp
+void fill(const Printable& object) noexcept;
+```
+
+```cpp
+win.fill(triangle);
+```
+
+![filled triangle](assets/graphics2.png)
+
+### Transparency
+
+It is possible to make shapes somewhat transparent. By reducing the *alpha* value of `Color`,
+we also reduce **the opacity** of the shape drawn on screen.
+
+example:
+
+without transparency:
+
+```cpp
+triangle.color(rmk::color::red);
+win.clear(rmk::color::green);
+win.fill(triangle);
+```
+
+![opaque triangle](assets/graphics3.png)
+
+with transparency:
+```cpp
+triangle.color({255, 0, 0, 128}); // semi-transparent red triangle
+win.clear(rmk::color::green);
+win.fill(triangle);
+```
+
+![semi-transparent triangle](assets/graphics4.png)
+
+You can change the transparency mode via the `blendMode` method of the `Window` class, which can take
+five distinct values:
+
+```cpp
+namespace window {
+
+enum class blendmode : u8 {
+    none,
+    normal,
+    add,
+    mod,
+    mul
+};
+
+}
+```
+
+- `none`   : disable transparency on the window
+- `normal` : default transparency mode
+- `add`    : additive mode with the background color
+- `mod`    : modulate mode with the background color
+- `mul`    : multiply mode with the background color
+
+example:
+
+```cpp
+triangle.color({255, 0, 0, 128});
+win.blendMode(rmk::window::blendmode::add);
+
+win.clear(rmk::color::green);
+win.fill(triangle);
+```
+
+![additive semi-transparent triangle](assets/graphics5.png)
+
+---
+
 ## Shape types
 
 **RE:MAKE 2D** offers several type aliases and specialized types for shapes:
@@ -178,8 +204,8 @@ virtual bool           hasIntersected(const Geometry& other) const noexcept = 0;
 ```cpp
 // Alias
 using Line      = Shape<2>;   // line segment
-using Losange   = Shape<4>;   // diamond shape
-using Hexagone  = Shape<6>;   // hexagon
+using Diamond   = Shape<4>;   // diamond shape
+using Hexagon  = Shape<6>;   // hexagon
 using Ellipse   = Shape<36>;  // ellipse approximation
 
 // Derived types
@@ -191,9 +217,18 @@ class Circle    : public Ellipse;   // circle (w == h enforced)
 ```
 
 !!! info
-    For the `Square` and `Circle` types, only the `resize` method is overridden to take just the width into account (`transform` is not
-	overridden and therefore follows `Geometry`'s standard behavior).
-	The constructors of the `Square` and `Circle` types take an `f32` rather than a `Dim2d` in their constructor.
+    For the `Square` and `Circle` types, only the `transform` method is overridden to take just the width into account.
+    The constructors of the `Square` and `Circle` types take an `f32` rather than a `Dim2d` in their constructor.
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Geometry | Yes | Yes | Followable and Printable |
+| Shape | Yes | Yes | Geometry |
+| Shape derived | Yes | Yes | Geometry |
 
 ---
 

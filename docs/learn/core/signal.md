@@ -33,8 +33,8 @@ void connectPriority(void (*func)(Args... args));     // connect a free function
 void disconnectPriority(void (*func)(Args... args));  // disconnect a priority free function
 void connectPriority(Slot& slot);                     // connect a std::function with priority
 void disconnectPriority(Slot& slot);                  // disconnect a priority std::function
-void unablePriority(void (*func)(Args... args));      // promote a normal function to priority
-void unablePriority(Slot& slot);                      // promote a normal slot to priority
+void enablePriority(void (*func)(Args... args));      // promote a normal function to priority
+void enablePriority(Slot& slot);                      // promote a normal slot to priority
 void disablePriority(void (*func)(Args... args));     // demote a priority function to normal
 void disablePriority(Slot& slot);                     // demote a priority slot to normal
 
@@ -48,14 +48,14 @@ void bindFalling(Condition cond, Args... defaultArgs); // emit once when conditi
 void bindChange(Condition cond, Args... defaultArgs);  // emit on every condition change
 
 // Lifecycle
-void start(void);        // activate the signal
-void stop(void);         // deactivate the signal
-int  count(void) const;  // number of connected slots
-void reserve(int size);  // pre-allocate internal storage
+void  start(void);         // activate the signal
+void  stop(void);          // deactivate the signal
+usize count(void) const;   // number of connected slots
+void  reserve(usize);      // pre-allocate internal storage
 ```
 
 !!! info
-    Priority slots and functions are called before regular ones. Within the same priority level, execution order follows the order of connection.
+    Priority slots and regular ones are called first. Within the same priority level, execution order follows the order of connection.
 
 ---
 
@@ -63,13 +63,13 @@ void reserve(int size);  // pre-allocate internal storage
 
 ### Manual emission
 
-The simplest use case — connect a function and emit manually:
+The simplest use case , connect a function and emit manually:
 
 ```cpp
 rmk::Signal<f32> onHealthChanged;
 
 onHealthChanged.join([](f32 hp) {
-    std::cout << "HP : " << hp << "\n";
+    std::cout << "HP : " << hp << std::endl;
 });
 
 onHealthChanged.emit(75.0f);
@@ -107,9 +107,17 @@ onHealthChanged.join([&](f32 hp) { checkDeath(hp); });         // called after
 
 ```cpp
 onHealthChanged.joinOnce([](f32 hp) {
-    std::cout << "First hit at : " << hp << "\n";
+    std::cout << "First hit at : " << hp << std::endl;
 }); // disconnected automatically after first emission
 ```
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Signal | Yes | Yes | SignalBase |
 
 ---
 

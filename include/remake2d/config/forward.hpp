@@ -3,11 +3,38 @@
 
 #include <remake2d/concept.hpp>
 
+struct SDL_Color;
+struct SDL_Window;
+struct SDL_Surface;
+struct SDL_Renderer;
+struct SDL_Rect;
+union  SDL_Event;
+struct SDL_Point;
+struct SDL_FPoint;
+struct SDL_Vertex;
+struct SDL_Texture;
+struct TTF_Font;
+struct Mix_Music;
+struct Mix_Chunk;
+struct _SDL_GameController;
+typedef struct _SDL_GameController SDL_GameController;
+
 namespace rmk {
+
+struct Area;
+struct Vec2d;
+struct Dim2d;
+struct Grid2d;
+struct Fact2d;
+
+struct HSL;
+struct Color;
 
 class PhysicBody;
 class StaticBody;
 class DynamicBody;
+
+class Actor;
 
 class Geometry;
 
@@ -19,15 +46,21 @@ template<IsShape S> class Texture;
 
 class Date;
 class Clock;
+class Timer;
+class Chronometer;
 
 class Camera;
 class Window;
 class TileMap;
 class TileGrid;
 class Parallax;
+struct TileMapData;
 
-class ISavable;
+template<typename... Args> class Signal;
 template<typename... Args> class Croutine;
+
+class TimerManager;
+class EventManager;
 
 }//namespace rmk
 #endif

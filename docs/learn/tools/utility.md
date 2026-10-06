@@ -81,20 +81,35 @@ Ordering a scene's background, characters, and HUD correctly gets tedious with a
 offsets computed from a base "wall" value:
 
 ```cpp
-i16 ground(u8 wall) noexcept; // wall - 256  (background)
-i16 world(u8 wall)  noexcept; // wall        (game world)
-i16 sky(u8 wall)    noexcept; // wall + 256  (foreground)
-i16 ui(u8 wall)     noexcept; // wall + 511  (interface)
-i16 log(u8 wall)    noexcept; // wall + 767  (debug)
+enum class layer : i16 {
+    min   = -50, // minimum layer
+    max   = 249, // maximum layer
 
-inline constexpr i16 min = -256;
-inline constexpr i16 max = 1023;
+    size  = 50, // distance between two layers
+
+    ground = min,           // ground layer start
+    world  = ground + size, // world layer start
+    sky    = world  + size, // sky layer start
+    ui     = sky    + size, // ui layer start
+    log    = ui     + size, // log layer start
+
+    count = log + size * 2 - 1 // total layers count
+};
+
+// Layer helpers (returns i16 layer value)
+namespace level {
+    i16 ground(u8 wall) noexcept; // wall + layer::ground  (background elements)
+    i16 world(u8 wall)  noexcept; // wall + layer::world   (game world objects)
+    i16 sky(u8 wall)    noexcept; // wall + layer::sky     (foreground effects)
+    i16 ui(u8 wall)     noexcept; // wall + layer::ui      (user interface)
+    i16 log(u8 wall)    noexcept; // wall + layer::log     (debug overlay)
+}
 ```
 
 ```cpp
-scene.add(background, rmk::layer::ground(0));
-scene.add(player,     rmk::layer::world(0));
-scene.add(hud,         rmk::layer::ui(0));
+scene.add(background,  rmk::level::ground(10)); // -40
+scene.add(player,      rmk::level::world(0));   // 0
+scene.add(hud,         rmk::level::ui(200));    // 149 : value is automatically clamped to 49 if is overlimit
 ```
 
 !!! info
@@ -109,15 +124,22 @@ fallback locations:
 
 ```cpp
 namespace file {
+void createParentPath(std::string_view)             noexcept;
 std::string jump(std::span<std::string_view> paths) noexcept;
 }
 ```
 
 ```cpp
-std::string_view paths [] = {
-    "assets/player.png",
-    "fallback/player.png"
-};
+std::string path = "my/full/path.txt";
+rmk::file::createParentPath(path); // create directory my/ and my/full/
+std::ofstream file(path);
+```
+
+```cpp
+std::string path1("assets/player.png");
+std::string path2("fallback/player.png");
+
+std::string_view paths [] = { path1, path2 };
 
 std::string path = rmk::file::jump(paths);
 ```
@@ -148,19 +170,19 @@ rmk::Color color = rmk::color::HSLToRGB(hsl);
 
 ## Version
 
-This header also contains macros and a function to find out the current version of the engine being used: 
+This header also contains enumeration and a function to find out the current version of the engine being used:
 
 ```cpp
-// version macro
+// version enum
 
-REMAKE2D_VERSION_MAJOR // major version x
-REMAKE2D_VERSION_MINOR // minor version y
-REMAKE2D_VERSION_PATCH // patch version z
+enum class version : u8 {
+	major = 0,
+	minor = 3,
+	patch = 0
+};
 
 // Helper function
-namespace version {
-std::string current(void) noexcept; // full current version (x.y.z)
-}
+std::string currentVersion(void) noexcept; // full current version (x.y.z)
 ```
 
 ---

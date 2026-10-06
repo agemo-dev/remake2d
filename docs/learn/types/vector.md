@@ -137,5 +137,16 @@ The same applies to `Dim2d`, `Fact2d` and `Grid2d`. See [Math](../tools/math.md)
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Vec2d | Yes | Yes | None |
+| Dim2d | Yes | Yes | None |
+| Fact2d | Yes | Yes | None |
+| Grid2d | Yes | Yes | None |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](numeric.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](area.md){ .md-button .md-button--primary }

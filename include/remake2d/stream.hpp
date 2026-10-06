@@ -10,25 +10,29 @@
 #include <sstream>
 
 namespace rmk {
-    
+
 std::ostream& operator<<(std::ostream&, const Vec2d&)  noexcept;
 std::ostream& operator<<(std::ostream&, const Fact2d&) noexcept;
+std::ostream& operator<<(std::ostream&, const Grid2d&) noexcept;
 std::ostream& operator<<(std::ostream&, const Dim2d&)  noexcept;
 std::ostream& operator<<(std::ostream&, const Color&)  noexcept;
+std::ostream& operator<<(std::ostream&, const HSL&)    noexcept;
 std::ostream& operator<<(std::ostream&, const Area&)   noexcept;
 
 
 Text& operator<<(Text&, Text&)            noexcept;
 Text& operator<<(Text&, std::string_view) noexcept;
-Text& operator<<(Text&, fmt)		      noexcept;
+Text& operator<<(Text&, fmt)              noexcept;
 template<IsBasicType T> Text& operator<<(Text& t, const T& value) noexcept;
 
 std::istream& operator>>(std::istream&, Vec2d&);
 std::istream& operator>>(std::istream&, Fact2d&);
+std::istream& operator>>(std::istream&, Grid2d&);
 std::istream& operator>>(std::istream&, Dim2d&);
 std::istream& operator>>(std::istream&, Color&);
+std::istream& operator>>(std::istream&, HSL&);
 std::istream& operator>>(std::istream&, Area&);
-	
+
 std::istream& operator>>(std::istream&, Text&) noexcept;
 
 

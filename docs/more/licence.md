@@ -1,12 +1,12 @@
-# Licence
+# License
 
-RE:MAKE 2D is on  **MIT Licene**.
+RE:MAKE 2D is on  **MIT License**.
 
 ---
 
 ## MIT License
 
-Copyright (c) 2025-2026 agemo-dev
+Copyright (c) 2026-2027 agemo-dev
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ SOFTWARE.
 
 licence of all **RE:MAKE 2D** dependancies :
 
-| Librairy | Licence | Link |
+| Librairy | License | Link |
 |---|---|---|
 | SDL2 | Zlib | [libsdl.org](https://libsdl.org) |
 | SDL2_image | Zlib | [libsdl.org](https://libsdl.org) |
@@ -42,3 +42,12 @@ licence of all **RE:MAKE 2D** dependancies :
 | Lua 5.4 | MIT | [lua.org](https://lua.org) |
 | sol2 | MIT | [github.com/ThePhD/sol2](https://github.com/ThePhD/sol2) |
 | nlohmann/json | MIT | [github.com/nlohmann/json](https://github.com/nlohmann/json) |
+| skiptracer | MIT | [github.com/agemo-dev/skiptracer](https://github.com/agemo-dev/skiptracer) |
+
+## Add-ons
+
+licence and version of RE:MAKE 2D Add-ons:
+
+| Add-ons | License | Version |
+|---|---|---|
+| RE:MAKE-SCRIPT | MIT | 0.2 |

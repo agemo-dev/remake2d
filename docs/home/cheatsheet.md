@@ -12,6 +12,20 @@ This page lists every **public class** and their methods in **RE:MAKE 2D**.
 ## Window
 
 ```cpp
+// class Window::Viewport
+Window::Viewport(void);
+explicit Window::Viewport(const Area& zone); // create a viewport
+
+Camera& camera(void)             noexcept; // get viewport camera
+void area(const Area&)           noexcept; // set viewport area
+Area area(void)            const noexcept; // get viewport area
+const Camera& camera(void) const noexcept; // get const viewport camera
+
+void clear(Color = rmk::color::black) noexcept;   // clear viewport with solid color
+void draw(const Printable&) noexcept; // draw a drawable object on viewport
+void fill(const Printable&) noexcept; // draw filled a fillable object on viewport
+
+// class Window
 Window(std::string_view title, Vec2d pos, Dim2d size); // create a new window
 u32      ID(void) const noexcept;           // get the unique window identifier
 Vec2d    pos(void) const noexcept;          // get window position (upper-left corner)
@@ -27,46 +41,64 @@ void     resizable(bool) noexcept;          // allow or forbid user resizing
 void     fullScreen(bool) noexcept;         // toggle fullscreen mode
 void     border(bool) noexcept;             // show or hide window decorations
 void     close(void) noexcept;              // close and destroy the window
+bool     resizable(void) const noexcept;    // check if window is resizable
 bool     isOpen(void) const noexcept;       // check if window is still open
 bool     isFocus(void) const noexcept;      // check if window has input focus
 std::string title(void) noexcept;           // get current window title
-void     blendMode(window::blendmode) noexcept; // set SDL blend mode
+void     blendMode(window::blendmode) noexcept; // set window blend mode
 
-void     clear(Color = rmk::color::black, std::string_view viewport = "") noexcept; // clear window with a solid color
+void     present(void);                      // present current frame
+void     screenshot(std::string_view path);  // take a screenshot of current frame (.png)
+void     clear(Color = rmk::color::black) noexcept; // clear window with a solid color
 
-void     draw(const TextureBase&, Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw a texture
-void     draw(const TileMap&,     Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw a tile map
-void     draw(const Parallax&,    Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw a parallax background
-void     draw(const Area&,        Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw rectangle outline
-void     draw(const TileGrid&,    Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw tile grid outline
-void     draw(const Geometry&,    Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw shape outline
-void     draw(const PhysicBody&,  Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw physics body outline
+void     draw(const Printable&) noexcept; // draw a drawable object
+void     fill(const Printable&) noexcept; // draw filled a fillable object
 
-void     fill(const Area&,        Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw filled rectangle
-void     fill(const Geometry&,    Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw filled shape
-void     fill(const PhysicBody&,  Color = rmk::color::white, std::string_view viewport = "") noexcept; // draw filled physics body
+void     connectViewport(Viewport&)    noexcept;  // register viewport
+void     disconnectViewport(Viewport&) noexcept;  // unregister viewport
 
-void     addViewport(std::string_view, Viewport) noexcept;  // register a named viewport
-void     linkCamera(std::string_view, Camera&) noexcept;    // attach a camera to a viewport
-void     unlinkCamera(std::string_view) noexcept;           // detach camera from a viewport
-void     removeViewport(std::string_view) noexcept;         // delete a named viewport
-void     useViewport(std::string_view) noexcept;            // activate a viewport for subsequent drawing
-void     resetViewport(void) noexcept;                      // restore the default full-window viewport
+// class Printable
 ```
 
 ---
 
-## Color / Vec2d / Dim2d / Fact2d / Grid2d / Area
+## Color
 
 ```cpp
 // Color
 Color(byte R, byte G, byte B, byte A = 255); // construct from RGBA components
 auto operator<=>(const Color&) const noexcept = default; // full comparison support
 
-// Named colors inside rmk::color::
-red, green, blue, skyblue, purple, orange, yellow, gray, gold,
-darkblue, darkgreen, lime, silver, maroon, pink, fuchsia, aqua,
-raywhite, cyan, emerald, teal, amber, indigo, black, white
+// Named colors
+namespace color {
+
+inline constexpr Color red       = { 255, 0,   0,   255 };
+inline constexpr Color green     = {   0, 230, 50,  255 };
+inline constexpr Color blue      = {   0, 0,   255, 255 };
+inline constexpr Color skyblue   = {   0, 191, 255, 255 };
+inline constexpr Color purple    = { 138, 43,  226, 255 };
+inline constexpr Color orange    = { 249, 115,  22, 255 };
+inline constexpr Color yellow    = { 255, 215, 0,   255 };
+inline constexpr Color gray      = { 128, 128, 128, 255 };
+inline constexpr Color gold      = { 255, 203,   0, 255 };
+inline constexpr Color darkblue  = {   0, 80,  180, 255 };
+inline constexpr Color darkgreen = {   0, 120,  50, 255 };
+inline constexpr Color lime      = {   0, 255,   0, 255 };
+inline constexpr Color silver    = { 192, 192, 192, 255 };
+inline constexpr Color maroon    = { 128, 0,   0,   255 };
+inline constexpr Color pink      = { 255, 0,   128, 255 };
+inline constexpr Color fuchsia   = { 255, 0,   255, 255 };
+inline constexpr Color aqua      = {   0, 255, 255, 255 };
+inline constexpr Color raywhite  = { 245, 245, 245, 255 };
+inline constexpr Color cyan      = {   6, 182, 212, 255 };
+inline constexpr Color emerald   = {   5, 150, 105, 255 };
+inline constexpr Color teal      = {  13, 148, 136, 255 };
+inline constexpr Color amber     = { 217, 119,   6, 255 };
+inline constexpr Color indigo    = {  79,  70, 229, 255 };
+inline constexpr Color black     = {   0, 0,   0,   255 };
+inline constexpr Color white     = { 255, 255, 255, 255 };
+
+} // namespace color
 
 // Free operators
 Color operator+(const Color&, const Color&) noexcept; // component-wise addition (clamped)
@@ -80,12 +112,16 @@ HSL(f32 hue, f32 saturation, f32 luminosity); // construct from HSL components
 auto operator<=>(const Color&) const noexcept = default; // full comparison support
 ```
 
+## Vector & dimension
+
 ```cpp
 // Vec2d
-Vec2d(f32 X, f32 Y);   // construct from X and Y
-Vec2d(f32 XY);         // construct with same value for both axes
-operator Fact2d(void);          // implicit conversion (negative components clamped to 0)
-operator Grid2d(void);          // implicit conversion (cast to usize)
+Vec2d(f32 X, f32 Y);     // construct from X and Y
+Vec2d(f32 XY);           // construct with same value for both axes
+
+operator Fact2d(void);   // implicit conversion (negative components clamped to 0)
+operator Grid2d(void);   // implicit conversion (cast to usize)
+
 auto operator<=>(const Vec2d&) const noexcept = default; // full comparison
 Vec2d operator+(const Vec2d&, const Vec2d&) noexcept; // addition
 Vec2d operator-(const Vec2d&, const Vec2d&) noexcept; // subtraction
@@ -98,19 +134,22 @@ Vec2d operator%(const Vec2d&, const Vec2d&) noexcept; // modulo (fmod)
 // Dim2d
 Dim2d(f32 W, f32 H);   // construct from width and height
 Dim2d(f32 WH);         // construct with same value for both axes
+
 auto operator<=>(const Dim2d&) const noexcept = default; // full comparison
-Dim2d operator+(const Dim2d&, const Dim2d&) noexcept; // addition
-Dim2d operator-(const Dim2d&, const Dim2d&) noexcept; // subtraction
-Dim2d operator*(const Dim2d&, const Dim2d&) noexcept; // multiplication
-Dim2d operator/(const Dim2d&, const Dim2d&) noexcept; // division
-Dim2d operator%(const Dim2d&, const Dim2d&) noexcept; // modulo (fmod)
+Dim2d operator+(const Dim2d&, const Dim2d&) noexcept;    // addition
+Dim2d operator-(const Dim2d&, const Dim2d&) noexcept;    // subtraction
+Dim2d operator*(const Dim2d&, const Dim2d&) noexcept;    // multiplication
+Dim2d operator/(const Dim2d&, const Dim2d&) noexcept;    // division
+Dim2d operator%(const Dim2d&, const Dim2d&) noexcept;    // modulo (fmod)
 ```
 
 ```cpp
 // Fact2d — scaling factor, now f32-based (was u32)
 Fact2d(f32 X, f32 Y);  // construct from X and Y — negative values clamped to 0 at construction
-Fact2d(f32 XY);        // construct with same value for both axes — negative clamped to 0
-operator Vec2d(void);           // implicit conversion
+Fact2d(f32 XY);        // construct with same value for both axes , negative clamped to 0
+
+operator Vec2d(void);  // implicit conversion
+
 auto operator<=>(const Fact2d&) const noexcept = default; // full comparison
 Fact2d operator+(const Fact2d&, const Fact2d&) noexcept;  // addition
 Fact2d operator-(const Fact2d&, const Fact2d&) noexcept;  // subtraction
@@ -123,24 +162,33 @@ Fact2d operator%(const Fact2d&, const Fact2d&) noexcept;  // modulo
 // Grid2d — id/index roles (usize-based)
 Grid2d(usize X, usize Y); // construct from X and Y
 Grid2d(usize XY);         // construct with same value for both axes
-operator Vec2d(void);              // implicit conversion
-operator SDL_Point(void);          // implicit conversion
+
+operator Vec2d(void);     // implicit conversion
+
 auto operator<=>(const Grid2d&) const noexcept = default; // full comparison
-Grid2d operator+(const Grid2d&, const Grid2d&) noexcept; // addition
-Grid2d operator-(const Grid2d&, const Grid2d&) noexcept; // subtraction
-Grid2d operator*(const Grid2d&, const Grid2d&) noexcept; // multiplication
-Grid2d operator/(const Grid2d&, const Grid2d&) noexcept; // division
-Grid2d operator%(const Grid2d&, const Grid2d&) noexcept; // modulo
+Grid2d operator+(const Grid2d&, const Grid2d&) noexcept;  // addition
+Grid2d operator-(const Grid2d&, const Grid2d&) noexcept;  // subtraction
+Grid2d operator*(const Grid2d&, const Grid2d&) noexcept;  // multiplication
+Grid2d operator/(const Grid2d&, const Grid2d&) noexcept;  // division
+Grid2d operator%(const Grid2d&, const Grid2d&) noexcept;  // modulo
 ```
 
 !!! info
     `Vec2d` converts implicitly to both `Fact2d` and `Grid2d`, so a `Vec2d` literal can be passed anywhere either type is expected.
 
+---
+
+# Area
+
 ```cpp
 // Area
 Area(i32 x, i32 y, i32 w, i32 h); // construct from position and size
 Area(const Vec2d& pos, const Dim2d& size); // construct from position + dimension
+
+Vec2d pos(void)    const noexcept; // get area upper-left position
+Dim2d size(void)   const noexcept; // get area size
 Vec2d center(void) const noexcept; // get area center
+
 auto operator<=>(const Area&) const noexcept = default; // full comparison
 Area operator+(const Area&, const Area&) noexcept; // addition
 Area operator-(const Area&, const Area&) noexcept; // subtraction
@@ -177,12 +225,12 @@ Shape(const Vec2d& center, const Dim2d& size); // construct a regular polygon
 // Triangulation for filled rendering is generated automatically.
 ```
 
-Aliases
+### Custom Shapes
 
 ```cpp
 using Line      = Shape<2>;   // line segment
-using Losange   = Shape<4>;   // diamond shape
-using Hexagone  = Shape<6>;   // hexagon
+using Diamond   = Shape<4>;   // diamond shape
+using Hexagon  = Shape<6>;   // hexagon
 using Ellipse   = Shape<36>;  // ellipse approximation
 
 class Point     : public Shape<1>;  // single point
@@ -211,8 +259,8 @@ void connectPriority(void (*func)(Args...));     // connect a free function with
 void disconnectPriority(void (*func)(Args...));  // disconnect a priority free function
 void connectPriority(Slot& slot);                // connect a std::function with priority
 void disconnectPriority(Slot& slot);             // disconnect a priority std::function
-void unablePriority(void (*func)(Args...));      // promote a normal function to priority
-void unablePriority(Slot& slot);                 // promote a normal slot to priority
+void enablePriority(void (*func)(Args...));      // promote a normal function to priority
+void enablePriority(Slot& slot);                 // promote a normal slot to priority
 void disablePriority(void (*func)(Args...));     // demote a priority function to normal
 void disablePriority(Slot& slot);                // demote a priority slot to normal
 
@@ -226,15 +274,15 @@ void bindFalling(Condition cond, Args... defaultArgs); // emit once when conditi
 void bindChange(Condition cond, Args... defaultArgs);  // emit on every condition change
 
 // Lifecycle
-void start(void);        // activate the signal
-void stop(void);         // deactivate the signal
-u32  count(void) const;  // number of connected slots
-void reserve(u32 size);  // pre-allocate internal storage
+void  start(void);          // activate the signal
+void  stop(void);           // deactivate the signal
+usize count(void) const;    // number of connected slots
+void  reserve(usize size);  // pre-allocate internal storage
 ```
 
 ---
 
-## EventManager (singleton event)
+## EventManager (singleton `event`)
 
 ```cpp
 void poll(void);                  // process all pending events (non-blocking)
@@ -254,11 +302,11 @@ _EventSignal<> onPressBackspace, onPressTab, onPressCapsLock;
 _EventSignal<> onPressDelete, onPressInsert, onPressHome;
 _EventSignal<> onPressEnd, onPressPageUp, onPressPageDown;
 _EventSignal<> onPressLeft, onPressRight, onPressUp, onPressDown; // arrow keys
-_EventSignal<> onPressLShift, onPressRShift;               // shift keys
-_EventSignal<> onPressLCtrl, onPressRCtrl;                 // control keys
-_EventSignal<> onPressLAlt, onPressRAlt;                   // alt keys
-_EventSignal<> onPressAny;                                 // any key pressed
-_EventSignal<> onPressF1 .. onPressF12;                    // function keys
+_EventSignal<> onPressShift, onPressLShift, onPressRShift;        // shift keys
+_EventSignal<> onPressCtrl, onPressLCtrl, onPressRCtrl;           // control keys
+_EventSignal<> onPressAlt, onPressLAlt, onPressRAlt;              // alt keys
+_EventSignal<> onPressAny;                                        // any key pressed
+_EventSignal<> onPressF1 .. onPressF12;                           // function keys
 
 // Equivalent onRelease* events for key releases
 // Equivalent onPressScan*, onReleaseScan* events (scancode-based, layout-independent)
@@ -274,8 +322,8 @@ _EventSignal<std::string> onTextEdit;    // composition / IME editing
 ### Mouse
 
 ```cpp
-_EventSignal<Vec2d> onMouseMove;                    // mouse position
-_EventSignal<Vec2d> onMouseRawMove;                 // relative mouse motion
+_EventSignal<Vec2d> onMouseMove;                     // mouse position
+_EventSignal<Vec2d> onMouseRawMove;                  // relative mouse motion
 _EventSignal<Vec2d> onLeftDown, onLeftUp;            // left button
 _EventSignal<Vec2d> onRightDown, onRightUp;          // right button
 _EventSignal<Vec2d> onMiddleDown, onMiddleUp;        // middle button
@@ -286,12 +334,15 @@ _EventSignal<Vec2d> onWheel;                         // mouse wheel (x, y)
 ### Gamepad
 
 ```cpp
+// i32 : controller ID
 _EventSignal<i32> onPressACtrl, onPressBCtrl, onPressXCtrl, onPressYCtrl;
 _EventSignal<i32> onPressStart, onPressSelect;
 _EventSignal<i32> onPressLShoulder, onPressRShoulder;
 _EventSignal<i32> onPressDpadLeft, onPressDpadRight, onPressDpadUp, onPressDpadDown;
 _EventSignal<i32> onPressLStick, onPressRStick;
+
 // Equivalent onRelease* events
+// i16 : axis value
 _EventSignal<i32, i16> onAxisLeftX, onAxisLeftY;       // left stick
 _EventSignal<i32, i16> onAxisRightX, onAxisRightY;     // right stick
 _EventSignal<i32, i16> onAxisLTrigger, onAxisRTrigger; // triggers
@@ -302,15 +353,26 @@ _EventSignal<i32> onControllerRemoved;                 // controller unplugged
 ### Touch
 
 ```cpp
+// Vec2d : click position
 _EventSignal<Vec2d> onFingerDown;     // finger touched screen
 _EventSignal<Vec2d> onFingerUp;       // finger lifted
 _EventSignal<Vec2d> onFingerMove;     // finger moved
 _EventSignal<Vec2d> onMultiGesture;   // multi-touch gesture
 ```
 
+
+### Mouse and Touch (mobile / mouse compatibility)
+
+```cpp
+// Vec2d : click position
+_EventSignal<Vec2d> onPointerUp;    // left button or finger up
+_EventSignal<Vec2d> onPointerDown;  // left button or finger down
+```
+
 ### Window events
 
 ```cpp
+// u32 : window ID
 _EventSignal<u32>        onWindowClose;        // window close requested
 _EventSignal<u32>        onWindowMinimized;    // window minimized
 _EventSignal<u32>        onWindowMaximized;    // window maximized
@@ -369,7 +431,7 @@ void update(void);                 // advance delta and dispatch signals (called
 
 ---
 
-## Timer / TimerManager (singleton timer)
+## Timer / TimerManager (singleton `timer`)
 
 ```cpp
 // Time unit
@@ -404,8 +466,8 @@ void pause(void) noexcept;    // pause without resetting
 void resume(void) noexcept;   // resume after pause
 void repeat(bool) noexcept;   // auto-restart on timeout
 
-bool isActive(void)  const noexcept;   // check if currently running
-bool isElapsed(void) const noexcept;   // check if timeout occurred
+bool active(void)      const noexcept; // check if currently running
+bool elapsed(void)     const noexcept; // check if timeout occurred
 fmax elapsedTime(void) const noexcept; // current elapsed time
 
 _TimerSignal<> onTimeout; // emitted once when the timer elapses
@@ -453,7 +515,7 @@ bool timeIs(const Clock& other) const noexcept; // compare with another time
 
 ---
 
-## System (singleton system)
+## System (singleton `system`)
 
 ```cpp
 void init(void);    // initialize SDL and all subsystems (must be called before Window)
@@ -469,24 +531,27 @@ struct Info {
     Date        currentDay(void);      // current system date
     Clock       currentTime(void);     // current system time
 };
+
 struct Setup {
-    void scalingMode(std::string_view);          // set render scaling quality
-    void backend(std::string_view);              // set render backend
-    void audioMode(std::string_view);            // set audio resampling mode
-    void audioCategory(std::string_view);        // set audio category
-    void mouseRelativeMode(std::string_view);    // set mouse relative mode
-    void mobileOrientation(std::span<std::string_view>); // set allowed orientations
     void allocateChannels(u16);                  // set number of audio channels
+    bool backend(std::string_view);              // set render backend
+    bool audioMode(std::string_view);            // set audio resampling mode
+    bool scalingMode(std::string_view);          // set render scaling quality
+    bool audioCategory(std::string_view);        // set audio category
+    bool mouseRelativeMode(std::string_view);    // set mouse relative mode
+    bool mobileOrientation(std::span<std::string_view>); // set allowed orientations
 };
+
 struct Toggle {
-    void vsync(bool);                  // enable/disable vsync
-    void blockOnPause(bool);           // block on pause (Android)
-    void gameController(bool);         // enable/disable game controller support
-    void hideHomeIndicator(bool);      // hide home indicator (iOS)
-    void relativeMouseMode(bool);      // enable/disable relative mouse mode
-    void materialAcceleration(bool);   // enable/disable framebuffer acceleration
-    void accelerometerAsJoystick(bool); // use accelerometer as joystick
+    bool vsync(bool);                   // enable/disable vsync
+    bool blockOnPause(bool);            // block on pause (Android)
+    void gameController(bool);          // enable/disable game controller support
+    bool hideHomeIndicator(bool);       // hide home indicator (iOS)
+    void relativeMouseMode(bool);       // enable/disable relative mouse mode
+    bool materialAcceleration(bool);    // enable/disable framebuffer acceleration
+    bool accelerometerAsJoystick(bool); // use accelerometer as joystick
 };
+
 Info   info;    // system information
 Setup  setup;   // system setup (must be called before init)
 Toggle toggle;  // system toggles (must be called before init)
@@ -494,7 +559,7 @@ Toggle toggle;  // system toggles (must be called before init)
 
 ---
 
-## PhysicManager (singleton physics)
+## PhysicManager (singleton `physics`)
 
 ```cpp
 f32   gravitationalConstant(void) const noexcept;  // get gravity
@@ -504,9 +569,10 @@ void  pixelsPerMeter(f32) noexcept;                // set pixel-to-meter ratio
 Area  world(void) const noexcept;                  // get world boundaries
 void  world(const Area&) noexcept;                 // set world boundaries (creates boundary walls)
 void  remove(PhysicBody&);                         // remove a body from the simulation
-const std::vector<PhysicBody*>&  bodies(void) const noexcept;   // all physics bodies
-const std::vector<StaticBody*>&  statics(void) const noexcept;  // static bodies only
-const std::vector<DynamicBody*>& dynamics(void) const noexcept; // dynamic bodies only
+
+std::vector<Tracker<PhysicBody>>& bodies(void)   const noexcept; // all physics bodies
+std::vector<Tracker<PhysicBody>>& statics(void)  const noexcept; // static bodies only
+std::vector<Tracker<PhysicBody>>& dynamics(void) const noexcept; // dynamic bodies only
 ```
 
 ---
@@ -529,10 +595,10 @@ void        focusAnimation(std::string_view); 	     // focus an animation
 Animation&  animation(std::string_view);             // get animation by name (use focused animation by default)
 void        linkAnimation(std::string_view, const Animation&); // attach an animation (first animation is automatically focused)
 
-// Parameter : PhysicBody *self, PhysicBody *other
-_PhysicSignal<PhysicBody*, PhysicBody*> onContact;       // emitted on contact persist
-_PhysicSignal<PhysicBody*, PhysicBody*> onContactStart;  // emitted on contact begin
-_PhysicSignal<PhysicBody*, PhysicBody*> onContactEnd;    // emitted on contact end
+// Parameter : Tracker<PhysicBody> self, Tracker<PhysicBody> other
+_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>> onContact;       // emitted on contact persist
+_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>> onContactStart;  // emitted on contact begin
+_PhysicSignal<Tracker<PhysicBody>, Tracker<PhysicBody>> onContactEnd;    // emitted on contact end
 ```
 
 ---
@@ -551,35 +617,46 @@ explicit StaticBody(const Geometry& shape); // create and register a static phys
 explicit DynamicBody(const Geometry& shape); // create and register a dynamic physics body
 void mass(f32) noexcept;                    // set mass (kg)
 f32  mass(void) const noexcept;             // get mass (kg)
+
 void density(f32) noexcept;                 // set density (kg/m², independent of size)
 f32  density(void) const noexcept;          // get density (kg/m²)
+
 void bounce(f32) noexcept;                  // set restitution (0.0 – 1.0)
 f32  bounce(void) const noexcept;           // get restitution
+
 void bounceThreshold(f32) noexcept;         // set minimum velocity for bounce
 f32  bounceThreshold(void) const noexcept;  // get bounce threshold
+
 void infiniteBounce(bool) noexcept;         // enable or disable perfect bouncing
 bool infiniteBounce(void) const noexcept;   // check whether perfect bouncing is enabled
+
 void friction(f32) noexcept;                // set friction coefficient
 f32  friction(void) const noexcept;         // get friction coefficient
+
 void gravity(bool) noexcept;                // enable or disable gravity
 bool gravity(void) const noexcept;          // check whether gravity is enabled
+
 void isBullet(bool) noexcept;               // enable bullet (CCD) mode for fast objects
 bool isBullet(void) const noexcept;         // check whether bullet mode is enabled
+
 void warp(const Area&) noexcept;            // set screen-wrapping area
 Area warp(void) const noexcept;             // get screen-wrapping area
+
 void limit(const Area&) noexcept;           // set movement boundaries
 Area limit(void) const noexcept;            // get movement boundaries
-void jump(f32) noexcept;                    // apply an upward impulse
-void push(const Vec2d&) noexcept;           // apply a continuous force
+
 void velocity(const Vec2d&) noexcept;       // set linear velocity
 Vec2d velocity(void) const noexcept;        // get linear velocity
 
-// Parameter: DynamicBody* self
-_PhysicSignal<DynamicBody*> onMove;         // emitted while moving
-_PhysicSignal<DynamicBody*> onMoveUp;       // emitted while moving upward
-_PhysicSignal<DynamicBody*> onMoveDown;     // emitted while moving downward
-_PhysicSignal<DynamicBody*> onMoveLeft;     // emitted while moving left
-_PhysicSignal<DynamicBody*> onMoveRight;    // emitted while moving right
+void jump(f32) noexcept;                    // apply an upward impulse
+void push(const Vec2d&) noexcept;           // apply a continuous force
+
+// Parameter: Tracker<DynamicBody> self
+_PhysicSignal<Tracker<DynamicBody>> onMove;         // emitted while moving
+_PhysicSignal<Tracker<DynamicBody>> onMoveUp;       // emitted while moving upward
+_PhysicSignal<Tracker<DynamicBody>> onMoveDown;     // emitted while moving downward
+_PhysicSignal<Tracker<DynamicBody>> onMoveLeft;     // emitted while moving left
+_PhysicSignal<Tracker<DynamicBody>> onMoveRight;    // emitted while moving right
 ```
 
 ---
@@ -588,8 +665,9 @@ _PhysicSignal<DynamicBody*> onMoveRight;    // emitted while moving right
 
 ```cpp
 // Sound (abstract base)
-i8       playFor(void) const noexcept;        // remaining loops
-u8       getVolume(void) const noexcept;      // current volume
+i8 playFor(void) const noexcept; // remaining loops
+u8 volume(void)  const noexcept; // current volume
+
 virtual void play(i8 = 0) = 0;                // start playback (0=once, -1=infinite, n=n times)
 virtual void stop(void) = 0;                  // stop playback
 virtual void pause(void) = 0;                 // pause playback
@@ -667,8 +745,8 @@ void append(std::string_view);  // append text to current content
 void append(fmt);               // append a formatting token (see below)
 void clear(void);               // clear text content
 
-void maxLengh(u16) noexcept;         // set max wrap length (pixels)
-u16  maxLengh(void) const noexcept;  // get max wrap length
+void maxLength(u16) noexcept;         // set max wrap length (pixels)
+u16  maxLength(void) const noexcept;  // get max wrap length
 ```
 
 ```cpp
@@ -705,6 +783,7 @@ void load(std::string_view tag, std::string_view path, u8 size); // load a font 
 Animation(std::string_view path, const Rectangle& shape,
           u8 total_clips, Dim2d clip_size,
           Vec2d start_pos = {0,0}, u8 spacing = 0); // create sprite sheet animation
+
 void play(i8 loop = 0, u8 fps = 12); // start animation (0=once, -1=infinite, n=n times)
 void pause(void) noexcept;           // pause animation
 void resume(void) noexcept;          // resume animation
@@ -719,24 +798,34 @@ Signal<> onFinish; // emit when animation ended (in last remaining)
 ## Camera
 
 ```cpp
-Camera(void);                                                    // default camera
-Camera(const Vec2d& center, const Dim2d& size, const Dim2d& limit); // camera with bounds
-void  zoom(f32) noexcept;                                        // set zoom level
-void  move(const Vec2d&) noexcept;                               // move camera
-void  limit(const Dim2d&) noexcept;                              // set world boundaries
-void  resize(const Dim2d&) noexcept;                             // set viewport size
-void  smoothing(f32) noexcept;                                   // set smoothing factor (0.0–1.0)
-f32   zoom(void) const noexcept;                                 // get zoom
-Dim2d size(void) const noexcept;                                 // get viewport size
-Vec2d center(void) const noexcept;                               // get camera position
-Dim2d limit(void) const noexcept;                                // get world boundaries
-Vec2d offset(void) const noexcept;                               // get last frame offset
-Vec2d followedPoint(void) const noexcept;                        // get tracked point
-f32   smoothing(void) const noexcept;                            // get smoothing factor
-void  follow(Vec2d&) noexcept;                                   // track a point
-void  follow(Geometry&) noexcept;                                // track a shape
-void  follow(PhysicBody&) noexcept;                              // track a physics body
-Signal<> onMove;                                                 // emitted when camera moves
+Camera(void);  // default camera
+Camera(const Vec2d& center, const Dim2d& size, const Dim2d& limit = nil); // camera with bounds
+
+void  zoom(f32)            noexcept;         // set zoom level
+void  move(const Vec2d&)   noexcept;         // move camera
+void  limit(const Dim2d&)  noexcept;         // set world boundaries
+void  resize(const Dim2d&) noexcept;         // set viewport size
+void  smoothing(f32)       noexcept;         // set smoothing factor (0.0 – 1.0)
+
+f32   zoom(void)       const noexcept;       // get zoom
+Dim2d size(void)       const noexcept;       // get viewport size
+Vec2d center(void)     const noexcept;       // get camera position
+Vec2d viewCenter(void) const noexcept;       // get the smoothed point the view is centered on (trails the followed point, clamped by limit)
+Dim2d limit(void)      const noexcept;       // get world boundaries
+Vec2d offset(void)     const noexcept;       // get last frame offset
+f32   smoothing(void)  const noexcept;       // get smoothing factor
+
+Vec2d followedPoint(void) const noexcept;    // get tracked point
+void  follow(const Followable&) noexcept;    // track a followable object
+void  unfollow(void)            noexcept;    // track a followable object
+
+Signal<> onMove;  // emitted when camera moves
+```
+
+### Followable
+
+```cpp
+virtual Vec2d center(void) const noexcept = 0;
 ```
 
 ---
@@ -744,18 +833,32 @@ Signal<> onMove;                                                 // emitted when
 ## TileMap
 
 ```cpp
+
+struct TileMapData {
+    Vec2d  center;
+    Dim2d  size;
+    Grid2d cut;
+    Dim2d  clip_size;
+    Vec2d  clip_start;
+    Vec2d  margin;
+};
+
+// TileMapData constructor
+TileMapData (Vec2d center, Dim2d size, Grid2d cut, Dim2d clip_size, Vec2d clip_start = 0, Vec2d margin = 0);
+
 TileMap(std::string_view tileset_path, TileMapData data); // create tile map
-// TileMapData { Vec2d center; Dim2d size; Vec2d clip_start; Dim2d clip_size; Grid2d cut; u8 margin; }
-using TileID       = i16;                          // tile identifier type
+
+using TileID       = u32;                          // tile identifier type
 using TileTemplate = std::vector<TileID>;          // tile layout type
 
-Vec2d  center(void) const noexcept;                // get map position
-Dim2d  size(void) const noexcept;                  // get map size
-Dim2d  clip(void) const noexcept;                  // get tile clip size
-Grid2d cut(void) const noexcept;                   // get grid dimensions
+Vec2d  center(void)    const noexcept;             // get map position
+Dim2d  size(void)      const noexcept;             // get map size
+Dim2d  clip(void)      const noexcept;             // get tile clip size
+Grid2d cut(void)       const noexcept;             // get grid dimensions
+TileMapData data(void) const noexcept;             // get all grid data
 
-void   move(Vec2d) noexcept;                       // move map
-void   resize(Dim2d) noexcept;                     // resize map
+void   move(Vec2d)       noexcept;                 // move map
+void   resize(Dim2d)     noexcept;                 // resize map
 void   counterStart(i16) noexcept;                 // set starting tile ID offset
 void   tag(std::string_view, TileID);              // assign a tag to a tile ID
 
@@ -777,16 +880,18 @@ u32         tileCount(TileID) const noexcept;      // count of a specific tile t
 
 ```cpp
 TileGrid(const Vec2d& center, const Dim2d& size, const Grid2d& cut); // create a grid
-void move(const Vec2d&) noexcept;     // move grid center
-void cut(const Grid2d&) noexcept;     // change grid divisions
+void move(const Vec2d&)   noexcept;   // move grid center
+void cut(const Grid2d&)   noexcept;   // change grid divisions
 void resize(const Dim2d&) noexcept;   // resize grid
 
-usize         count(void) const noexcept;           // total number of cells
-Dim2d         size(void) const noexcept;            // grid size
-Grid2d        cut(void) const noexcept;             // current grid divisions
-Vec2d         center(void) const noexcept;          // grid center
+usize         count(void)         const noexcept;   // total number of cells
+Dim2d         size(void)          const noexcept;   // grid size
+Grid2d        cut(void)           const noexcept;   // current grid divisions
+Vec2d         center(void)        const noexcept;   // grid center
 Area          cell(const Grid2d&) const noexcept;   // get a specific cell area by (col, row)
-std::vector<Area> cells(void) const noexcept;       // get all cell areas
+
+std::vector<Area>& cells(void)             noexcept; // get all cell areas
+const std::vector<Area>& cells(void) const noexcept; // get all cell areas (const)
 ```
 
 ---
@@ -795,12 +900,13 @@ std::vector<Area> cells(void) const noexcept;       // get all cell areas
 
 ```cpp
 Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Sprite>& sprites, const std::vector<u8>& quotients); // create parallax background
-void  move(const Vec2d&) noexcept;     // move background
-void  resize(const Dim2d&) noexcept;   // resize background
-void  velocity(const Vec2d&) noexcept; // set scroll speed
-Vec2d velocity(void) const noexcept;   // get scroll speed
-Dim2d size(void) const noexcept;       // get size
-Vec2d center(void) const noexcept;     // get center
+void  move(const Vec2d&)     noexcept;  // move background
+void  resize(const Dim2d&)   noexcept;  // resize background
+void  velocity(const Vec2d&) noexcept;  // set scroll speed
+Vec2d velocity(void)   const noexcept;  // get scroll speed
+Dim2d size(void)       const noexcept;  // get size
+Vec2d center(void)     const noexcept;  // get center
+void  linkCamera(const Camera&) noexcept; // scroll with a camera's movement
 ```
 
 ---
@@ -809,21 +915,33 @@ Vec2d center(void) const noexcept;     // get center
 
 ```cpp
 // Data (sum type)
-Data(byte); Data(rune); Data(imax); Data(fmax); Data(bool);
-Data(Vec2d); Data(Fact2d); Data(Grid2d); Data(Dim2d); Data(Color); Data(Area);
+Data(byte);
+Data(rune);
+Data(int);
+Data(imax);
+Data(fmax);
+Data(bool);
+Data(Vec2d);
+Data(Fact2d);
+Data(Grid2d);
+Data(Dim2d);
+Data(Color);
+Data(Area);
 Data(std::string_view);
 Data(std::vector<Data>);
 Data(std::map<std::string, Data>);
-static Data map(std::span<std::pair<const std::string, Data>>); // create map
+
 static Data list(std::span<Data>);                              // create list
+static Data map(std::span<std::pair<const std::string, Data>>); // create map
 
-const Data& operator[](std::string_view key) const;  // access map field by key
-const Data& operator[](usize idx) const;              // access list element by index
+const Data& operator[](usize idx) const;                // access list element by index
+const Data& operator[](std::string_view key) const;     // access map field by key
+
+template<typename T> operator T(void) const;            // implicit conversion
 template<typename T> T get(std::string_view key) const; // typed field access
-template<typename T> operator T(void) const;             // implicit conversion
 
-// ISavable (interface)
-virtual Data sdata(void) const = 0;   // serialize to Data
+// Savable
+virtual Data sdata(void) const  = 0;  // serialize to Data
 virtual void ldata(const Data&) = 0;  // load from Data
 
 // DataFile
@@ -832,83 +950,73 @@ void save(const Data&);                    // save raw Data
 void load(Data&);                          // load raw Data
 void save(const ISavable&);                // save a savable object
 void load(ISavable&);                      // load into a savable object
+
+void        remove(void)      noexcept;    // delete the file
+bool        exist(void) const noexcept;    // check if file exists
+std::string path(void)  const noexcept;    // get full file path
+std::string name(void)  const noexcept;    // get file name
+
 template<IsSavable T> friend DataFile& operator<<(DataFile&, const T&); // stream-save a savable object
 template<IsSavable T> friend DataFile& operator>>(DataFile&, T&);       // stream-load a savable object
-void        remove(void) noexcept;         // delete the file
-bool        exist(void) const noexcept;    // check if file exists
-std::string path(void) const noexcept;     // get full file path
-std::string name(void) const noexcept;     // get file name
 
 // SaveManager (singleton data)
-std::string root(void) const noexcept;        // get root directory
-void        root(std::string_view) noexcept;  // set root directory
+std::string root(void)       const noexcept;    // get root directory
+void        root(std::string_view) noexcept;    // set root directory
+
 bool        isInitialized(void) const noexcept; // check if initialized
 ```
-
----
-
-## Script
-
-```cpp
-// SolState (singleton script)
-template<typename T, typename... Ctors>
-void registerType(std::string_view name, std::function<void(SolState::Type&)> init = nullptr); // register C++ type to Lua
-template<typename T> void loadVar(std::string_view id, T& data) noexcept; // expose C++ variable to Lua
-std::string loadedTypes(void) const noexcept;      // list all registered type names
-bool        isLoadedType(std::string_view) const noexcept; // check if a type is registered
-
-// Script
-Script(std::string_view lua_file);            // load a Lua script
-template<typename T> T get(std::string_view); // get a Lua variable by name
-void update(void);                            // run the script
-Signal<> onFileChanged;                       // emitted when script file changes on disk
-```
-
-!!! info
-    Lua script execution requires the `remakeScript` add-on to be built and linked (`COMPONENTS Script`). See [Installation](../learn/install/install.md#components) for details.
 
 ---
 
 ## Scene & Actor
 
 ```cpp
-// ActorBase
-virtual void update(void) = 0;                                // update logic (override in derived)
-void             addChild(ActorBase*) noexcept;               // add child actor
-void             removeChild(ActorBase*) noexcept;            // remove child actor
-ActorBase*       parent(void) const noexcept;                 // get parent actor
-const std::vector<ActorBase*>& children(void) const noexcept; // get child actors
-void             active(bool) noexcept;                       // enable or disable actor
-bool             active(void) const noexcept;                 // check if active
+// Actor
+virtual void update(void) = 0;     // update logic (override in derived)
 
-// Actor (concrete, no physics)
-// PhysicActor<P> (StaticActor, DynamicActor)
+void addChild(Actor&)      noexcept;  // add child
+void removeChild(Actor&)   noexcept;  // remove child
+
+UnsafeTracker<Actor>& parent(void)             noexcept; // get current parent (mutable)
+const UnsafeTracker<Actor>& parent(void) const noexcept; // get current parent (constant)
+
+std::vector<UnsafeTracker<Actor>>& children(void)             noexcept; // get all children (mutable)
+const std::vector<UnsafeTracker<Actor>>& children(void) const noexcept; // get all children (constant)
+
+void active(bool)       noexcept; // enable/disable active
+bool active(void) const noexcept; // check if is active
+
+
+// template<IsPhysic P> PhysicActor<P> (inherit from Actor)
 PhysicActor(const Geometry&); // create actor with physics body
 P body; // public physics body member
+
+virtual void update(void) override {}; // update logic (override in derived)
 
 using StaticActor  = PhysicActor<StaticBody>;
 using DynamicActor = PhysicActor<DynamicBody>;
 
 // Scene
 void execute(const Frame&);               // set main update function
-void add(ActorBase&, i16 layer = 0);      // add actor to a layer
+void add(Actor&, i16 layer = 0);          // add actor to a layer
 void add(const Frame&, i16 layer = 0);    // add function to a layer
-void remove(ActorBase&);                  // remove actor from scene
+void remove(Actor&);                      // remove actor from scene
 void update(void);                        // run one frame
-void enable(void) noexcept;               // enable scene updates
-void disable(void) noexcept;              // disable scene updates
-bool isEnabled(void) const noexcept;      // check if scene is enabled
+void active(bool)       noexcept;         // enable/disable active
+bool active(void) const noexcept;         // check if is active
 void setLayerActive(i16 layer, bool);     // enable/disable all actors on a layer
-void setActorActive(ActorBase&, bool);    // enable/disable a specific actor
+void setActorActive(Actor&, bool);        // enable/disable a specific actor
 
 // Act
 void add(std::string_view name, Scene&);                               // register a scene
 void link(std::string_view name, std::span<std::string_view> scenes);  // group scenes under a tag
 void focus(std::string_view);                                          // activate a scene or link
 void update(void) const;                                               // update focused scene(s)
-void update(std::string_view) const;                                   // update a specific scene or link
 void updates(void) const;                                              // update all scenes
-Scene* scene(std::string_view) const;                                  // get scene by tag
+void update(std::string_view) const;                                   // update a specific scene or link
+
+Tracker<Scene>       scene(std::string_view);                          // get scene by tag
+const Tracker<Scene> scene(std::string_view) const;                    // get scene by tag (const)
 ```
 
 ---
@@ -917,14 +1025,14 @@ Scene* scene(std::string_view) const;                                  // get sc
 
 ```cpp
 // Croutine<Args...> and Croutine<>
-template<typename F> void load(F&& function); // attach a coroutine function
+template<typename F> void load(F&& function);  // attach a coroutine function
 void run(Args... args);                        // start with arguments
 void run(void);                                // start without arguments (Croutine<> only)
 void resume(void) noexcept;                    // resume after pause
 void stop(void) noexcept;                      // stop permanently
 void wait(void) noexcept;                      // block caller until coroutine finishes
 bool isRunning(void) noexcept;                 // check if currently running
-u64  id(void) const noexcept;                  // get coroutine ID
+u64  ID(void) const noexcept;                  // get coroutine ID
 u64  majorID(void) const noexcept;             // get worker thread ID
 void priority(croutine::priority) noexcept;    // set scheduling priority (engine, heavy, user)
 void isEngine(bool) noexcept;                  // mark as engine priority
@@ -973,19 +1081,24 @@ bool isRunning(void) const noexcept;                    // check if loop is acti
 
 ```cpp
 u32  seed(void) noexcept;                   // get current seed
-void seed(u32) noexcept;                    // set seed
+void seed(u32)  noexcept;                   // set seed
+
 u32  randSeed(void) noexcept;               // generate a hardware random seed
 void rollSeed(void) noexcept;               // generate and apply a new random seed
-template<IsBasicType T = i32> T rand(const T& min, const T& max) noexcept; // random integer/float
-template<> Vec2d  rand<Vec2d>(const Vec2d& min, const Vec2d& max) noexcept;   // random vector
-template<> Fact2d rand<Fact2d>(const Fact2d& min, const Fact2d& max) noexcept;   // random vector
-template<> Grid2d rand<Grid2d>(const Grid2d& min, const Grid2d& max) noexcept;   // random vector
-template<> Dim2d  rand<Dim2d>(const Dim2d& min, const Dim2d& max) noexcept;   // random dimensions
-template<> Color  rand<Color>(const Color& min, const Color& max) noexcept;   // random color in HSL range
-Color mixColor(f32 saturation = 1.0f, f32 lightness = 0.5f) noexcept;        // random vivid color (HSL)
-template<typename T> T choice(const std::span<T>&) noexcept;                 // random element from span
-std::string choice(const std::span<std::string_view>&) noexcept;             // random string from span
-std::vector<u8> dice(u8 n, u8 faces) noexcept; // roll n dice with given face count
+
+template<IsBasicType T = i32> T rand(const T& min, const T& max) noexcept;      // random integer/float
+template<> Vec2d  rand<Vec2d>(const Vec2d& min, const Vec2d& max) noexcept;     // random vector
+template<> Fact2d rand<Fact2d>(const Fact2d& min, const Fact2d& max) noexcept;  // random vector
+template<> Grid2d rand<Grid2d>(const Grid2d& min, const Grid2d& max) noexcept;  // random vector
+template<> Dim2d  rand<Dim2d>(const Dim2d& min, const Dim2d& max) noexcept;     // random dimensions
+template<> Color  rand<Color>(const Color& min, const Color& max) noexcept;     // random color in HSL range
+
+Color mixColor(f32 saturation = 1.0f, f32 lightness = 0.5f) noexcept;   // random vivid color (HSL)
+
+template<typename T> T choice(const std::span<T>&) noexcept;            // random element from span
+std::string choice(const std::span<std::string_view>&) noexcept;        // random string from span
+
+std::vector<u8> dice(u8 n, u8 faces) noexcept;  // roll n dice with given face count
 bool chance(f32 probability) noexcept;          // true with given probability (0.0–1.0)
 ```
 
@@ -999,21 +1112,36 @@ constexpr Nil nil; // universal null/zero placeholder
 // Operators: all types comparable to nil via == and !=
 // (nil == T{} evaluates to true)
 
+
+enum class layer : i16 {
+    min   = -50, // minimum layer
+    max   = 249, // maximum layer
+
+    size  = 50, // distance between two layers
+
+    ground = min,           // ground layer start
+    world  = ground + size, // world layer start
+    sky    = world  + size, // sky layer start
+    ui     = sky    + size, // ui layer start
+    log    = ui     + size, // log layer start
+
+    count = log + size * 2 - 1 // total layers count
+};
+
 // Layer helpers (returns i16 layer value)
-namespace layer {
-    i16 ground(u8 wall); // wall - 256  (background elements)
-    i16 world(u8 wall);  // wall        (game world objects)
-    i16 sky(u8 wall);    // wall + 256  (foreground effects)
-    i16 ui(u8 wall);     // wall + 511  (user interface)
-    i16 log(u8 wall);    // wall + 767  (debug overlay)
-    inline constexpr i16 min = -256;
-    inline constexpr i16 max = 1023;
+namespace level {
+    i16 ground(u8 wall) noexcept; // wall + layer::ground  (background elements)
+    i16 world(u8 wall)  noexcept; // wall + layer::world   (game world objects)
+    i16 sky(u8 wall)    noexcept; // wall + layer::sky     (foreground effects)
+    i16 ui(u8 wall)     noexcept; // wall + layer::ui      (user interface)
+    i16 log(u8 wall)    noexcept; // wall + layer::log     (debug overlay)
 }
 
 // Angle utilities
 namespace angle {
     fmax degToRad(fmax degrees) noexcept;
     fmax radToDeg(fmax radians) noexcept;
+
     namespace literal {
         fmax operator""_deg(fmax) noexcept; // degrees to radians literal
         fmax operator""_rad(fmax) noexcept; // radians to degrees literal
@@ -1048,3 +1176,28 @@ inline constexpr bool on      = true,  off     = false;
 inline constexpr bool isTrue  = true,  isFalse = false;
 inline constexpr u8   success = 0,     fail    = 1;
 ```
+
+---
+
+## Script
+
+```cpp
+// SolState (singleton script)
+template<typename T, typename... Ctors>
+void registerType(std::string_view name, std::function<void(SolState::Type&)> init = nullptr); // register C++ type to Lua
+
+template<typename T> void loadVar(std::string_view id, T& data) noexcept; // expose C++ variable to Lua
+
+std::string loadedTypes(void) const noexcept;              // list all registered type names
+bool        isLoadedType(std::string_view) const noexcept; // check if a type is registered
+
+// Script
+Script(std::string_view lua_file);            // load a Lua script
+template<typename T> T get(std::string_view); // get a Lua variable by name
+void update(void);                            // run the script
+
+Signal<> onFileChanged;                       // emitted when script file changes on disk
+```
+
+!!! info
+    Lua script execution requires the `remakeScript` add-on to be built and linked (`COMPONENTS Script`). See [Installation](../learn/introduction/install.md#components) for details.

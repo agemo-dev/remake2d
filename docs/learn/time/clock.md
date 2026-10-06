@@ -73,5 +73,13 @@ if (playTime.timeIs(bestTime)) { /* tied with best time */ }
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Clock | Yes | Yes | None |
+
+---
+
 [:octicons-arrow-left-24: Previous chapter](date.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](../tools/math.md){ .md-button .md-button--primary }

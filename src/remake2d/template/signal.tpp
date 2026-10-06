@@ -153,7 +153,7 @@ void Signal<Args...>::disconnect(void (*func)(Args...)) {
         m_connected_funcs.erase(it);
         m_count--;
         _refreshState();
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_nonexistent);
 }
 
 template<typename... Args>
@@ -177,7 +177,7 @@ void Signal<Args...>::disconnect(Slot& slot) {
         m_connected_slots.erase(it);
         m_count--;
         _refreshState();
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_nonexistent);
 }
 
 template<typename... Args>
@@ -223,7 +223,7 @@ void Signal<Args...>::disconnectPriority(void (*func)(Args...)) {
         m_prioritary_funcs.erase(it);
         m_count--;
         _refreshState();
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_nonexistent);
 }
 
 template<typename... Args>
@@ -240,25 +240,25 @@ void Signal<Args...>::disconnectPriority(Slot& slot) {
         m_prioritary_slots.erase(it);
         m_count--;
         _refreshState();
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_nonexistent);
 }
 
 template<typename... Args>
-void Signal<Args...>::unablePriority(void (*func)(Args...)) {
+void Signal<Args...>::enablePriority(void (*func)(Args...)) {
     auto it = std::find(m_connected_funcs.begin(), m_connected_funcs.end(), func);
     if (it != m_connected_funcs.end()) {
         m_prioritary_funcs.emplace_back(*it);
         m_connected_funcs.erase(it);
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_nonexistent);
 }
 
 template<typename... Args>
-void Signal<Args...>::unablePriority(Slot& slot) {
+void Signal<Args...>::enablePriority(Slot& slot) {
     auto it = std::find(m_connected_slots.begin(), m_connected_slots.end(), &slot);
     if (it != m_connected_slots.end()) {
         m_prioritary_slots.emplace_back(*it);
         m_connected_slots.erase(it);
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_nonexistent);
 }
 
 template<typename... Args>
@@ -267,7 +267,7 @@ void Signal<Args...>::disablePriority(void (*func)(Args...)) {
     if (it != m_prioritary_funcs.end()) {
         m_connected_funcs.emplace_back(*it);
         m_prioritary_funcs.erase(it);
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::function_nonexistent);
 }
 
 template<typename... Args>
@@ -276,7 +276,7 @@ void Signal<Args...>::disablePriority(Slot& slot) {
     if (it != m_prioritary_slots.end()) {
         m_connected_slots.emplace_back(*it);
         m_prioritary_slots.erase(it);
-    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_unexist);
+    } else rmk_dynamicAssert(rmk::SignalError, error::signal::slot_nonexistent);
 }
 
 template<typename... Args>
@@ -372,12 +372,12 @@ void Signal<Args...>::stop(void) {
 }
 
 template<typename... Args>
-u32 Signal<Args...>::count(void) const {
+usize Signal<Args...>::count(void) const {
     return m_count;
 }
 
 template<typename... Args>
-void Signal<Args...>::reserve(u32 size) {
+void Signal<Args...>::reserve(usize size) {
     m_connected_funcs.reserve(size);
     m_prioritary_funcs.reserve(size);
     m_connected_slots.reserve(size);
@@ -388,9 +388,9 @@ void Signal<Args...>::reserve(u32 size) {
 
 template<typename... Args>
 void Signal<Args...>::_evaluate(Args... args) {
-    
+
     if (!m_active.load()) return;
-    
+
     bool cond = m_condition && m_condition();
     bool prev = m_previous_cond.load();
     bool should_emit = false;
@@ -419,48 +419,6 @@ template<typename... Args>
 Signal<Args...>::~Signal(void) {
     if (m_registered_user) signalManager.unregisterUser(m_slot_index);
     if (m_registered_dispatch) signalManager.unregisterDispatchOnly(m_dispatch_index);
-}
-
-template<typename... Args>
-void _EngineSignal<Args...>::_evaluate(Args... args) {
-    this->m_pending_args = std::make_tuple(args...);
-    this->m_needs_emit.store(true);
-}
-
-template<typename... Args>
-void _EngineSignal<Args...>::_refreshState(void) {
-    bool ready = this->m_count > 0;
-    this->m_active.store(ready);
-    if (ready && !m_registered) {
-        this->m_dispatch_index = signalManager.registerDispatchOnly(*this);
-        this->m_registered_dispatch = true;
-        m_registered = true;
-    }
-}
-
-template<typename... Args>
-void _EventSignal<Args...>::_setScancode(SDL_Scancode sc) noexcept {
-    m_scancode = sc;
-}
-
-template<typename... Args>
-void _EventSignal<Args...>::_setButton(SDL_GameControllerButton b) noexcept {
-    m_button = b;
-}
-
-template<typename... Args>
-bool _EventSignal<Args...>::isActive(void) const noexcept {
-    if (m_scancode != SDL_SCANCODE_UNKNOWN)
-        return SDL_GetKeyboardState(nullptr)[m_scancode];
-    if (m_button != SDL_CONTROLLER_BUTTON_INVALID) {
-        for (int i = 0; i < SDL_NumJoysticks(); i++) {
-            SDL_JoystickID id = SDL_JoystickGetDeviceInstanceID(i);
-            SDL_GameController* ctrl = _getOpenController(id);
-            if (ctrl && SDL_GameControllerGetButton(ctrl, m_button))
-                return true;
-        }
-    }
-    return false;
 }
 
 } // namespace rmk

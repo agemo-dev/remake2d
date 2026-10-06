@@ -4,32 +4,23 @@
 #include <remake2d/lock.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/croutine.hpp>
+#include <remake2d/config/sdl.hpp>
+#include <remake2d/config/forward.hpp>
+#include <remake2d/private/ivector.hpp>
 
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-#else
-    #error "SDL not found."
-#endif
-
-#include <vector>
-#include <mutex>
-#include <atomic>
 #include <tuple>
-#include <optional>
+#include <mutex>
+#include <vector>
+#include <atomic>
 #include <utility>
+#include <optional>
 #include <algorithm>
 #include <functional>
+#include <initializer_list>
 
 
 namespace rmk {
 
-class TimerManager;
-class EventManager;
-class PhysicBody;
-template<typename...> class Signal;
-	
 SDL_GameController* _getOpenController(i32) noexcept;
 
 enum class EdgeMode : u8 {
@@ -41,6 +32,7 @@ enum class EdgeMode : u8 {
 
 
 class SignalManager {
+
 private:
     std::vector<std::optional<std::function<void()>>>  m_slot_user;
     _EngineCroutine                                    m_routine_user;
@@ -71,10 +63,11 @@ public:
 inline SignalManager& signalManager = SignalManager::getInstance();
 
 class SignalBase {
+
 protected:
     virtual void _dispatch(void)     = 0;
     virtual void _refreshState(void) = 0;
-    
+
 private:
     friend class SignalManager;
     friend class DeltaThreadConnector;
@@ -83,6 +76,7 @@ private:
 
 template<typename... Args>
 class Signal : public SignalBase {
+
 public:
     using Slot      = std::function<void(Args...)>;
     using Condition = std::function<bool(void)>;
@@ -114,7 +108,7 @@ protected:
 
 public:
     Signal(void) = default;
-	
+
 public:
     Signal(const Signal&);
     Signal(Signal&&) noexcept;
@@ -135,19 +129,19 @@ public:
     void joinOnce(Slot&&);
     void joinPriority(Slot&&);
 
-    void connectPriority(void (*)(Args...));
+    void connectPriority(void    (*)(Args...));
     void disconnectPriority(void (*)(Args...));
     void connectPriority(Slot&);
     void disconnectPriority(Slot&);
     void connectPriority(Slot&&)    = delete;
     void disconnectPriority(Slot&&) = delete;
 
-    void unablePriority(void (*)(Args...));
-    void unablePriority(Slot&);
+    void enablePriority(void (*)(Args...));
+    void enablePriority(Slot&);
     void disablePriority(void (*)(Args...));
-	
+
     void disablePriority(Slot&);
-    void unablePriority(Slot&&)  = delete;
+    void enablePriority(Slot&&)  = delete;
     void disablePriority(Slot&&) = delete;
 
     void emit(Args...);
@@ -159,8 +153,8 @@ public:
 
     void stop(void);
     void start(void);
-    u32 count(void) const;
-    void reserve(u32);
+    usize count(void) const;
+    void  reserve(usize);
 
 protected:
     void _dispatch(void) override;
@@ -176,80 +170,9 @@ public:
     virtual ~Signal(void);
 };
 
-template<typename... Args>
-class _EngineSignal : public Signal<Args...> {
-protected:
-    bool    m_registered{false};
-
-protected:
-    _EngineSignal(void) = default;
-    using Signal<Args...>::Signal;
-    using Signal<Args...>::operator=;
-    
-protected:
-    void _evaluate(Args...)  override;
-    void _refreshState(void) override;
-    
-public:
-    virtual ~_EngineSignal(void) = default;
-};
-
-template<typename... Args>
-class _TimerSignal : public _EngineSignal<Args...> {
-private:
-    _TimerSignal(void) = default;
-    using _EngineSignal<Args...>::_EngineSignal;
-    using _EngineSignal<Args...>::operator=;
-
-    friend class Timer;
-    friend class TimerManager;
-    friend class SignalManager;
-    friend class DeltaThreadConnector;
-    template<typename...> friend class Croutine;
-};
-
-template<typename... Args>
-class _EventSignal : public _EngineSignal<Args...> {
-private:
-    SDL_Scancode             m_scancode{SDL_SCANCODE_UNKNOWN};
-    SDL_GameControllerButton m_button{SDL_CONTROLLER_BUTTON_INVALID};
-
-private:
-    _EventSignal(void) = default;
-    using _EngineSignal<Args...>::_EngineSignal;
-    using _EngineSignal<Args...>::operator=;
-
-public:
-    bool isActive(void) const noexcept;
-
-private:
-    void _setScancode(SDL_Scancode)           noexcept;
-    void _setButton(SDL_GameControllerButton) noexcept;
-
-    friend class EventManager;
-    friend class SignalManager;
-    friend class DeltaThreadConnector;
-    template<typename...> friend class Croutine;
-};
-
-template<typename... Args>
-class _PhysicSignal : public _EngineSignal<Args...> {
-private:
-    _PhysicSignal(void) = default;
-    using _EngineSignal<Args...>::_EngineSignal;
-    using _EngineSignal<Args...>::operator=;
-
-private:
-    friend class PhysicBody;
-    friend class DynamicBody;
-    friend class SignalManager;
-    friend class PhysicManager;
-    friend class DeltaThreadConnector;
-    template<typename...> friend class Croutine;
-};
-
 } // namespace rmk
 
+#include <remake2d/private/esignal.hpp>
 #include <remake2d/template/signal.tpp>
 
 #endif

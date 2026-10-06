@@ -1,22 +1,15 @@
 #ifndef REMAKE2D_RESSOURCE_
 #define REMAKE2D_RESSOURCE_
 
-
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-	#include <SDL2/SDL_ttf.h>
-	#include <SDL2/SDL_image.h>
-	#include <SDL2/SDL_mixer.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-	#include <SDL_ttf.h>
-	#include <SDL_image.h>
-	#include <SDL_mixer.h>
-#else
-    #error "SDL not found."
-#endif
+#include <remake2d/system.hpp>
+#include <remake2d/config/sdl.hpp>
+#include <remake2d/config/forward.hpp>
 
 namespace rmk {
+
+inline void _resourceFreeSurface(SDL_Surface* s)  { sdl.freeSurface(s); }
+inline void _resourceFreeChunk(Mix_Chunk* c)      { sdl.freeChunk(c);   }
+inline void _resourceFreeMusic(Mix_Music* m)      { sdl.freeMusic(m);   }
 
 template<typename T, void(*F)(T*)> struct Resource {
 public:
@@ -26,6 +19,7 @@ private:
     u32* m_refcount{nullptr};
 
 public:
+    Resource(T*);
     Resource(void);
     Resource(const Resource&);
     Resource(Resource&&) noexcept;
@@ -39,9 +33,9 @@ private:
     void release(void);
 };
 
-using Surface = Resource<SDL_Surface, SDL_FreeSurface>;
-using CHK     = Resource<Mix_Chunk,     Mix_FreeChunk>;
-using MUS     = Resource<Mix_Music,     Mix_FreeMusic>;
+using Surface = Resource<SDL_Surface, _resourceFreeSurface>;
+using CHK     = Resource<Mix_Chunk,   _resourceFreeChunk>;
+using MUS     = Resource<Mix_Music,   _resourceFreeMusic>;
 
 } // namespace rmk
 

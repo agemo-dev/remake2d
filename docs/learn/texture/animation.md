@@ -31,9 +31,11 @@ Signal<> onFinish; // emit when animation ended (in last remaining)
 ### Creating an animation
 
 ```cpp
-Animation(std::string_view path, const Rectangle& shape,
-          u8 total_clips, Dim2d clip_size,
-          Vec2d start_pos = {0, 0}, u8 spacing = 0);
+Animation(
+        std::string_view path,    const Rectangle& shape,
+        u8 total_clips,           Dim2d clip_size,
+        Vec2d start_pos = {0, 0}, u8 spacing = 0
+);
 ```
 
 - `total_clips` : number of frames in the sheet.
@@ -47,10 +49,9 @@ rmk::Animation walk("player_walk.png", {{400, 300}, {32, 48}}, 6, {32, 48});
 
 ### Playing an animation
 
-Play must be called every frame for the animation to advance; it takes a loop count and a playback speed in frames per second:
+Play must be called once for the animation to advance; it takes a loop count and a playback speed in frames per second:
 
 ```cpp
-// In render loop
 walk.play(-1, 8); // loop forever, 8 frames per second
 ```
 
@@ -61,7 +62,7 @@ walk.play(-1, 8); // loop forever, 8 frames per second
 Since `Animation` inherits from `Sprite`, it draws exactly the same way:
 
 ```cpp
-win.draw(walk, rmk::color::white);
+win.fill(walk);
 ```
 
 ### Pausing and stopping
@@ -86,24 +87,23 @@ You can download the animation sheet [here](assets/texture3.png) .
 #include <remake2d/all/everything.hpp>
 
 int main () {
-	rmk::Window win;
+    rmk::Window win;
 
-	rmk::Animation anim(
-	        "texture3.png",					// path to animation sheet
-	        {win.center(), {320, 360}},     // Printing rectangle
-	        4,								// 4 clips
-	        {32, 36},						// clip size
-	        {0, 0}							// clip position
-	)
-	
-	anim.play(-1, 8);						// infinity loop + 8 fps speed
-	
-	rmk::loop.execute(win, [&] (){
-		win.clear(rmk::color::green);		// clear screen on green
-		win.draw(anim);						// draw current clip
-	});
-	
-	rmk::loop.update();		// launch app
+    rmk::Animation anim(
+            "texture3.png",                 // path to animation sheet
+            { win.center(), {320, 360} },   // Printing rectangle
+            4,                              // 4 clips
+            {32, 36}                        // clip size
+    );
+
+    anim.play(-1, 8);                       // infinity loop + 8 fps speed
+
+    rmk::loop.execute(win, [&] (){
+        win.clear(rmk::color::green);     // clear screen on green
+        win.fill(anim);                     // fill current clip
+    });
+
+    rmk::loop.update();        // launch app
 }
 
 ```
@@ -111,6 +111,14 @@ int main () {
 result:
 
 ![gif animation](assets/texture1.gif)
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Animation | Yes | Yes | Sprite |
 
 ---
 

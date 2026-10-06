@@ -8,6 +8,10 @@ namespace system {
 void initSDL(void);
 } // namespace system
 
+namespace loop {
+void init(void) noexcept;
+} // namespace loop
+
 namespace sound {
 void initQueue(void) noexcept;
 } // namespace sound

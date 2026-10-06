@@ -1,6 +1,6 @@
 # RE:MAKE 2D
 
-> *A 2D game engine that puts the developer first.*
+> *A simple, expressive, and complete C++20 2D engine.*
 
 **RE:MAKE 2D** is a full code, object-oriented 2D game engine for
 C++20. It wraps SDL2, Box2D, and Lua into a single cohesive API, so
@@ -29,7 +29,7 @@ below give a feel for the API; the full reference lives in the
 ```cpp
 rmk::Signal<f32*> onHealthChanged;
 
-onHealthChanged.bind([](void) { last_hp != hp; }, &hp); // auto-emits based on a condition
+onHealthChanged.bind([](void) { return last_hp != hp; }, &hp); // auto-emits based on a condition
 onHealthChanged.join([](f32 *hp) { std::cout << "HP : " << *hp << "\n"; });
 
 onHealthChanged.emit(&hp); // or emit manually
@@ -45,7 +45,7 @@ player.tag("player");
 player.mass(10.0f);
 player.friction(0.3f);
 
-player.onContact.join([&](rmk::PhysicBody* self, rmk::PhysicBody* other) {
+player.onContact.join([&](rmk::Tracker<rmk::PhysicBody> self, rmk::Tracker<rmk::PhysicBody> other) {
     if (other->tag() == "enemy") hp -= 10.0f;
 });
 ```
@@ -62,12 +62,12 @@ friction = 0.8
 rmk::Script rock("rock.lua");
 rock.onFileChanged.join([&]() {
     rock.update();
-    rockShape.resize({rock.get<rmk::f32>("size")});
+    rockShape.resize(rock.get<rmk::f32>("size"));
 });
 ```
 
-There's more to discover beyond these — tilemaps, save data,
-coroutines, cameras — all covered in the
+There's more to discover beyond these : tilemaps, save data,
+coroutines, cameras ... All covered in the
 [documentation](https://agemo-dev.github.io/remake2d/).
 
 ---
@@ -87,7 +87,7 @@ cmake --install .
 
 All other dependencies are fetched automatically via CMake FetchContent if not already installed.
 
-**Fetched automatically:** SDL2 2.28.11 — SDL_image 2.8.6 — SDL_mixer 2.8.2 — SDL_ttf 2.24.0
+**Fetched automatically:** SDL2 2.30.11 — SDL_image 2.8.6 — SDL_mixer 2.8.2 — SDL_ttf 2.24.0
 
 ---
 
@@ -96,13 +96,15 @@ All other dependencies are fetched automatically via CMake FetchContent if not a
 ```cpp
 #include <remake2d/all/bases.hpp>
 
-int main(void) {
+int main (void) {
 
     rmk::Window win;
     rmk::Circle circle(win.center(), 400);
 
+    circle.color(rmk::color::cyan);
+
     rmk::loop.execute(win, [&] (void) {
-        win.fill(circle, rmk::color::cyan);
+        win.fill(circle);
     });
 
     rmk::loop.update();

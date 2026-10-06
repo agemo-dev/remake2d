@@ -5,7 +5,8 @@
 **RE:MAKE 2D** offers a wide variety of numeric types available in the
 header **"remake2d/numeric.hpp"**. These types are organized as follows:
 
-##Kind Type
+## Kind Type
+
 | **Category** | **Type** |
 |---|---|
 |Signed integers | `i8`, `i16`, `i32`, `i64`, `imax` |
@@ -16,7 +17,6 @@ header **"remake2d/numeric.hpp"**. These types are organized as follows:
 |Unsigned fast integers | `ufast8`, `ufast16`, `ufast32`, `ufast64` |
 |Floating-point | `f32`, `f64`, `fmax` |
 |Pointers and size | `usize`, `ptrdiff`, `addr` |
-| | |
 
 ---
 
@@ -62,7 +62,7 @@ int main(void) {
     
     num += 10; // 110
     num = num - 50; // 60
-    num = num * num; // 360
+    num = num * num; // 3600
     
     dbl = dbl - 0.005; // 10.500;
     dbl = dbl % 10; // ERROR: modulo cannot be applied to double

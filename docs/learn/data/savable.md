@@ -1,12 +1,12 @@
-# ISavable
+# Savable
 
-Rebuilding a `Data` by hand for every object to save gets repetitive fast; `ISavable` lets that conversion be described once per type, so `DataFile` can then save or load it directly.
+Rebuilding a `Data` by hand for every object to save gets repetitive fast; `Savable` lets that conversion be described once per type, so `DataFile` can then save or load it directly.
 
 ---
 
 ## Overview
 
-`ISavable` is contained in the header **"remake2d/data.hpp"**. It's a small interface any custom type can implement, requiring only two methods: one to turn the object into a `Data`, the other to read it back from one.
+`Savable` is contained in the header **"remake2d/data.hpp"**. It's a trait any custom type can implement, requiring only two methods: one to turn the object into a `Data`, the other to read it back from one.
 
 ---
 
@@ -21,12 +21,12 @@ virtual void ldata(const Data&) = 0; // restores the object's state from a Data
 
 ## Usage
 
-### Implementing `ISavable`
+### Implementing `Savable`
 
-A type becomes savable by inheriting from `ISavable` and implementing both methods, mapping each field to and from a named entry in a `Data` map:
+A type becomes savable by inheriting from `Savable` and implementing both methods, mapping each field to and from a named entry in a `Data` map:
 
 ```cpp
-class Player : public rmk::ISavable {
+class Player : public rmk::Savable {
 public:
     std::string name;
     rmk::i32     score{0};
@@ -52,7 +52,7 @@ public:
 
 ### Saving and loading
 
-Once `ISavable` is implemented, the object passes directly to a `DataFile`, without ever building or reading a `Data` by hand at the call site:
+Once `Savable` is implemented, the object passes directly to a `DataFile`, without ever building or reading a `Data` by hand at the call site:
 
 ```cpp
 rmk::DataFile file("save1");
@@ -74,6 +74,14 @@ file >> p;
 
 !!! info
     Nested savable objects work naturally, since `sdata` can embed another object's own `sdata` result as one of its fields.
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Savable | Yes | Yes | None |
 
 ---
 

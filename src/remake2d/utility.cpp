@@ -1,5 +1,7 @@
 #include <remake2d/utility.hpp>
+#include <remake2d/all/types.hpp>
 #include <remake2d/physic.hpp>
+#include <remake2d/error.hpp>
 #include <remake2d/clock.hpp>
 #include <remake2d/math.hpp>
 
@@ -10,17 +12,14 @@
 
 namespace rmk {
 
-namespace version {
-std::string current(void) noexcept {
+std::string currentVersion(void) noexcept {
 	std::ostringstream oss;
-	oss << REMAKE2D_VERSION_MAJOR << '.' << REMAKE2D_VERSION_MINOR << '.' << REMAKE2D_VERSION_PATCH;
+	oss << (int) version::major << "." << (int) version::minor << "." << (int) version::patch;
 	return oss.str();
 }
-} // namespace version
 
 namespace color {
 HSL RGBToHSL(const Color& c) {
-    
     f32 rf = c.r / 255.0f;
     f32 gf = c.g / 255.0f;
     f32 bf = c.b / 255.0f;
@@ -110,25 +109,6 @@ Dim2d meterToPixel(const Dim2d& meters) {
 
 } //namespace physic
 
-
-namespace layer {
-i16 ground(u8 wall) noexcept {
-    return wall - 256;
-}
-i16 world(u8 wall) noexcept {
-    return wall;
-}
-i16 sky(u8 wall) noexcept {
-    return wall + 256;
-}
-i16 ui(u8 wall) noexcept {
-    return wall + 511;
-}
-i16 log(u8 wall) noexcept {
-    return wall + 767;
-}
-} //namespace layer
-
 namespace angle {
 fmax degToRad(fmax degrees) noexcept {
     return degrees * (pi / 180.0f);
@@ -159,6 +139,16 @@ std::string jump(std::span<std::string_view> files) noexcept {
         }
     }
     return nil;
+}
+
+void createParentPath(std::string_view path) noexcept {
+    std::filesystem::path p(path);
+
+    if (p.has_parent_path()) {
+        std::error_code ec;
+        std::filesystem::create_directories(p.parent_path(), ec);
+        if (ec) rmk_dynamicAssert(DataError, std::string(error::data::directory_no_create) + " : " + ec.message());
+    }
 }
 } //namespace file
 

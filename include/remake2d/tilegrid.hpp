@@ -1,45 +1,55 @@
 #ifndef REMAKE2D_TILEGRID_
 #define REMAKE2D_TILEGRID_
 
+#include <remake2d/area.hpp>
 #include <remake2d/vector.hpp>
+#include <remake2d/private/draw.hpp>
 #include <remake2d/config/forward.hpp>
 
 #include <vector>
 
 namespace rmk {
 
-class TileGrid {
+class TileGrid : public Printable {
+
 private:
-    Grid2d              m_cut;
-    Dim2d               m_size;
-    Vec2d               m_center;
-    std::vector<Area>   m_cells;
+    Grid2d              m_cut{0};
+    Dim2d               m_size{0};
+    Vec2d               m_center{0};
+    std::vector<Area>   m_cells{};
 
 public:
     TileGrid(const Vec2d&, const Dim2d&, const Grid2d&);
-    TileGrid(void)                          = default;
-    TileGrid(TileGrid&&)                    = default;
-    TileGrid(const TileGrid&)               = default;
-    TileGrid& operator=(TileGrid&&)         = default;
-    TileGrid& operator=(const TileGrid&)    = default;
-    
+
+public:
+    TileGrid(void)                            = delete;
+    TileGrid(const TileGrid&)                 = default;
+    TileGrid(TileGrid&&) noexcept             = default;
+    TileGrid& operator=(const TileGrid&)      = default;
+    TileGrid& operator=(TileGrid&&) noexcept  = default;
+
 public:
     void move(const Vec2d&)   noexcept;
     void cut(const Grid2d&)   noexcept;
     void resize(const Dim2d&) noexcept;
 
 public:
-    usize  count(void) 				const noexcept;
-    Dim2d  size(void) 				const noexcept;
-    Grid2d cut(void) 				const noexcept;
-    Vec2d  center(void)				const noexcept;
-    Area   cell(const Grid2d&)		const noexcept; 
-    std::vector<Area> cells(void)	const noexcept;
-    
+    usize  count(void)               const noexcept;
+    Dim2d  size(void)                const noexcept;
+    Grid2d cut(void)                 const noexcept;
+    Vec2d  center(void)              const noexcept;
+    Area   cell(const Grid2d&)       const noexcept;
+
+    std::vector<Area>& cells(void) noexcept;
+    const std::vector<Area>& cells(void) const noexcept;
+
 private:
-    void _build(void) 		  noexcept;
-    void _draw(Window&) const noexcept;
-    
+    void _build(void)  noexcept;
+
+public:
+    void draw(const Printable&) const noexcept override;
+    void fill(const Printable&) const noexcept override;
+
 private:
     friend class Window;
 };

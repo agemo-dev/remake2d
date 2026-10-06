@@ -12,6 +12,7 @@ template<typename Derived>
 void CroutineImpl<Derived>::resume(void) noexcept {
     if (!m_task || m_task->handle.done() || m_stopped || m_running) return;
     m_running = true;
+	croutinePool.start();
     croutinePool.submit(_makeEntry(), m_priority);
 }
 

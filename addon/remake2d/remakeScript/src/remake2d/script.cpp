@@ -28,11 +28,14 @@ SolState& SolState::getInstance(void) noexcept {
 }
 
 void SolState::_placeInTable(std::string_view path, SolState::Type ut) noexcept {
-    sol::table current = m_table;
+    usize sep = path.find("::");
+    if (sep == std::string_view::npos) return;
+
+    sol::table current = m_state.globals();
     usize      start   = 0;
 
     while (true) {
-        usize sep = path.find("::", start);
+        sep = path.find("::", start);
         std::string segment = (sep == std::string_view::npos)
             ? std::string(path.substr(start))
             : std::string(path.substr(start, sep - start));
@@ -46,27 +49,36 @@ void SolState::_placeInTable(std::string_view path, SolState::Type ut) noexcept 
         current = next;
         start   = sep + 2;
     }
+
+    m_state[std::string(path)] = sol::lua_nil;
 }
 
 Script::Script(std::string_view id) : m_file(id) {
-    if (!script.m_is_init) config::solstat::initLua();
+
     if (!std::filesystem::exists(m_file)) {
-        rmk_dynamicAssert(rmk::ScriptError, std::string(error::script::file_unexist) + " : " + std::string(m_file));
+        rmk_dynamicAssert(rmk::ScriptError, std::string(error::script::file_nonexistent) + " : " + std::string(m_file));
     }
     m_env = sol::environment(script.m_state, sol::create, script.m_state.globals());
 
-    onFileChanged.bindRising([this]() {
-        static auto last = std::filesystem::last_write_time(m_file);
-        auto current = std::filesystem::last_write_time(m_file);
-        if (current != last) {
-            last = current;
-            return true;
-        }
-        return false;
+    m_last_write_time = std::filesystem::last_write_time(m_file);
+
+    Tracker<Script> track = tracker();
+
+    onFileChanged.bindRising([track]() mutable {
+        if (!track) return false;
+
+        std::error_code ec;
+        auto current = std::filesystem::last_write_time(track->m_file, ec);
+        if (ec || current == track->m_last_write_time) return false;   // file momentarily missing, or unchanged
+
+        track->m_last_write_time = current;
+        return true;
     });
 }
 
 void Script::update(void) {
+	if (!script.m_is_init) config::solstat::initLua();
+
     try {
         script.m_state.script_file(m_file, m_env);
     } catch (const sol::error& e) {

@@ -1,18 +1,18 @@
 #include <remake2d/parallax.hpp>
+#include <remake2d/texture.hpp>
+#include <remake2d/vector.hpp>
+#include <remake2d/camera.hpp>
 #include <remake2d/window.hpp>
 #include <remake2d/time.hpp>
 
-#include <vector>
 #include <utility>
 #include <algorithm>
 
 namespace rmk {
 
-Parallax::Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Sprite>& sprites, const std::vector<u8>& quotients) {
+Parallax::Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Sprite>& sprites, const std::vector<u8>& quotients)
+    : m_size(size), m_center(center) {
 
-    m_size = size;
-    m_center = center;
-    
     m_speed_quotients = std::vector<u8>(quotients.begin(), quotients.end());
     u32 sprite_count  = sprites.size();
 
@@ -26,12 +26,13 @@ Parallax::Parallax(const Vec2d& center, const Dim2d& size, const std::vector<Spr
         }
         m_speed_quotients = std::move(temp);
     }
-	
+
 	if (m_speed_quotients.empty()) m_speed_quotients.push_back(0);
-    m_parse = sprite_count / m_speed_quotients.size();
+    m_parse = std::max<u32>(1, sprite_count / m_speed_quotients.size());
     m_sprite_list = sprites;
-    
+
     _moveAndResize(center, size);
+    parallax._registerParallax(this);
 }
 
 void Parallax::velocity(const Vec2d& v) noexcept {
@@ -58,53 +59,68 @@ Dim2d Parallax::size(void) const noexcept {
     return m_size;
 }
 
-void Parallax::_tile(Layer& layer) const noexcept {
-    Dim2d size = layer.sprite_a.size();
-
-    
-    if (layer.sprite_a.center().x < -size.w) {
-        layer.sprite_a.move({
-            layer.sprite_b.center().x + size.w,
-            layer.sprite_a.center().y
-        });
-    }
-
-    
-    if (layer.sprite_b.center().x < -size.w) {
-        layer.sprite_b.move({
-            layer.sprite_a.center().x + size.w,
-            layer.sprite_b.center().y
-        });
-    }
+void Parallax::linkCamera(const Camera& cam) noexcept {
+    m_sync_cam = cam.tracker();
 }
 
-void Parallax::_draw(Window& win, Color color) const noexcept {
+// Places the two sprites of a layer from its accumulated offset. The offset is wrapped
+// on x, so scrolling is endless in both directions: sprite_a sits at the offset and
+// sprite_b one width behind it, together they always cover the whole area.
+void Parallax::_tile(Layer& layer) const noexcept {
+    f32 w = layer.sprite_a.size().w;
+
+    if (w > 0.0f) {
+        layer.offset.x = std::fmod(layer.offset.x, w);
+        if (layer.offset.x < 0.0f) layer.offset.x += w;
+    }
+
+    Vec2d pos_a = { m_center.x + layer.offset.x, m_center.y + layer.offset.y };
+    layer.sprite_a.move(pos_a);
+    layer.sprite_b.move({ pos_a.x - w, pos_a.y });
+}
+
+void Parallax::update(void) noexcept {
 
     Vec2d vel = m_velocity;
 
+    if(m_sync_cam) vel += m_sync_cam->offset() / (f32) delta.tick();
+
     for (auto& layer : m_layers) {
-        
-        Vec2d delta_ = {
-            vel.x * layer.speed * (f32)delta.tick(),
-            vel.y * layer.speed * (f32)delta.tick()
-        };
 
-        layer.sprite_a.move({
-            layer.sprite_a.center().x + delta_.x,
-            layer.sprite_a.center().y + delta_.y
-        });
-        layer.sprite_b.move({
-            layer.sprite_b.center().x + delta_.x,
-            layer.sprite_b.center().y + delta_.y
-        });
+        layer.offset.x += vel.x * layer.speed * (f32)delta.tick();
+        layer.offset.y += vel.y * layer.speed * (f32)delta.tick();
 
-        
         _tile(layer);
-
-        
-        win.draw(layer.sprite_a, color);
-        win.draw(layer.sprite_b, color);
     }
+
+    is_fill_dirty = true;
+    is_draw_dirty = true;
+}
+
+void Parallax::fill(const Printable& main) const noexcept {
+
+    from(main);
+
+    for (auto& layer : m_layers) {
+        layer.sprite_a.fill(main);
+        layer.sprite_b.fill(main);
+    }
+
+    is_fill_dirty = false;
+    filled        = true;
+}
+
+void Parallax::draw(const Printable& main) const noexcept {
+
+    from(main);
+
+    for (auto& layer : m_layers) {
+        layer.sprite_a.draw(main);
+        layer.sprite_b.draw(main);
+    }
+
+    is_draw_dirty = false;
+    drawn         = true;
 }
 
 void Parallax::_moveAndResize(const Vec2d& center, const Dim2d& size) noexcept {
@@ -112,14 +128,11 @@ void Parallax::_moveAndResize(const Vec2d& center, const Dim2d& size) noexcept {
     m_size = size;
     m_layers.clear();
 
-    u32 group = 0;
     u32 count = 0;
     for (auto& sprite : m_sprite_list) {
-        if (count > 0 && count % m_parse == 0) group++;
-
-        f32 speed = 1.0f;
-        for (u32 i = 0; i <= group && i < m_speed_quotients.size(); i++)
-            speed *= (1.0f - m_speed_quotients[i] / 100.0f);
+        // each quotient is the % of the full velocity this layer LOSES (0 = full speed, 100 = fixed)
+        u32 group = std::min<u32>(count / m_parse, (u32)m_speed_quotients.size() - 1);
+        f32 speed = 1.0f - std::min<u32>(m_speed_quotients[group], 100) / 100.0f;
 
         Sprite a = sprite;
         a.move(center);
@@ -131,6 +144,28 @@ void Parallax::_moveAndResize(const Vec2d& center, const Dim2d& size) noexcept {
         m_layers.emplace_back(Layer{std::move(a), std::move(b), speed});
         count++;
     }
+}
+
+Parallax::~Parallax(void) {
+    parallax._unregisterParallax(this);
+}
+
+void ParallaxManager::update(void) {
+    for (auto& para : m_parallaxs) if (para) para->update();
+}
+
+ParallaxManager& ParallaxManager::getInstance(void) noexcept {
+    static ParallaxManager instance;
+    return instance;
+}
+
+void ParallaxManager::_registerParallax(const Parallax* para) noexcept {
+    m_parallaxs.push_back(para->tracker());
+}
+
+void ParallaxManager::_unregisterParallax(const Parallax* para) noexcept {
+    auto it = std::find(m_parallaxs.begin(), m_parallaxs.end(), para->tracker());
+    if (it != m_parallaxs.end()) m_parallaxs.erase(it);
 }
 
 } //namespace rmk

@@ -25,8 +25,8 @@ void pause(void)  noexcept; // pause without resetting
 void resume(void) noexcept; // resume after pause
 void repeat(bool) noexcept; // auto-restart on timeout
 
-bool isActive(void)    const noexcept; // check if currently running
-bool isElapsed(void)   const noexcept; // check if timeout occurred
+bool active(void)      const noexcept; // check if currently running
+bool elapsed(void)     const noexcept; // check if timeout occurred
 fmax elapsedTime(void) const noexcept; // current elapsed time
 
 _TimerSignal<> onTimeout;
@@ -64,7 +64,7 @@ else cooldown.resume();
 ### Reacting to timeout
 
 `onTimeout` fires once when the timer reaches its limit, which is where most of the actual logic belongs rather than 
-polling isElapsed every frame:
+polling elapsed every frame:
 
 ```cpp
 cooldown.onTimeout.join([&]() {
@@ -80,6 +80,14 @@ a wave spawner or a periodic heal tick:
 ```cpp
 cooldown.repeat(true);
 ```
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Timer | Yes | Yes | Trackable |
 
 ---
 

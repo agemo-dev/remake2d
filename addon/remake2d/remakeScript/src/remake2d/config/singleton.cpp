@@ -1,4 +1,5 @@
 #include <remake2d/all/everything.hpp>
+#include <remake2d/config/otracker.hpp>
 
 namespace rmk {
 namespace config {
@@ -10,10 +11,10 @@ void initLuaSingleton(sol::table& rmk) noexcept {
         ut["tick"]   = &DeltaTime::tick;
         ut["FPS"]    = &DeltaTime::FPS;
         ut["maxFPS"] = sol::overload(
-            [](DeltaTime& self) { return self.maxFPS(); },
+            [](DeltaTime& self)   { return self.maxFPS(); },
             [](DeltaTime& self, fmax v) { self.maxFPS(v); }
         );
-    });
+    }, rmk::type::base<Updatable, Trackable>);
     rmk["delta"] = &delta;
 
     script._registerEngineType<PhysicManager>("PhysicManager", [](SolState::Type& ut) {
@@ -32,7 +33,16 @@ void initLuaSingleton(sol::table& rmk) noexcept {
         ut["bodies"]   = &PhysicManager::bodies;
         ut["dynamics"] = &PhysicManager::dynamics;
         ut["statics"]  = &PhysicManager::statics;
-    });
+        ut["remove"]   = &PhysicManager::remove;
+        ut["useFixedStep"] = sol::overload(
+            [](PhysicManager& self) { return self.useFixedStep(); },
+            [](PhysicManager& self, bool s) { self.useFixedStep(s); }
+        );
+        ut["fixedStep"] = sol::overload(
+            [](PhysicManager& self) { return self.fixedStep(); },
+            [](PhysicManager& self, f32 s) { self.fixedStep(s); }
+        );
+    }, rmk::type::base<Updatable, Trackable>);
     rmk["physics"] = &physics;
 
     script._registerEngineType<Random>("Random", [](SolState::Type& ut) {
@@ -41,6 +51,7 @@ void initLuaSingleton(sol::table& rmk) noexcept {
             [](Random& self, u32 s) { self.seed(s); }
         );
         ut["rollSeed"] = &Random::rollSeed;
+        ut["randSeed"] = &Random::randSeed;
         ut["chance"]   = &Random::chance;
         ut["dice"]     = &Random::dice;
         ut["rand"] = sol::overload(
@@ -52,7 +63,7 @@ void initLuaSingleton(sol::table& rmk) noexcept {
         );
         ut["mixColor"] = &Random::mixColor;
         ut["choice"] = [](Random& self, std::vector<sol::object> vec) -> sol::object {
-		    return random.choice<sol::object>(vec);
+		    return self.choice<sol::object>(vec);
 		};
     });
     rmk["random"] = &random;
@@ -62,6 +73,7 @@ void initLuaSingleton(sol::table& rmk) noexcept {
             [](SaveManager& self) { return self.root(); },
             [](SaveManager& self, std::string_view p) { self.root(p); }
         );
+        ut["isInitialized"] = &SaveManager::isInitialized;
     });
     rmk["data"] = &data;
 
@@ -74,20 +86,30 @@ void initLuaSingleton(sol::table& rmk) noexcept {
         ut["update"]    = &MainRenderLoop::update;
         ut["isRunning"] = &MainRenderLoop::isRunning;
         ut["execute"] = sol::overload(
-            [](MainRenderLoop& self, Window& win, sol::function body) { loop.execute(win, [body]() { body(); }); },
-            [](MainRenderLoop& self, sol::function condition, sol::function body) { loop.execute([condition]() -> bool { return condition(); }, [body]() { body(); }); }
+            [](MainRenderLoop& self, Window& win, sol::function body) { self.execute(win, [body]() { body(); }); },
+            [](MainRenderLoop& self, sol::function condition, sol::function body) { self.execute([condition]() -> bool { return condition(); }, [body]() { body(); }); }
         );
     });
-    rmk["loop"] = &loop;
+    rmk["loop"] = &rmk::loop;
 
     script._registerEngineType<FontManager>("FontManager", [](SolState::Type& ut) {
         ut["load"] = &FontManager::load;
     });
     rmk["font"] = &font;
 
-    script._registerEngineType<XWindow>("XWindow");
+    script._registerEngineType<XWindow>("XWindow", [](SolState::Type& ut) {
+        ut["lastDrawnWindow"] = &XWindow::lastDrawnWindow;
+    });
     rmk["xwindow"] = &xwindow;
 
+    script._registerEngineType<System>("System", [&](SolState::Type& ut) {
+        ut["init"]    = &System::init;
+        ut["quit"]    = &System::quit;
+        ut["isInit"]  = &System::isInit;
+        ut["info"]    = &rmk::system.info;
+        ut["toggle"]  = &rmk::system.toggle;
+        ut["setup"]   = &rmk::system.setup;
+    });
     script._registerEngineType<System::Info>("System::Info", [](SolState::Type& ut) {
         ut["platform"]     = &System::Info::platform;
         ut["cpuCount"]     = &System::Info::cpuCount;
@@ -121,14 +143,6 @@ void initLuaSingleton(sol::table& rmk) noexcept {
 		};
     });
 
-    script._registerEngineType<System>("System", [&](SolState::Type& ut) {
-        ut["init"]    = &System::init;
-        ut["quit"]    = &System::quit;
-        ut["isInit"]  = &System::isInit;
-        ut["info"]    = &rmk::system.info;
-        ut["toggle"]  = &rmk::system.toggle;
-        ut["setup"]   = &rmk::system.setup;
-    });
     rmk["system"] = &rmk::system;
 }
 

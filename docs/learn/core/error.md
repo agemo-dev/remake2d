@@ -90,6 +90,7 @@ class ScriptError;
 class PhysicError;
 class TileMapError;
 class SignalError;
+class TrackerError;
 ```
 
 !!! warning
@@ -98,5 +99,14 @@ class SignalError;
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](../data/script.md){ .md-button }
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Error | Yes | Yes | None |
+| Error derived | Yes | Yes | Error |
+
+---
+
+[:octicons-arrow-left-24: Previous chapter](../data/lua.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](signal.md){ .md-button .md-button--primary }

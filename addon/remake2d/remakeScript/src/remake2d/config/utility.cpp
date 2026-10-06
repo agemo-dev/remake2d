@@ -6,9 +6,10 @@ namespace solstat {
 
 void initLuaUtility(sol::table& rmk) noexcept {
 
-	rmk["version"].get_or_create<sol::table>();
-	rmk["version"]["current"] = &version::current;
-	
+	rmk["currentVersion"] = &currentVersion;
+
+    rmk["pi"] = pi;
+
     rmk["angle"].get_or_create<sol::table>();
     rmk["angle"]["degToRad"] = &angle::degToRad;
     rmk["angle"]["radToDeg"] = &angle::radToDeg;
@@ -41,6 +42,7 @@ void initLuaUtility(sol::table& rmk) noexcept {
     rmk["file"]["jump"] = [](std::vector<std::string_view> views) -> std::string {
     	return file::jump(views);
 	};
+    rmk["file"]["createParentPath"] = &file::createParentPath;
 }
 
 } // namespace solstat

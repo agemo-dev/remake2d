@@ -31,7 +31,7 @@ void resume(void) noexcept;                    // resume after a pause
 void stop(void) noexcept;                      // stop permanently
 void wait(void) noexcept;                      // block caller until coroutine finishes
 bool isRunning(void) noexcept;                 // check if currently running
-u64  id(void) const noexcept;                  // get coroutine ID
+u64  ID(void) const noexcept;                  // get coroutine ID
 u64  majorID(void) const noexcept;             // get worker thread ID
 void priority(croutine::priority p) noexcept;  // set scheduling priority
 void isEngine(bool v) noexcept;                // mark as engine priority
@@ -200,5 +200,13 @@ reader.run();
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](event.md){ .md-button }
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Croutine | No | No | CroutineBase |
+
+---
+
+[:octicons-arrow-left-24: Previous chapter](tracker.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](system.md){ .md-button .md-button--primary }

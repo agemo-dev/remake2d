@@ -21,6 +21,29 @@ Task::Task(std::coroutine_handle<Task::promise_type> h) noexcept : handle(h) {}
 Task::Task(Task&& o) noexcept : handle(std::exchange(o.handle, {})) {}
 Task::~Task(void) { if (handle) handle.destroy(); }
 
+bool Task::await_ready(void) const noexcept {
+    // initial_suspend() is suspend_always, so nothing has run yet:
+    // never ready on a freshly returned Task. Also treat an empty/
+    // finished handle as ready so co_await on it is a no-op instead
+    // of resuming a done coroutine.
+    return !handle || handle.done();
+}
+
+bool Task::await_suspend(std::coroutine_handle<>) noexcept {
+    // One step per resume: run the inner Task until it either hits
+    // its next suspend point (rmk_pause()/co_yield, or a co_await
+    // inside it) or finishes. We do NOT loop to completion . A Task
+    // is not required to ever finish (e.g. a while(running) loop
+    // driven one tick at a time), so looping here would block
+    // forever on exactly that kind of Task. Either way we return
+    // false so the awaiting coroutine resumes immediately after this
+    // one step, rather than parking on a continuation.
+    handle.resume();
+    return false;
+}
+
+void Task::await_resume(void) const noexcept {}
+
 ThreadWorker::ThreadWorker(void) {
     m_thread = std::jthread([this](std::stop_token token) {
         _loop(token);
@@ -111,8 +134,9 @@ void CroutinePool::start(void) {
     m_max_user = std::max(1u, std::thread::hardware_concurrency());
 
     u32 initial = std::max(1u, m_max_user / 4u);
-    for (u32 i = 0; i < initial; i++)
+    for (u32 i = 0; i < initial; i++) {
         m_user.emplace_back(std::make_unique<ThreadWorker>());
+	}
 
 	m_is_init = true;
 }

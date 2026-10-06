@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.32)
 
 project(
-	remakeScript
-	VERSION 0.1.0
-	DESCRIPTION "A remake2d add-on for lua scripting"
-	LANGUAGES CXX C
+    remakeScript
+    VERSION 0.2.0
+    DESCRIPTION "A remake2d add-on for lua scripting"
+    LANGUAGES CXX C
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -16,10 +16,59 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O2 -DNDEBUG")
+
+if(MSVC)
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " /W4")
+else()
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " -Wall -Wextra -Werror")
+endif()
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+
+set(LOSLIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/remake2d/lua/loslib.c")
+
+if(EXISTS "${LOSLIB_PATH}")
+    file(READ "${LOSLIB_PATH}" FILE_CONTENTS)
+
+    set(OLD_MACRO_REGEX "#define[ \t]+lua_tmpnam\\(b,e\\)[ \t]+\\{[ \t]+e[ \t]+=[ \t]+\\(tmpnam\\(b\\)[ \t]+==[ \t]+NULL\\);[ \t]+\\}")
+
+    set(NEW_MULTI_MACRO [[
+#include <stdlib.h>
+#include <string.h>
+
+#if defined(_WIN32)
+#include <io.h>
+#include <process.h>
+#define lua_tmpnam(b,e) { \\
+  char *tmp_dir = getenv("TMP"); \\
+  if (!tmp_dir) tmp_dir = getenv("TEMP"); \\
+  if (!tmp_dir) tmp_dir = "."; \\
+  snprintf(b, LUA_TMPNAMBUFSIZE, "%s\\lua_XXXXXX", tmp_dir); \\
+  e = (_mktemp_s(b, strlen(b) + 1) != 0); \\
+}
+#else
+#include <unistd.h>
+#define lua_tmpnam(b,e) { \\
+  char *tmp_dir = getenv("TMPDIR"); \\
+  if (!tmp_dir) tmp_dir = "/tmp"; \\
+  snprintf(b, LUA_TMPNAMBUFSIZE, "%s/lua_XXXXXX", tmp_dir); \\
+  int fd = mkstemp(b); \\
+  if (fd != -1) { \\
+    close(fd); \\
+    e = 0; \\
+  } else { \\
+    e = 1; \\
+  } \\
+}
+#endif]])
+
+    if(FILE_CONTENTS MATCHES "tmpnam\\(b\\)")
+        string(REGEX REPLACE "${OLD_MACRO_REGEX}" "${NEW_MULTI_MACRO}" MODIFIED_CONTENTS "${FILE_CONTENTS}")
+        file(WRITE "${LOSLIB_PATH}" "${MODIFIED_CONTENTS}")
+    endif()
+endif()
 
 file(GLOB_RECURSE SOL2_PATCH_HEADERS external/remake2d/sol2/*.hpp)
 foreach(SOL2_HPP ${SOL2_PATCH_HEADERS})
@@ -33,7 +82,10 @@ endforeach()
 file(GLOB_RECURSE LUA_SRC external/remake2d/lua/*.c)
 add_library(lualib OBJECT ${LUA_SRC})
 
-target_compile_options(lualib PRIVATE -Wno-unused-parameter)
+if(NOT MSVC)
+    target_compile_options(lualib PRIVATE -Wno-unused-parameter)
+endif()
+
 target_include_directories(lualib PRIVATE external/remake2d)
 set_target_properties(lualib PROPERTIES LINKER_LANGUAGE C)
 
@@ -42,26 +94,27 @@ file(GLOB_RECURSE REMAKE_SCRIPT_CONFIG_SRC src/remake2d/config/*.cpp)
 
 if(BUILD_SHARED_LIBS)
     add_library(remakeScript SHARED
-		$<TARGET_OBJECTS:lualib>
-		${REMAKE_SCRIPT_SRC}
-		${REMAKE_SCRIPT_CONFIG_SRC}
-	)
+        $<TARGET_OBJECTS:lualib>
+        ${REMAKE_SCRIPT_SRC}
+        ${REMAKE_SCRIPT_CONFIG_SRC}
+    )
 else()
-	add_library(remakeScript STATIC
-		$<TARGET_OBJECTS:lualib>
-		${REMAKE_SCRIPT_SRC}
-		${REMAKE_SCRIPT_CONFIG_SRC}
-	)
+    add_library(remakeScript STATIC
+        $<TARGET_OBJECTS:lualib>
+        ${REMAKE_SCRIPT_SRC}
+        ${REMAKE_SCRIPT_CONFIG_SRC}
+    )
 endif()
 
 
 
 target_include_directories(
     remakeScript
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/external
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_compile_definitions(
@@ -73,13 +126,24 @@ target_compile_definitions(
 )
 
 target_link_libraries(
-	remakeScript
-	PUBLIC
-		remake2d
+    remakeScript
+    PUBLIC
+        remake2d
 )
 
-if(BUILD_SHARED_LIBS AND MSVC)
-  set_target_properties(remakeScript PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(
+        remakeScript
+        PUBLIC
+            REMAKE2D_SCRIPT_SHARED
+        PRIVATE
+            REMAKE2D_SCRIPT_BUILD
+    )
+
+    if(WIN32)
+        target_compile_definitions(lualib PRIVATE LUA_BUILD_AS_DLL)
+        target_compile_definitions(remakeScript PUBLIC LUA_BUILD_AS_DLL)
+    endif()
 endif()
 
 if(WIN32)
@@ -91,8 +155,8 @@ if(WIN32)
 endif()
 
 install(
-	TARGETS remakeScript
-	EXPORT remakeScriptTargets
+    TARGETS remakeScript
+    EXPORT remakeScriptTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

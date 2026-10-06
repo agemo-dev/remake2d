@@ -38,11 +38,11 @@ To use colors, include the header **"remake2d/color.hpp"**.
 #include <remake2d/color.hpp>
 
 int main(void) {
-    
+
     rmk::Color black(0, 0, 0, 255);      // pure black
     rmk::Color red(255, 0, 0, 255);      // pure red
     rmk::Color purple(255, 0, 255, 255); // purple
-    
+
     rmk::byte r = red.r; // retrieve the amount of red
 
 }
@@ -100,7 +100,7 @@ Adding two colors together using the `+` operator picks the largest RGBA values
 from both. For example:
 
 ```cpp
-// red  = {255, 0, 0, 255} and blue = {0, 0, 255, 0}
+// red  = {255, 0, 0, 255} and blue = {0, 0, 255, 255}
 // gives purple = {255, 0, 255, 255}
 rmk::Color purple = rmk::color::red + rmk::color::blue;
 ```
@@ -119,8 +119,8 @@ The `%` operator computes the average of each RGBA value, resulting in a more
 precise blend that is strictly irreversible in a trivial way. Example:
 
 ```cpp
-// red  = {255, 0, 0, 255} and blue = {0, 0, 255, 0}
-// gives purple = {128, 0, 128, 255}
+// red  = {255, 0, 0, 255} and blue = {0, 0, 255, 255}
+// gives purple = {127, 0, 127, 255}
 rmk::Color purple = rmk::color::red % rmk::color::blue;
 ```
 
@@ -163,5 +163,14 @@ rmk::Color result = rmk::color::HSLToRGB(hsl);
 
 ---
 
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Color | Yes | Yes | None |
+| HSL | Yes | Yes | None |
+
+---
+
 [:octicons-arrow-left-24: Previous Chapter](area.md){ .md-button }
-[Next Chapter :octicons-arrow-right-24:](../graphics/window.md){ .md-button .md-button--primary }
+[Next Chapter :octicons-arrow-right-24:](trait.md){ .md-button .md-button--primary }

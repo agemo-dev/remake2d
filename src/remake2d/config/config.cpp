@@ -1,21 +1,50 @@
 #include <remake2d/config/config.hpp>
-#include <remake2d/sound.hpp>
+#include <remake2d/all/everything.hpp>
 
-#if __has_include(<SDL2/SDL.h>)
-    #include <SDL2/SDL.h>
-	#include <SDL2/SDL_ttf.h>
-	#include <SDL2/SDL_image.h>
-	#include <SDL2/SDL_mixer.h>
-#elif __has_include(<SDL.h>)
-    #include <SDL.h>
-	#include <SDL_ttf.h>
-	#include <SDL_image.h>
-	#include <SDL_mixer.h>
-#else
-    #error "SDL not found."
-#endif
+#include <atomic>
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 namespace rmk {
+
+void _hookMusicFinished(void) {
+    if(!rmk::Music::m_current_music) return;
+
+    auto& mus = rmk::Music::m_current_music;
+
+    if(!mus) return;
+    if(mus->m_loops_remaining < 0) {
+        return;
+    } else if(mus->m_loops_remaining > 0) {
+        mus->m_loops_remaining -= 1;
+		mus->onRepeat.emit();
+    } else {
+        mus->stop();
+        mus->onFinish.emit();
+    }
+}
+
+ void _channelFinished(int channel) {
+    if(channel >= (int)system.info.channelCount()) return;
+
+    auto& sfx = rmk::SFX::m_channel_owners[channel];
+
+    if(!sfx) return;
+    if(sfx->m_loops_remaining < 0) {
+        return;
+    } else if(sfx->m_loops_remaining > 0) {
+        sfx->m_loops_remaining -= 1;
+		sfx->onRepeat.emit();
+    } else {
+        sfx->m_is_playing = false;
+        sfx->onFinish.emit();
+    }
+ }
+
+
 namespace config {
 
 namespace system {
@@ -44,20 +73,46 @@ void initSDL(void) {
     if(TTF_Init() != 0) {
         rmk_dynamicAssert(rmk::SystemError, (std::string(error::system::sdl_ttf_init_fail) + " : " + TTF_GetError()));
     }
+
+    Mix_ChannelFinished(_channelFinished);
+    Mix_HookMusicFinished(_hookMusicFinished);
 }
+
 } //namespace system
 
-namespace sound {
-void initQueue(void) noexcept {
-    static bool isInit = false;
 
-    if(isInit) return;
+namespace loop {
+
+void init (void) noexcept {
+    static std::atomic<bool> isInit(false);
+
+    if(isInit.load(std::memory_order_relaxed)) return;
+
+    rmk::loop.add(event.tracker());
+    rmk::loop.add(delta.tracker());
+    rmk::loop.add(physics.tracker());
+    rmk::loop.add(parallax.tracker());
+    rmk::loop.add(animation.tracker());
+
+    isInit.store(true, std::memory_order_relaxed);
+}
+
+} // namespace loop
+
+
+namespace sound {
+
+void initQueue(void) noexcept {
+    static std::atomic<bool> isInit(false);
+
+    if(isInit.load(std::memory_order_relaxed)) return;
     for(u16 i = 0; i < rmk::system.info.channelCount(); i++) {
         rmk::SFX::m_free_channels.push(i);
-        rmk::SFX::m_channel_owners[i] = nullptr;
+        rmk::SFX::m_channel_owners[i] = nil;
     }
-    isInit = true;
+    isInit.store(true, std::memory_order_relaxed);
 }
+
 } //namespace sound
 
 } //namespace config

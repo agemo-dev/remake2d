@@ -3,7 +3,7 @@
 
 #include <remake2d/concept.hpp>
 #include <remake2d/numeric.hpp>
-#include <SDL2/SDL.h>
+#include <remake2d/config/forward.hpp>
 
 #include <compare>
 
@@ -18,38 +18,40 @@ public:
     byte a{255};
 
 public:
-    constexpr Color(void)                       = default;
-    constexpr Color(Color&&)                    = default;
-    constexpr Color(const Color&)               = default;
-    constexpr Color& operator=(Color&&)         = default;
-    constexpr Color& operator=(const Color&)    = default;
     constexpr Color(byte R, byte G, byte B, byte A = 255) : r(R), g(G), b(B), a(A) {}
 
-private:
-    constexpr SDL_Color _data(void) const noexcept { return SDL_Color{ r, g, b, a }; }
+public:
+    constexpr Color(void)                         = default;
+    constexpr Color(const Color&)                 = default;
+    constexpr Color(Color&&) noexcept             = default;
+    constexpr Color& operator=(const Color&)      = default;
+    constexpr Color& operator=(Color&&) noexcept  = default;
+
+public:
+    operator SDL_Color (void) const noexcept;
 
 public:
     constexpr auto operator<=>(const Color&) const noexcept = default;
-
-private:
-    friend class Window;
-    friend class Text;
-    friend class FontManager;
-    template<IsShape S> friend class Texture;
 };
 
 // HSL : Hue - Saturation - Luminosity
 struct HSL {
-    f32 h, s, l;
-    
+
 public:
-    constexpr HSL(void)                   = default;
-    constexpr HSL(HSL&&)                  = default;
-    constexpr HSL(const HSL&)             = default;
-    constexpr HSL& operator=(HSL&&)       = default;
-    constexpr HSL& operator=(const HSL&)  = default;
+    f32 h{0.0f};
+    f32 s{0.0f};
+    f32 l{0.0f};
+
+public:
     constexpr HSL(f32 H, f32 S, f32 L) : h(H), s(S), l(L) {}
-    
+
+public:
+    constexpr HSL(void)                      = default;
+    constexpr HSL(const HSL&)                = default;
+    constexpr HSL(HSL&&) noexcept            = default;
+    constexpr HSL& operator=(const HSL&)     = default;
+    constexpr HSL& operator=(HSL&&) noexcept = default;
+
 public:
     constexpr auto operator<=>(const HSL&) const noexcept = default;
 };
@@ -67,7 +69,7 @@ inline constexpr Color gray      = { 128, 128, 128, 255 };
 inline constexpr Color gold      = { 255, 203,   0, 255 };
 inline constexpr Color darkblue  = {   0, 80,  180, 255 };
 inline constexpr Color darkgreen = {   0, 120,  50, 255 };
-inline constexpr Color lime      = {  34, 182, 212, 255 };
+inline constexpr Color lime      = {   0, 255,   0, 255 };
 inline constexpr Color silver    = { 192, 192, 192, 255 };
 inline constexpr Color maroon    = { 128, 0,   0,   255 };
 inline constexpr Color pink      = { 255, 0,   128, 255 };

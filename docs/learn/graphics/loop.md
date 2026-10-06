@@ -28,8 +28,9 @@ The methods of the `MainRenderLoop` class are as follows:
 void execute(Window& win, const std::function<void(void)>& body) noexcept; 								  // loop while window is open
 void execute(const std::function<bool(void)>& condition, const std::function<void(void)>& body) noexcept; // loop with custom condition
 
-void update(void) noexcept;          // start the main loop (blocking)
-bool isRunning(void) const noexcept; // check if loop is active
+void update(void)            noexcept;  // start the main loop (blocking)
+void add(Tracker<Updatable>) noexcept;  // add Updatable object
+bool isRunning(void)   const noexcept;  // check if loop is active
 ```
 
 ---
@@ -133,6 +134,40 @@ int main(void) {
 !!! warning
 	`loop` must be initialized and started, as several modules depend on it, namely: timers, delta time, signals, croutines, etc.
 	Failing to do so can cause these modules to malfunction.
+
+---
+
+## Updatable
+
+For logic update pools, such as updating the game state, the engine provides the Updatable trait.
+
+### Usage
+
+To use it, simply inherit from it and implement the update method:
+
+```cpp
+class PlayerPool : public rmk::Updatable {
+public:
+    void update(void) override {/*...*/}
+};
+```
+
+This gives you the ability to link an instance of this class to loop via the add method:
+
+```cpp
+rmk::loop.add(PlayerPool::instance().tracker());
+```
+
+This will be executed right before the function passed to execute.
+
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Updatable | Yes | Yes | Trackable |
+| MainRenderLoop | No | No | None |
 
 ---
 

@@ -24,7 +24,9 @@ Dim2d  size(void)               const noexcept; // grid size
 Grid2d cut(void)                const noexcept; // current grid divisions
 Vec2d  center(void)             const noexcept; // grid center
 Area   cell(const Grid2d&)      const noexcept; // get a specific cell area by (col, row)
-std::vector<Area> cells(void)   const noexcept; // get all cell areas
+
+std::vector<Area>& cells(void)             noexcept; // get all cell areas
+const std::vector<Area>& cells(void) const noexcept; // get all cell areas (const)
 ```
 
 ---
@@ -36,7 +38,7 @@ std::vector<Area> cells(void)   const noexcept; // get all cell areas
 The constructor takes a center, a size, and a `Grid2d` defining the number of columns and rows:
 
 ```cpp
-Grid2d(const Vec2d&, const Dim2d&, const Grid2d&);
+TileGrid(const Vec2d&, const Dim2d&, const Grid2d&);
 ```
 
 ```cpp
@@ -48,26 +50,24 @@ rmk::TileGrid grid({400, 300}, {800, 600}, {8, 6});
 Like any `Geometry`, `TileGrid` draws directly through `Window::draw`, handy for visualizing an alignment during development:
 
 ```cpp
-// In render loop
-win.draw(grid, rmk::color::gray);
-```
-
-```cpp
 #include <remake2d/window.hpp>
 #include <remake2d/loop.hpp>
 #include <remake2d/tilegrid.hpp>
 
 int main(void) {
     rmk::Window win;
-    rmk::TileGrid grid({400, 300}, {800, 600}, {8, 6});
+    rmk::TileGrid grid(win.center(), {800, 600}, {8, 6});
+    grid.color(rmk::color::cyan);
 
     rmk::loop.execute(win, [&](void) {
-        win.draw(grid, rmk::color::gray);
+        win.draw(grid);
     });
 
     rmk::loop.update();
 }
 ```
+
+![tile grid example](assets/maps1.png)
 
 ### Retrieving cells
 
@@ -79,7 +79,7 @@ std::vector<rmk::Area> all = grid.cells();
 ```
 
 !!! info
-    Count returns `cut.x * cut.y`, the total number of cells in the grid.
+    `count` returns `cut.x * cut.y`, the total number of cells in the grid.
 
 ### Modifying a grid
 
@@ -90,10 +90,15 @@ grid.move({500, 300});
 grid.cut({10, 8});
 grid.resize({1000, 700});
 ```
+---
+
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| TileGrid | Yes | Yes | Printable |
 
 ---
 
 [:octicons-arrow-left-24: Previous chapter](../physic/physic.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](tilemap.md){ .md-button .md-button--primary }
-
----

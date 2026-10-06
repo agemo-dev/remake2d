@@ -1,6 +1,7 @@
 #ifndef REMAKE2D_DATA_
 #define REMAKE2D_DATA_
 
+#include <remake2d/area.hpp>
 #include <remake2d/error.hpp>
 #include <remake2d/color.hpp>
 #include <remake2d/vector.hpp>
@@ -8,24 +9,22 @@
 #include <remake2d/numeric.hpp>
 #include <remake2d/concept.hpp>
 #include <remake2d/json/json.hpp>
+#include <remake2d/private/struct.hpp>
 
 #include <map>
 #include <list>
+#include <span>
 #include <vector>
 #include <string>
 #include <variant>
 #include <utility>
 #include <algorithm>
 #include <filesystem>
-#include <string_view>
 
 
 namespace rmk {
 
-namespace fdata {
-inline static constexpr const char *droot = "data/remake2d/json";
-} //namespace rmk
-
+inline static constexpr const char *DATA_DEFAULT_ROOT = "data/remake2d/";
 
 struct Data {
     using Value = std::variant<
@@ -49,7 +48,7 @@ struct Data {
     Value value;
 
     Data(void)                  : value(0) {}
-    Data(Nil v)                 : value(0) {}
+    Data(Nil v)                 : value(v) {}
     Data(byte v)                : value(v) {}
     Data(rune v)                : value(v) {}
     Data(imax v)                : value(v) {}
@@ -61,31 +60,36 @@ struct Data {
     Data(Dim2d v)               : value(v) {}
     Data(Color v)               : value(v) {}
     Data(Area v)                : value(v) {}
-    Data(std::vector<Data> v)   : value(std::move(v)) {}
-    Data(std::string_view v)    : value(std::string(v)) {}
+    Data(int v)                 : value((imax)v) {}
+    Data(unsigned int v)        : value((imax)v) {}
+    Data(std::vector<Data> v)   : value(std::move(v))         {}
+    Data(std::string_view v)    : value(std::string(v))       {}
     Data(std::map<std::string, Data> v) : value(std::move(v)) {}
 
     Data(std::span<std::pair<const std::string, Data>> list)
         : value(std::map<std::string, Data>(list.begin(), list.end())) {}
 
+public:
     static Data map(std::span<std::pair<const std::string, Data>> list) {
         return Data(list);
     }
+
     static Data list(std::span<Data> items) {
         return Data(std::vector<Data>(items.begin(), items.end()));
     }
 
+public:
     const Data& operator[](std::string_view key) const {
         const auto& m = std::get<std::map<std::string, Data>>(value);
         auto it = m.find(std::string(key));
         if (it == m.end()) throw DataError(error::data::invalid_field);
         return it->second;
     }
-    
+
     const Data& operator[](const char* key) const {
         return (*this)[std::string_view(key)];
     }
-    
+
     const Data& operator[](usize idx) const {
         const auto& v = std::get<std::vector<Data>>(value);
         if (idx >= v.size()) throw DataError(error::data::invalid_field);
@@ -111,19 +115,21 @@ struct Data {
 };
 
 
-class ISavable {
+class Savable {
+
 public:
     virtual Data        sdata(void) const  = 0;
     virtual void        ldata(const Data&) = 0;
 
 public:
-    virtual ~ISavable(void) = default;
+    rmk_heritableBaseClass(Savable);
 };
 
 
 class SaveManager;
 
 class DataFile {
+
 private:
     std::string    m_name;
     std::string    m_path;
@@ -138,11 +144,11 @@ public:
 
     void load(Data&);
     void save(const Data&);
-    void load(ISavable&);
-    void save(const ISavable&);
+    void load(Savable&);
+    void save(const Savable&);
 
-    void remove(void) 			 noexcept;
-    bool exist(void) 	   const noexcept;
+    void remove(void)            noexcept;
+    bool exist(void)       const noexcept;
     std::string path(void) const noexcept;
     std::string name(void) const noexcept;
 
@@ -155,7 +161,7 @@ private:
 class SaveManager {
 private:
     bool               m_initialized{false};
-    std::string        m_root{fdata::droot};
+    std::string        m_root{DATA_DEFAULT_ROOT};
 
 private:
     SaveManager(void) = default;
@@ -163,14 +169,14 @@ private:
     SaveManager& operator=(const SaveManager&) = delete;
 
 public:
-    std::string root(void) 			const noexcept;
-    bool isInitialized(void) 		const noexcept;
-    void root(std::string_view)      	  noexcept;
-    static SaveManager& getInstance(void) noexcept;
+    std::string root(void)           const noexcept;
+    bool isInitialized(void)         const noexcept;
+    void root(std::string_view)            noexcept;
+    static SaveManager& getInstance(void)  noexcept;
 
 private:
     void _init(void);
-    
+
 private:
     friend class DataFile;
 };

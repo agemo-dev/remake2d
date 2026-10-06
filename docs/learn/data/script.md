@@ -10,7 +10,7 @@ Hot reloading is an essential module for making rapid program debugging easier.
 limited on this interface. For this we'll use the `Script` type, contained in the header **"remake2d/script.hpp"**.
 
 !!! info
-    Lua script execution requires the `remakeScript` add-on to be built and linked (`COMPONENTS Script`). See [Installation](../install/install.md#components) for details.
+    Lua script execution requires the `remakeScript` add-on to be built and linked (`COMPONENTS Script`). See [Installation](../introduction/install.md#components) for details.
 
 ---
 
@@ -105,5 +105,13 @@ game.update();
 
 ---
 
-[:octicons-arrow-left-24: Previous chapter](isavable.md){ .md-button }
+## Property
+
+| Type | Copiable | Movable | Bases and Traits |
+|---|---|---|---|
+| Script | No | Yes | Trackable |
+
+---
+
+[:octicons-arrow-left-24: Previous chapter](savable.md){ .md-button }
 [Next chapter :octicons-arrow-right-24:](loadtype.md){ .md-button .md-button--primary }
