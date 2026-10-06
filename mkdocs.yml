@@ -37,7 +37,6 @@ markdown_extensions:
 
 plugins:
   - search
-  - sitemap
   - minify:
       minify_html: true
 
